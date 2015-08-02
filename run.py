@@ -15,6 +15,8 @@ class WinFrame(wx.Frame):
                                        style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         wxpanel = wx.Panel(self)
+        self.icon = wx.Icon(r"c:\windows\system32\shell32.dll;315", wx.BITMAP_TYPE_ICO)
+        self.SetIcon(self.icon)
 
         self.telebox = wx.CheckBox(wxpanel, label="Disable Telemetry", pos=(10, 15))
         self.telebox.Set3StateValue(0)
