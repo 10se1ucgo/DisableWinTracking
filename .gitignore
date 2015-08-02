@@ -1,0 +1,10 @@
+# Pycharm
+.idea/
+
+# Python stuff
+*.py[cod]
+
+# Pyinstaller
+build/
+dist/
+*.spec
