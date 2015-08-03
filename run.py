@@ -72,7 +72,6 @@ class WinFrame(wx.Frame):
                     shell=True)  # Prevent modification to file
             except IOError:
                 print "Unable to clear DiagTrack log. Deleted, or is the program not elevated?"
-                pass
 
         if self.hostbox.IsChecked():
             self.MSHosts = "\r\n0.0.0.0 vortex.data.microsoft.com\r\n0.0.0.0 vortex-win.data.microsoft.com\r\n" \
