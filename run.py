@@ -23,7 +23,7 @@ class WinFrame(wx.Frame):
         self.redir = RedirectText(self.debug)
         sys.stdout = self.redir
 
-        if ctypes.windll.shell32.IsUserAnAdmin() != 1:
+        if ctypes.windll.shell32.IsUserAnAdmin() != 0:
             self.warn = wx.MessageDialog(parent=wxpanel,
                                          message="Program requires elevation, please run it as an administrator",
                                          caption="ERROR", style=wx.OK | wx.ICON_WARNING)
@@ -47,7 +47,7 @@ class WinFrame(wx.Frame):
         self.servicebox.Set3StateValue(0)
         self.servicebox.Bind(wx.EVT_CHECKBOX, self.serviceradcheck)
 
-        self.servicerad = wx.RadioBox(wxpanel, label="Service Method", pos=(135, 10), choices=["Delete", "Disable"])
+        self.servicerad = wx.RadioBox(wxpanel, label="Service Method", pos=(135, 10), choices=["Disable", "Delete"])
         self.servicerad.Disable()
 
         self.okbutton = wx.Button(wxpanel, -1, "Go Private!", (275, 25))
@@ -113,7 +113,7 @@ class WinFrame(wx.Frame):
             except WindowsError:
                 print "Could not access HOSTS file. Is the program not elevated?"
 
-        if self.servicerad.Selection == 0 and self.servicebox.IsChecked():
+        if self.servicerad.Selection == 1 and self.servicebox.IsChecked():
             try:
                 win32serviceutil.RemoveService('dmwappushsvc')  # Delete dmwappushsvc
                 print "dmwappushsvc successfully deleted."
@@ -126,7 +126,7 @@ class WinFrame(wx.Frame):
             except pywintypes.error:
                 print "Diagnostics Tracking Service unable to be deleted. Deleted already, or is the program not elevated?"
 
-        elif self.servicerad.Selection == 1 and self.servicebox.IsChecked():
+        elif self.servicerad.Selection == 0 and self.servicebox.IsChecked():
             self.diagkeypath = r'SYSTEM\CurrentControlSet\Services\DiagTrack'
             self.dmwakeypath = r'SYSTEM\CurrentControlSet\Services\dmwappushsvc'
 

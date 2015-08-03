@@ -27,8 +27,8 @@ Clears and disables writing to the log located in "C:\ProgramData\Microsoft\Diag
 Append known tracking domains to the HOSTS file located in "C:\Windows\System32\drivers\etc"
 
 ## Delete Services vs Disable Services?
-Selecting the "Delete" choice will completely delete the tracking services. This is the recommended choice.  
-Selecting "Disable" however will simply stop the services from being able to run.
+Selecting "Disable" will simply stop the services from being able to run.
+Selecting the "Delete" choice will completely delete the tracking services.
 #  
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
