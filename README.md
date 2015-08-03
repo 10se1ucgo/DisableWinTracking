@@ -2,6 +2,11 @@
 [GIF of GUI](http://i.imgur.com/AV8btDc.gifv)  
 A tool that I created to use some of the known methods of disabling tracking in Windows 10.
 
+## How to use
+You can either  
+A. Install Python and the dependencies listed below and run the script from an elevated (admin) command prompt and select which options you'd like  
+B. Run the binary uploaded to the Release tab as an Administrator and select which options you'd like  
+
 ## Dependencies
 * wxPython
 * PyWin32
@@ -20,13 +25,6 @@ Clears log and disables writing to the log located in "C:\ProgramData\Microsoft\
 
 #### HOSTS
 Append known tracking domains to the HOSTS file located in "C:\Windows\System32\drivers\etc"
-
-
-
-## How to use
-You can either  
-A. Install Python and the 2 dependencies and run the script from an elevated (admin) command prompt and select which options you'd like  
-B. Run the binary uploaded to the Release tab as an Administrator and select which options you'd like  
 
 ## Delete Services vs Disable Services?
 Selecting the "Delete" choice will completely delete the tracking services. This is the recommended choice.  
