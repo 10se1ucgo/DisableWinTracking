@@ -17,7 +17,7 @@ B. Run the binary uploaded to the Release tab as an Administrator and select whi
 Set the "AllowTelemetry" string in "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection" to 0
 
 #### DiagTrack Log
-Clears log and disables writing to the log located in "C:\ProgramData\Microsoft\Diagnosis\ETLLogs\AutoLogger"
+Clears and disables writing to the log located in "C:\ProgramData\Microsoft\Diagnosis\ETLLogs\AutoLogger"
 
 #### Services
 * Delete: Remove both services
