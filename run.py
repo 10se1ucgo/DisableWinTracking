@@ -3,6 +3,7 @@
 import sys
 import subprocess
 import _winreg
+import ctypes
 
 import wx
 import win32serviceutil
@@ -15,6 +16,16 @@ class WinFrame(wx.Frame):
                                        style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         wxpanel = wx.Panel(self)
+
+        if ctypes.windll.shell32.IsUserAnAdmin() != 1:
+            self.warn = wx.MessageDialog(parent=wxpanel,
+                                         message="Program requires elevation, please run it as an administrator",
+                                         caption="ERROR", style=wx.OK | wx.ICON_WARNING)
+            self.warn.ShowModal()
+            self.warn.Destroy()
+            sys.exit()
+
+
         self.icon = wx.Icon(r"c:\windows\system32\shell32.dll;315", wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 
