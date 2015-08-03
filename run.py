@@ -25,7 +25,6 @@ class WinFrame(wx.Frame):
             self.warn.Destroy()
             sys.exit()
 
-
         self.icon = wx.Icon(r"c:\windows\system32\shell32.dll;315", wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 
@@ -62,7 +61,8 @@ class WinFrame(wx.Frame):
                 _winreg.SetValueEx(self.telekey, "AllowTelemetry", 0, _winreg.REG_SZ, "0")  # Disable Telemetry
                 _winreg.CloseKey(self.telekey)
             except WindowsError:
-                pass
+                print "Unable to modify Telemetry key. Deleted, or is the program not elevated?"
+
         if self.diagbox.IsChecked():
             try:
                 open('C:\ProgramData\Microsoft\Diagnosis\ETLLogs\AutoLogger\AutoLogger-Diagtrack-Listener.etl',
@@ -71,6 +71,7 @@ class WinFrame(wx.Frame):
                     "echo y|cacls C:\ProgramData\Microsoft\Diagnosis\ETLLogs\AutoLogger\AutoLogger-Diagtrack-Listener.etl /d SYSTEM",
                     shell=True)  # Prevent modification to file
             except IOError:
+                print "Unable to clear DiagTrack log. Deleted, or is the program not elevated?"
                 pass
 
         if self.hostbox.IsChecked():
@@ -102,20 +103,19 @@ class WinFrame(wx.Frame):
                 with open('C:\Windows\System32\drivers\etc\hosts', 'ab') as f:
                     f.write(self.MSHosts)
             except WindowsError:
-                pass
+                print "Could not access HOSTS file. Is the program not elevated?"
 
         if self.servicerad.Selection == 0 and self.servicebox.IsChecked():
             try:
                 win32serviceutil.RemoveService('dmwappushsvc')  # Delete dmwappushsvc
             except pywintypes.error:
                 print "dmwappushsvc unable to be deleted. Deleted already, or is the program not elevated?"
-                pass
 
             try:
                 win32serviceutil.RemoveService('Diagnostics Tracking Service')  # Delete the DiagnosticsTracking Service
             except pywintypes.error:
                 print "Diagnostics Tracking Service unable to be deleted. Deleted already, or is the program not elevated?"
-                pass
+
         elif self.servicerad.Selection == 1 and self.servicebox.IsChecked():
             self.diagkeypath = r'SYSTEM\CurrentControlSet\Services\DiagTrack'
             self.dmwakeypath = r'SYSTEM\CurrentControlSet\Services\dmwappushsvc'
@@ -125,28 +125,25 @@ class WinFrame(wx.Frame):
                 _winreg.SetValueEx(self.diagkey, "Start", 0, _winreg.REG_DWORD, 0x0000004)
                 _winreg.CloseKey(self.diagkey)
             except WindowsError:
-                pass
+                print "Unable to modify DiagTrack key. Deleted, or is the program not elevated?"
 
             try:
                 self.dmwakey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, self.dmwakeypath, 0, _winreg.KEY_ALL_ACCESS)
                 _winreg.SetValueEx(self.dmwakey, "Start", 0, _winreg.REG_DWORD, 0x0000004)
                 _winreg.CloseKey(self.dmwakey)
             except WindowsError:
-                pass
+                print "Unable to modify dwmappushsvc key. Deleted, or is the program not elevated?"
 
             try:
                 win32serviceutil.StopService('Diagnostics Tracking Service')  # Disable Diagnostics Tracking Service
             except pywintypes.error:
                 print "Diagnostics Tracking Service unable to be stopped. Deleted, or is the program not elevated?"
-                pass
 
             try:
                 win32serviceutil.StopService('dmwappushsvc')  # Disable dmwappushsvc
             except pywintypes.error:
                 print "dmwappushsvc unable to be stopped. Deleted, or is the program not elevated?"
-                pass
 
-            print "Services Disabled"
         sys.exit()
 
 
