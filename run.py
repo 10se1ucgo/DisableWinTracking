@@ -23,7 +23,7 @@ class WinFrame(wx.Frame):
         self.redir = RedirectText(self.debug)
         sys.stdout = self.redir
 
-        if ctypes.windll.shell32.IsUserAnAdmin() != 0:
+        if ctypes.windll.shell32.IsUserAnAdmin() != 1:
             self.warn = wx.MessageDialog(parent=wxpanel,
                                          message="Program requires elevation, please run it as an administrator",
                                          caption="ERROR", style=wx.OK | wx.ICON_WARNING)
