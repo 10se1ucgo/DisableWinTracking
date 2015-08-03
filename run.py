@@ -12,12 +12,18 @@ import pywintypes
 
 class WinFrame(wx.Frame):
     def __init__(self, parent, title):
-        super(WinFrame, self).__init__(parent, title=title, size=[375, 115],
+        super(WinFrame, self).__init__(parent, title=title, size=[375, 215],
                                        style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         wxpanel = wx.Panel(self)
 
-        if ctypes.windll.shell32.IsUserAnAdmin() != 1:
+        self.debug = wx.TextCtrl(wxpanel, wx.ID_ANY, size=(349, 92),
+                                 style=wx.TE_MULTILINE | wx.TE_READONLY, pos=(10, 84))
+
+        self.redir = RedirectText(self.debug)
+        sys.stdout = self.redir
+
+        if ctypes.windll.shell32.IsUserAnAdmin() != 0:
             self.warn = wx.MessageDialog(parent=wxpanel,
                                          message="Program requires elevation, please run it as an administrator",
                                          caption="ERROR", style=wx.OK | wx.ICON_WARNING)
@@ -60,6 +66,7 @@ class WinFrame(wx.Frame):
                 self.telekey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, self.telekeypath, 0, _winreg.KEY_ALL_ACCESS)
                 _winreg.SetValueEx(self.telekey, "AllowTelemetry", 0, _winreg.REG_SZ, "0")  # Disable Telemetry
                 _winreg.CloseKey(self.telekey)
+                print "Telemetry key succesfully modified."
             except WindowsError:
                 print "Unable to modify Telemetry key. Deleted, or is the program not elevated?"
 
@@ -70,6 +77,7 @@ class WinFrame(wx.Frame):
                 subprocess.Popen(
                     "echo y|cacls C:\ProgramData\Microsoft\Diagnosis\ETLLogs\AutoLogger\AutoLogger-Diagtrack-Listener.etl /d SYSTEM",
                     shell=True)  # Prevent modification to file
+                print "DiagTrack log succesfully cleared and locked."
             except IOError:
                 print "Unable to clear DiagTrack log. Deleted, or is the program not elevated?"
 
@@ -101,17 +109,20 @@ class WinFrame(wx.Frame):
             try:
                 with open('C:\Windows\System32\drivers\etc\hosts', 'ab') as f:
                     f.write(self.MSHosts)
+                print "Domains successfully appended to HOSTS file."
             except WindowsError:
                 print "Could not access HOSTS file. Is the program not elevated?"
 
         if self.servicerad.Selection == 0 and self.servicebox.IsChecked():
             try:
                 win32serviceutil.RemoveService('dmwappushsvc')  # Delete dmwappushsvc
+                print "dmwappushsvc successfully deleted."
             except pywintypes.error:
                 print "dmwappushsvc unable to be deleted. Deleted already, or is the program not elevated?"
 
             try:
                 win32serviceutil.RemoveService('Diagnostics Tracking Service')  # Delete the DiagnosticsTracking Service
+                print "Diagnostics Tracking Service successfully deleted."
             except pywintypes.error:
                 print "Diagnostics Tracking Service unable to be deleted. Deleted already, or is the program not elevated?"
 
@@ -130,20 +141,31 @@ class WinFrame(wx.Frame):
                 self.dmwakey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, self.dmwakeypath, 0, _winreg.KEY_ALL_ACCESS)
                 _winreg.SetValueEx(self.dmwakey, "Start", 0, _winreg.REG_DWORD, 0x0000004)
                 _winreg.CloseKey(self.dmwakey)
+                print "dmwappushsvc key successfully modified"
             except WindowsError:
-                print "Unable to modify dwmappushsvc key. Deleted, or is the program not elevated?"
+                print "Unable to modify dmwappushsvc key. Deleted, or is the program not elevated?"
 
             try:
                 win32serviceutil.StopService('Diagnostics Tracking Service')  # Disable Diagnostics Tracking Service
+                print "Diagnostics Tracking Service successfully stopped"
             except pywintypes.error:
                 print "Diagnostics Tracking Service unable to be stopped. Deleted, or is the program not elevated?"
 
             try:
                 win32serviceutil.StopService('dmwappushsvc')  # Disable dmwappushsvc
+                print "dmwappushsvc successfully stopped"
             except pywintypes.error:
                 print "dmwappushsvc unable to be stopped. Deleted, or is the program not elevated?"
 
-        sys.exit()
+        print "Done. You can close this window after reading the log."
+
+
+class RedirectText(object):
+    def __init__(self, aWxTextCtrl):
+        self.out = aWxTextCtrl
+
+    def write(self, string):
+        self.out.WriteText(string)
 
 
 if __name__ == '__main__':
