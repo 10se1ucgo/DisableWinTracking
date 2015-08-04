@@ -91,7 +91,7 @@ class WinFrame(wx.Frame):
 
         aboutpg = wx.AboutDialogInfo()
         aboutpg.Name = "Windows 10 Tracking Disable Tool"
-        aboutpg.Version = "v1.4"
+        aboutpg.Version = "v1.5"
         aboutpg.Copyright = "(c) 2015 10se1ucgo"
         aboutpg.Description = "A tool to disable nasty tracking in Windows 10"
         aboutpg.WebSite = ("https://github.com/10se1ucgo/DisableWinTracking", "GitHub Project Page")
