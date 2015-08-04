@@ -4,6 +4,7 @@ import sys
 import subprocess
 import _winreg
 import ctypes
+import os
 
 import wx
 from wx.lib.wordwrap import wordwrap
@@ -41,23 +42,29 @@ class WinFrame(wx.Frame):
             self.warn.Destroy()
             sys.exit()
 
-        self.icon = wx.Icon(r"c:\windows\system32\shell32.dll;315", wx.BITMAP_TYPE_ICO)
+        self.shell32file = os.path.join(os.environ['WINDIR'], 'System32\\shell32.dll')
+        self.icon = wx.Icon(self.shell32file + ";315", wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 
         self.telebox = wx.CheckBox(wxpanel, label="Telemetry", pos=(10, 15))
         self.telebox.Bind(wx.EVT_CHECKBOX, self.hostcheck)
+        self.telebox.SetToolTip(
+            wx.ToolTip("Set \'AllowTelemetry\' to 0. Requires HOST file modification for full effect"))
         self.telebox.Set3StateValue(0)
 
-        self.diagbox = wx.CheckBox(wxpanel, label="Clear DiagTrack log", pos=(10, 45))
-        self.diagbox.Set3StateValue(0)
-
-        self.hostbox = wx.CheckBox(wxpanel, label="Block tracking servers with HOSTS file (Needed for Telemetry)",
-                                   pos=(10, 60))
-        self.hostbox.Set3StateValue(0)
-
         self.servicebox = wx.CheckBox(wxpanel, label="Services", pos=(10, 30))
+        self.servicebox.SetToolTip(wx.ToolTip("Enable \'Service Method\' box, select an option"))
         self.servicebox.Set3StateValue(0)
         self.servicebox.Bind(wx.EVT_CHECKBOX, self.serviceradcheck)
+
+        self.diagbox = wx.CheckBox(wxpanel, label="Clear DiagTrack log", pos=(10, 45))
+        self.diagbox.SetToolTip(wx.ToolTip("Clear DiagTrack log and prevents modification to it."))
+        self.diagbox.Set3StateValue(0)
+
+        self.hostbox = wx.CheckBox(wxpanel, label="Block tracking servers with HOSTS file",
+                                   pos=(10, 60))
+        self.hostbox.SetToolTip(wx.ToolTip("Add known tracking domains to HOSTS file. Required for Telemetry"))
+        self.hostbox.Set3StateValue(0)
 
         self.servicerad = wx.RadioBox(wxpanel, label="Service Method", pos=(135, 10), choices=["Disable", "Delete"])
         self.servicerad.Disable()
@@ -94,6 +101,7 @@ class WinFrame(wx.Frame):
     def onok(self, event):
         if self.telebox.IsChecked():
             self.telekeypath = r'SOFTWARE\Policies\Microsoft\Windows\DataCollection'  # Path to Telemetry key
+            self.telekey2path = r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\DataCollection'  # 2nd path
 
             try:
                 self.telekey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, self.telekeypath, 0, _winreg.KEY_ALL_ACCESS)
@@ -101,14 +109,25 @@ class WinFrame(wx.Frame):
                 _winreg.CloseKey(self.telekey)
                 print "Telemetry key succesfully modified."
             except WindowsError:
-                print "Unable to modify Telemetry key. Deleted, or is the program not elevated?"
+                print "Unable to modify Telemetry key. Deleted, or is the program not elevated? Trying another method"
+
+            try:
+                self.telekey2 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, self.telekey2path, 0,
+                                                _winreg.KEY_ALL_ACCESS)
+                _winreg.SetValueEx(self.telekey2, "AllowTelemetry", 0, _winreg.REG_SZ, "0")  # Disable Telemetry
+                _winreg.CloseKey(self.telekey2)
+                print "2nd Telemetry key succesfully modified."
+            except WindowsError:
+                print "Unable to modify 2nd Telemetry key. Deleted, or is the program not elevated?"
 
         if self.diagbox.IsChecked():
+            self.logfile = os.path.join(os.environ['SYSTEMDRIVE'],
+                                        '\\ProgramData\\Microsoft\\Diagnosis\\ETLLogs\\AutoLogger\\AutoLogger-Diagtrack-Listener.etl')
+
             try:
-                open('C:\ProgramData\Microsoft\Diagnosis\ETLLogs\AutoLogger\AutoLogger-Diagtrack-Listener.etl',
-                     'w').close()  # Clear the AutoLogger file
+                open(self.logfile).close()  # Clear the AutoLogger file
                 subprocess.Popen(
-                    "echo y|cacls C:\ProgramData\Microsoft\Diagnosis\ETLLogs\AutoLogger\AutoLogger-Diagtrack-Listener.etl /d SYSTEM",
+                    ["echo", "y|cacls", self.logfile, "/d", "SYSTEM"],
                     shell=True)  # Prevent modification to file
                 print "DiagTrack log succesfully cleared and locked."
             except IOError:
@@ -139,9 +158,10 @@ class WinFrame(wx.Frame):
                             'feedback.microsoft-hohm.com', 'feedback.search.microsoft.com']
             self.IP = '0.0.0.0 '
             self.MSHosts2 = [self.IP + x for x in self.MSHosts]
+            self.hostslocation = os.path.join(os.environ['WINDIR'], 'System32\\drivers\\etc\\hosts')
 
             try:
-                with open('C:\Windows\System32\drivers\etc\hosts', 'ab') as f:
+                with open(self.hostslocation, 'ab') as f:
                     f.write('\n' + '\n'.join(self.MSHosts2))
                 print "Domains successfully appended to HOSTS file."
             except WindowsError:
