@@ -6,16 +6,26 @@ import _winreg
 import ctypes
 
 import wx
+from wx.lib.wordwrap import wordwrap
 import win32serviceutil
 import pywintypes
 
 
 class WinFrame(wx.Frame):
     def __init__(self, parent, title):
-        super(WinFrame, self).__init__(parent, title=title, size=[375, 215],
+        super(WinFrame, self).__init__(parent, title=title, size=[375, 235],
                                        style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         wxpanel = wx.Panel(self)
+
+        menuBar = wx.MenuBar()
+        fileMenu = wx.Menu()
+        aboutMenuItem = fileMenu.Append(wx.NewId(), "About",
+                                        "About the application")
+        menuBar.Append(fileMenu, "&Info")
+        self.SetMenuBar(menuBar)
+
+        self.Bind(wx.EVT_MENU, self.about, aboutMenuItem)
 
         self.debug = wx.TextCtrl(wxpanel, wx.ID_ANY, size=(349, 92),
                                  style=wx.TE_MULTILINE | wx.TE_READONLY, pos=(10, 84))
@@ -23,7 +33,7 @@ class WinFrame(wx.Frame):
         self.redir = RedirectText(self.debug)
         sys.stdout = self.redir
 
-        if ctypes.windll.shell32.IsUserAnAdmin() != 1:
+        if ctypes.windll.shell32.IsUserAnAdmin() != 0:
             self.warn = wx.MessageDialog(parent=wxpanel,
                                          message="Program requires elevation, please run it as an administrator",
                                          caption="ERROR", style=wx.OK | wx.ICON_WARNING)
@@ -34,13 +44,15 @@ class WinFrame(wx.Frame):
         self.icon = wx.Icon(r"c:\windows\system32\shell32.dll;315", wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 
-        self.telebox = wx.CheckBox(wxpanel, label="Disable Telemetry", pos=(10, 15))
+        self.telebox = wx.CheckBox(wxpanel, label="Telemetry", pos=(10, 15))
+        self.telebox.Bind(wx.EVT_CHECKBOX, self.hostcheck)
         self.telebox.Set3StateValue(0)
 
         self.diagbox = wx.CheckBox(wxpanel, label="Clear DiagTrack log", pos=(10, 45))
         self.diagbox.Set3StateValue(0)
 
-        self.hostbox = wx.CheckBox(wxpanel, label="Block tracking servers with HOSTS file", pos=(10, 60))
+        self.hostbox = wx.CheckBox(wxpanel, label="Block tracking servers with HOSTS file (Needed for Telemetry)",
+                                   pos=(10, 60))
         self.hostbox.Set3StateValue(0)
 
         self.servicebox = wx.CheckBox(wxpanel, label="Services", pos=(10, 30))
@@ -57,6 +69,27 @@ class WinFrame(wx.Frame):
 
     def serviceradcheck(self, event):
         self.servicerad.Enable(self.servicebox.IsChecked())  # If Service box is ticked enable Service radio box
+
+    def hostcheck(self, event):
+        self.hostbox.Set3StateValue(self.telebox.IsChecked())
+
+    def about(self, event):
+        licensetext = "Copyright 2015 10se1ucgo\r\n\r\nLicensed under the Apache License, Version 2.0" \
+                      " (the \"License\");\r\nyou may not use this file except in compliance with the License" \
+                      ".\r\nYou may obtain a copy of the License at\r\n\r\n" \
+                      "    http://www.apache.org/licenses/LICENSE-2.0\r\n\r\nUnless required by applicable law or" \
+                      " agreed to in writing, software\r\ndistributed under the License is distributed on an" \
+                      " \"AS IS\" BASIS,\r\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied." \
+                      "\r\nSee the License for the specific language governing permissions and\r\nlimitations under the License."
+
+        aboutpg = wx.AboutDialogInfo()
+        aboutpg.Name = "Windows 10 Tracking Disable Tool"
+        aboutpg.Version = "v1.4"
+        aboutpg.Copyright = "(c) 2015 10se1ucgo"
+        aboutpg.Description = "A tool to disable nasty tracking in Windows 10"
+        aboutpg.WebSite = ("https://github.com/10se1ucgo/DisableWinTracking", "GitHub Project Page")
+        aboutpg.License = wordwrap(licensetext, 500, wx.ClientDC(self))
+        wx.AboutBox(aboutpg)
 
     def onok(self, event):
         if self.telebox.IsChecked():
@@ -166,7 +199,6 @@ class RedirectText(object):
 
     def write(self, string):
         self.out.WriteText(string)
-
 
 if __name__ == '__main__':
     wxwindow = wx.App(False)
