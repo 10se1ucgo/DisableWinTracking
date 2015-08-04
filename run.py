@@ -172,14 +172,3 @@ if __name__ == '__main__':
     wxwindow = wx.App(False)
     WinFrame(None, title='Disable Windows 10 Tracking')  # Create Window
     wxwindow.MainLoop()
-
-'''
-https://www.reddit.com/r/Windows10/comments/3fn46j/i_made_my_own_userfriendly_windows_10_privacy/ctq93kr
-  ______ _    _  _____ _  __ __     ______  _    _       _______       ____          _______ _   _ _____   ______          _______ __  ___
- |  ____| |  | |/ ____| |/ / \ \   / / __ \| |  | |     / /  __ \     / /\ \        / /_   _| \ | |  __ \ / __ \ \        / / ____/_ |/ _ \
- | |__  | |  | | |    | ' /   \ \_/ / |  | | |  | |    / /| |__) |   / /  \ \  /\  / /  | | |  \| | |  | | |  | \ \  /\  / / (___  | | | | |
- |  __| | |  | | |    |  <     \   /| |  | | |  | |   / / |  _  /   / /    \ \/  \/ /   | | | . ` | |  | | |  | |\ \/  \/ / \___ \ | | | | |
- | |    | |__| | |____| . \     | | | |__| | |__| |  / /  | | \ \  / /      \  /\  /   _| |_| |\  | |__| | |__| | \  /\  /  ____) || | |_| |
- |_|     \____/ \_____|_|\_\    |_|  \____/ \____/  /_/   |_|  \_\/_/        \/  \/   |_____|_| \_|_____/ \____/   \/  \/  |_____/ |_|\___/
- https://www.reddit.com/r/Windows10/comments/3fn46j/i_made_my_own_userfriendly_windows_10_privacy/ctq93kr
- '''
