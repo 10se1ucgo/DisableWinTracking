@@ -2,10 +2,14 @@
 [GIF of GUI](http://i.imgur.com/AV8btDc.gifv)  
 A tool that I created to use some of the known methods of disabling tracking in Windows 10.
 
+## PRECOMPILED BUILDS
+[Precompiled builds ARE AVAILIBLE. Please stop saying that you need an installation of Python/PyWin32/wxPython](https://github.com/10se1ucgo/DisableWinTracking/releases/)
+
 ## How to use
 You can either  
-A. Install Python and the dependencies listed below and run the script from an elevated (admin) command prompt and select which options you'd like  
-B. Run the binary uploaded to the Release tab as an Administrator and select which options you'd like  
+A. [Run the binary uploaded to the Release tab as an Administrator and select which options you'd like](https://github.com/10se1ucgo/DisableWinTracking/releases/)
+
+B. Install Python and the dependencies listed below and run the script from an elevated (admin) command prompt and select which options you'd like  
 
 ## Dependencies
 * wxPython
