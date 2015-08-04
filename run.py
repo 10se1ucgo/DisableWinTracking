@@ -115,33 +115,34 @@ class WinFrame(wx.Frame):
                 print "Unable to clear DiagTrack log. Deleted, or is the program not elevated?"
 
         if self.hostbox.IsChecked():
-            self.MSHosts = "\r\n0.0.0.0 vortex.data.microsoft.com\r\n0.0.0.0 vortex-win.data.microsoft.com\r\n" \
-                           "0.0.0.0 telecommand.telemetry.microsoft.com\r\n0.0.0.0 telecommand.telemetry.microsoft.com.nsatc.net\r\n" \
-                           "0.0.0.0 oca.telemetry.microsoft.com\r\n0.0.0.0 oca.telemetry.microsoft.com.nsatc.net\r\n" \
-                           "0.0.0.0 sqm.telemetry.microsoft.com\r\n0.0.0.0 sqm.telemetry.microsoft.com.nsatc.net\r\n" \
-                           "0.0.0.0 watson.telemetry.microsoft.com\r\n0.0.0.0 watson.telemetry.microsoft.com.nsatc.net\r\n" \
-                           "0.0.0.0 redir.metaservices.microsoft.com\r\n0.0.0.0 choice.microsoft.com\r\n" \
-                           "0.0.0.0 choice.microsoft.com.nsatc.net\r\n0.0.0.0 df.telemetry.microsoft.com\r\n" \
-                           "0.0.0.0 reports.wes.df.telemetry.microsoft.com\r\n0.0.0.0 wes.df.telemetry.microsoft.com\r\n" \
-                           "0.0.0.0 services.wes.df.telemetry.microsoft.com\r\n0.0.0.0 sqm.df.telemetry.microsoft.com\r\n" \
-                           "0.0.0.0 telemetry.microsoft.com\r\n0.0.0.0 watson.ppe.telemetry.microsoft.com\r\n" \
-                           "0.0.0.0 telemetry.appex.bing.net\r\n0.0.0.0 telemetry.urs.microsoft.com\r\n" \
-                           "0.0.0.0 telemetry.appex.bing.net:443\r\n0.0.0.0 settings-sandbox.data.microsoft.com\r\n" \
-                           "0.0.0.0 vortex-sandbox.data.microsoft.com\r\n0.0.0.0 survey.watson.microsoft.com\r\n" \
-                           "0.0.0.0 watson.live.com\r\n0.0.0.0 watson.microsoft.com\r\n0.0.0.0 statsfe2.ws.microsoft.com\r\n" \
-                           "0.0.0.0 corpext.msitadfs.glbdns2.microsoft.com\r\n0.0.0.0 compatexchange.cloudapp.net\r\n" \
-                           "0.0.0.0 cs1.wpc.v0cdn.net\r\n0.0.0.0 a-0001.a-msedge.net\r\n" \
-                           "0.0.0.0 statsfe2.update.microsoft.com.akadns.net\r\n0.0.0.0 sls.update.microsoft.com.akadns.net\r\n" \
-                           "0.0.0.0 fe2.update.microsoft.com.akadns.net\r\n0.0.0.0 65.55.108.23 \r\n0.0.0.0 65.39.117.230\r\n" \
-                           "0.0.0.0 23.218.212.69 \r\n0.0.0.0 134.170.30.202\r\n0.0.0.0 137.116.81.24\r\n" \
-                           "0.0.0.0 diagnostics.support.microsoft.com\r\n0.0.0.0 corp.sts.microsoft.com\r\n" \
-                           "0.0.0.0 statsfe1.ws.microsoft.com\r\n0.0.0.0 pre.footprintpredict.com\r\n0.0.0.0 204.79.197.200\r\n" \
-                           "0.0.0.0 23.218.212.69\r\n0.0.0.0 i1.services.social.microsoft.com\r\n" \
-                           "0.0.0.0 i1.services.social.microsoft.com.nsatc.net\r\n0.0.0.0 feedback.windows.com\r\n" \
-                           "0.0.0.0 feedback.microsoft-hohm.com\r\n0.0.0.0 feedback.search.microsoft.com"  # Known MS Tracking domains
+            self.MSHosts = ['vortex.data.microsoft.com', 'vortex-win.data.microsoft.com',
+                            'telecommand.telemetry.microsoft.com', 'telecommand.telemetry.microsoft.com.nsatc.net',
+                            'oca.telemetry.microsoft.com', 'oca.telemetry.microsoft.com.nsatc.net',
+                            'sqm.telemetry.microsoft.com', 'sqm.telemetry.microsoft.com.nsatc.net',
+                            'watson.telemetry.microsoft.com', 'watson.telemetry.microsoft.com.nsatc.net',
+                            'redir.metaservices.microsoft.com', 'choice.microsoft.com',
+                            'choice.microsoft.com.nsatc.net', 'df.telemetry.microsoft.com',
+                            'reports.wes.df.telemetry.microsoft.com', 'wes.df.telemetry.microsoft.com',
+                            'services.wes.df.telemetry.microsoft.com', 'sqm.df.telemetry.microsoft.com',
+                            'telemetry.microsoft.com', 'watson.ppe.telemetry.microsoft.com',
+                            'telemetry.appex.bing.net', 'telemetry.urs.microsoft.com', 'telemetry.appex.bing.net:443',
+                            'settings-sandbox.data.microsoft.com', 'vortex-sandbox.data.microsoft.com',
+                            'survey.watson.microsoft.com', 'watson.live.com', 'watson.microsoft.com',
+                            'statsfe2.ws.microsoft.com', 'corpext.msitadfs.glbdns2.microsoft.com',
+                            'compatexchange.cloudapp.net', 'cs1.wpc.v0cdn.net', 'a-0001.a-msedge.net',
+                            'statsfe2.update.microsoft.com.akadns.net', 'sls.update.microsoft.com.akadns.net',
+                            'fe2.update.microsoft.com.akadns.net', '65.55.108.23', '65.39.117.230', '23.218.212.69',
+                            '134.170.30.202', '137.116.81.24', 'diagnostics.support.microsoft.com',
+                            'corp.sts.microsoft.com', 'statsfe1.ws.microsoft.com', 'pre.footprintpredict.com',
+                            '204.79.197.200', '23.218.212.69', 'i1.services.social.microsoft.com',
+                            'i1.services.social.microsoft.com.nsatc.net', 'feedback.windows.com',
+                            'feedback.microsoft-hohm.com', 'feedback.search.microsoft.com']
+            self.IP = '0.0.0.0 '
+            self.MSHosts2 = [self.IP + x for x in self.MSHosts]
+
             try:
                 with open('C:\Windows\System32\drivers\etc\hosts', 'ab') as f:
-                    f.write(self.MSHosts)
+                    f.write('\n' + '\n'.join(self.MSHosts2))
                 print "Domains successfully appended to HOSTS file."
             except WindowsError:
                 print "Could not access HOSTS file. Is the program not elevated?"
