@@ -128,6 +128,12 @@ class WinFrame(wx.Frame):
                                         '\\ProgramData\\Microsoft\\Diagnosis\\ETLLogs\\AutoLogger\\AutoLogger-Diagtrack-Listener.etl')
 
             try:
+                win32serviceutil.StopService('Diagnostics Tracking Service')  # Stop Diagnostics Tracking Service
+                print "Stopping DiagTrack service."
+            except pywintypes.error:
+                print "Couldn't stop DiagTrack service. Deleted, or is the program not elevated?"
+
+            try:
                 open(self.logfile).close()  # Clear the AutoLogger file
                 subprocess.Popen(
                     ["echo", "y|cacls", self.logfile, "/d", "SYSTEM"],
