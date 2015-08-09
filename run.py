@@ -14,7 +14,7 @@ import pywintypes
 
 class WinFrame(wx.Frame):
     def __init__(self, parent, title):
-        super(WinFrame, self).__init__(parent, title=title, size=[375, 235],
+        super(WinFrame, self).__init__(parent, title=title, size=[375, 250],
                                        style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         wxpanel = wx.Panel(self)
@@ -29,12 +29,12 @@ class WinFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.about, aboutMenuItem)
 
         self.debug = wx.TextCtrl(wxpanel, wx.ID_ANY, size=(349, 92),
-                                 style=wx.TE_MULTILINE | wx.TE_READONLY, pos=(10, 84))
+                                 style=wx.TE_MULTILINE | wx.TE_READONLY, pos=(10, 99))
 
         self.redir = RedirectText(self.debug)
         sys.stdout = self.redir
 
-        if ctypes.windll.shell32.IsUserAnAdmin() != 1:
+        if ctypes.windll.shell32.IsUserAnAdmin() != 0:
             self.warn = wx.MessageDialog(parent=wxpanel,
                                          message="Program requires elevation, please run it as an administrator",
                                          caption="ERROR", style=wx.OK | wx.ICON_WARNING)
@@ -65,6 +65,9 @@ class WinFrame(wx.Frame):
                                    pos=(10, 60))
         self.hostbox.SetToolTip(wx.ToolTip("Add known tracking domains to HOSTS file. Required for Telemetry"))
         self.hostbox.Set3StateValue(0)
+
+        self.onedrivebox = wx.CheckBox(wxpanel, label="Remove OneDrive", pos=(10, 75))
+        self.onedrivebox.Set3StateValue(0)
 
         self.servicerad = wx.RadioBox(wxpanel, label="Service Method", pos=(135, 10), choices=["Disable", "Delete"])
         self.servicerad.Disable()
@@ -140,21 +143,36 @@ class WinFrame(wx.Frame):
                             'sqm.telemetry.microsoft.com', 'sqm.telemetry.microsoft.com.nsatc.net',
                             'watson.telemetry.microsoft.com', 'watson.telemetry.microsoft.com.nsatc.net',
                             'redir.metaservices.microsoft.com', 'choice.microsoft.com',
-                            'choice.microsoft.com.nsatc.net', 'df.telemetry.microsoft.com',
-                            'reports.wes.df.telemetry.microsoft.com', 'wes.df.telemetry.microsoft.com',
-                            'services.wes.df.telemetry.microsoft.com', 'sqm.df.telemetry.microsoft.com',
-                            'telemetry.microsoft.com', 'watson.ppe.telemetry.microsoft.com',
-                            'telemetry.appex.bing.net', 'telemetry.urs.microsoft.com',
-                            'settings-sandbox.data.microsoft.com', 'vortex-sandbox.data.microsoft.com',
-                            'survey.watson.microsoft.com', 'watson.live.com', 'watson.microsoft.com',
-                            'statsfe2.ws.microsoft.com', 'corpext.msitadfs.glbdns2.microsoft.com',
-                            'compatexchange.cloudapp.net', 'cs1.wpc.v0cdn.net', 'a-0001.a-msedge.net',
-                            'statsfe2.update.microsoft.com.akadns.net', 'sls.update.microsoft.com.akadns.net',
-                            'fe2.update.microsoft.com.akadns.net', 'diagnostics.support.microsoft.com',
-                            'corp.sts.microsoft.com', 'statsfe1.ws.microsoft.com', 'pre.footprintpredict.com',
-                            'feedback.search.microsoft.com', 'i1.services.social.microsoft.com',
+                            'choice.microsoft.com.nsatc.net',
+                            'df.telemetry.microsoft.com', 'reports.wes.df.telemetry.microsoft.com',
+                            'wes.df.telemetry.microsoft.com', 'services.wes.df.telemetry.microsoft.com',
+                            'sqm.df.telemetry.microsoft.com', 'telemetry.microsoft.com',
+                            'watson.ppe.telemetry.microsoft.com', 'telemetry.appex.bing.net',
+                            'telemetry.urs.microsoft.com', 'settings-sandbox.data.microsoft.com',
+                            'vortex-sandbox.data.microsoft.com', 'survey.watson.microsoft.com',
+                            'watson.live.com', 'watson.microsoft.com', 'statsfe2.ws.microsoft.com',
+                            'corpext.msitadfs.glbdns2.microsoft.com', 'compatexchange.cloudapp.net',
+                            'cs1.wpc.v0cdn.net', 'a-0001.a-msedge.net', 'statsfe2.update.microsoft.com.akadns.net',
+                            'sls.update.microsoft.com.akadns.net', 'fe2.update.microsoft.com.akadns.net',
+                            'diagnostics.support.microsoft.com', 'corp.sts.microsoft.com', 'statsfe1.ws.microsoft.com',
+                            'pre.footprintpredict.com', 'i1.services.social.microsoft.com',
                             'i1.services.social.microsoft.com.nsatc.net', 'feedback.windows.com',
-                            'feedback.microsoft-hohm.com']
+                            'feedback.microsoft-hohm.com', 'feedback.search.microsoft.com', 'rad.msn.com',
+                            'preview.msn.com', 'ad.doubleclick.net', 'ads.msn.com', 'ads1.msads.net', 'ads1.msn.com',
+                            'a.ads1.msn.com', 'a.ads2.msn.com', 'adnexus.net', 'adnxs.com', 'aidps.atdmt.com',
+                            'apps.skype.com', 'az361816.vo.msecnd.net', 'az512334.vo.msecnd.net', 'a.rad.msn.com',
+                            'a.ads2.msads.net', 'ac3.msn.com', 'aka-cdn-ns.adtech.de', 'b.rad.msn.com',
+                            'b.ads2.msads.net', 'b.ads1.msn.com', 'bs.serving-sys.com', 'c.msn.com', 'cdn.atdmt.com',
+                            'cds26.ams9.msecn.net', 'c.atdmt.com', 'db3aqu.atdmt.com', 'ec.atdmt.com', 'flex.msn.com',
+                            'g.msn.com', 'h1.msn.com', 'live.rads.msn.com', 'msntest.serving-sys.com', 'm.adnxs.com',
+                            'm.hotmail.com', 'preview.msn.com', 'pricelist.skype.com', 'rad.msn.com', 'rad.live.com',
+                            'secure.flashtalking.com', 'static.2mdn.net', 's.gateway.messenger.live.com',
+                            'secure.adnxs.com', 'sO.2mdn.net', 'ui.skype.com', 'www.msftncsi.com', 'msftncsi.com',
+                            'view.atdmt.com', 'msnbot-65-55-108-23.search.msn.com', 'settings-win.data.microsoft.com',
+                            'schemas.microsoft.akadns.net ', 'a-0001.a-msedge.net', 'a-0002.a-msedge.net',
+                            'a-0003.a-msedge.net', 'a-0004.a-msedge.net', 'a-0005.a-msedge.net', 'a-0006.a-msedge.net',
+                            'a-0007.a-msedge.net', 'a-0008.a-msedge.net', 'a-0009.a-msedge.net', 'msedge.net',
+                            'a-msedge.net', 'lb1.www.ms.akadns.net', 'pre.footprintpredict.com']
             self.IP = '0.0.0.0 '
             self.MSHosts2 = [self.IP + x for x in self.MSHosts]
             self.hostslocation = os.path.join(os.environ['WINDIR'], 'System32\\drivers\\etc\\hosts')
@@ -165,6 +183,9 @@ class WinFrame(wx.Frame):
                 print "Domains successfully appended to HOSTS file."
             except WindowsError:
                 print "Could not access HOSTS file. Is the program not elevated?"
+
+        if self.onedrivebox.IsChecked():
+            print "OneDrive"
 
         if self.servicerad.Selection == 1 and self.servicebox.IsChecked():
             try:
