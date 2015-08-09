@@ -34,7 +34,7 @@ class WinFrame(wx.Frame):
         self.redir = RedirectText(self.debug)
         sys.stdout = self.redir
 
-        if ctypes.windll.shell32.IsUserAnAdmin() != 0:
+        if ctypes.windll.shell32.IsUserAnAdmin() != 1:
             self.warn = wx.MessageDialog(parent=wxpanel,
                                          message="Program requires elevation, please run it as an administrator",
                                          caption="ERROR", style=wx.OK | wx.ICON_WARNING)
@@ -191,7 +191,15 @@ class WinFrame(wx.Frame):
                 print "Could not access HOSTS file. Is the program not elevated?"
 
         if self.onedrivebox.IsChecked():
-            print "OneDrive"
+            self.onedkeypath = r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive'  # Path to OneDrive key
+
+            try:
+                self.onedkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, self.onedkeypath, 0, _winreg.KEY_ALL_ACCESS)
+                _winreg.SetValueEx(self.onedkey, "DisableFileSyncNGSC", 0, _winreg.REG_DWORD, 1)  # Disable Telemetry
+                _winreg.CloseKey(self.onedkey)
+                print "OneDrive key succesfully modified."
+            except WindowsError:
+                print "Unable to modify OneDrive key. Deleted, or is the program not elevated?"
 
         if self.servicerad.Selection == 1 and self.servicebox.IsChecked():
             try:
