@@ -144,18 +144,17 @@ class WinFrame(wx.Frame):
                             'reports.wes.df.telemetry.microsoft.com', 'wes.df.telemetry.microsoft.com',
                             'services.wes.df.telemetry.microsoft.com', 'sqm.df.telemetry.microsoft.com',
                             'telemetry.microsoft.com', 'watson.ppe.telemetry.microsoft.com',
-                            'telemetry.appex.bing.net', 'telemetry.urs.microsoft.com', 'telemetry.appex.bing.net:443',
+                            'telemetry.appex.bing.net', 'telemetry.urs.microsoft.com',
                             'settings-sandbox.data.microsoft.com', 'vortex-sandbox.data.microsoft.com',
                             'survey.watson.microsoft.com', 'watson.live.com', 'watson.microsoft.com',
                             'statsfe2.ws.microsoft.com', 'corpext.msitadfs.glbdns2.microsoft.com',
                             'compatexchange.cloudapp.net', 'cs1.wpc.v0cdn.net', 'a-0001.a-msedge.net',
                             'statsfe2.update.microsoft.com.akadns.net', 'sls.update.microsoft.com.akadns.net',
-                            'fe2.update.microsoft.com.akadns.net', '65.55.108.23', '65.39.117.230', '23.218.212.69',
-                            '134.170.30.202', '137.116.81.24', 'diagnostics.support.microsoft.com',
+                            'fe2.update.microsoft.com.akadns.net', 'diagnostics.support.microsoft.com',
                             'corp.sts.microsoft.com', 'statsfe1.ws.microsoft.com', 'pre.footprintpredict.com',
-                            '204.79.197.200', '23.218.212.69', 'i1.services.social.microsoft.com',
+                            'feedback.search.microsoft.com', 'i1.services.social.microsoft.com',
                             'i1.services.social.microsoft.com.nsatc.net', 'feedback.windows.com',
-                            'feedback.microsoft-hohm.com', 'feedback.search.microsoft.com']
+                            'feedback.microsoft-hohm.com']
             self.IP = '0.0.0.0 '
             self.MSHosts2 = [self.IP + x for x in self.MSHosts]
             self.hostslocation = os.path.join(os.environ['WINDIR'], 'System32\\drivers\\etc\\hosts')
