@@ -34,6 +34,11 @@ Clears and disables writing to the log located in `C:\ProgramData\Microsoft\Diag
 
 #### Services
 
+You can delete or disable the 2 services below:
+* `DiagTrack` Diagnostics Tracking Service
+* `dmwappushsvc` WAP Push Message Routing Service
+
+Action:
 * Delete: Remove both services
 * Disable: Set the `Start` registry key for both services to `4` (Disabled) Located at `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\`
 
