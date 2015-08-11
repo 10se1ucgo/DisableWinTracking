@@ -42,7 +42,7 @@ class WinFrame(wx.Frame):
             self.warn.Destroy()
             sys.exit()
 
-        self.shell32file = os.path.join(os.environ['WINDIR'], 'System32\\shell32.dll')
+        self.shell32file = os.path.join(os.environ['SYSTEMROOT'], 'System32\\shell32.dll')
         self.icon = wx.Icon(self.shell32file + ";315", wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 
@@ -143,45 +143,45 @@ class WinFrame(wx.Frame):
                 print "Unable to clear DiagTrack log. Deleted, or is the program not elevated?"
 
         if self.hostbox.IsChecked():
-            self.MSHosts = ['vortex.data.microsoft.com', 'vortex-win.data.microsoft.com',
-                            'telecommand.telemetry.microsoft.com', 'telecommand.telemetry.microsoft.com.nsatc.net',
-                            'oca.telemetry.microsoft.com', 'oca.telemetry.microsoft.com.nsatc.net',
-                            'sqm.telemetry.microsoft.com', 'sqm.telemetry.microsoft.com.nsatc.net',
-                            'watson.telemetry.microsoft.com', 'watson.telemetry.microsoft.com.nsatc.net',
-                            'redir.metaservices.microsoft.com', 'choice.microsoft.com',
-                            'choice.microsoft.com.nsatc.net',
-                            'df.telemetry.microsoft.com', 'reports.wes.df.telemetry.microsoft.com',
-                            'wes.df.telemetry.microsoft.com', 'services.wes.df.telemetry.microsoft.com',
-                            'sqm.df.telemetry.microsoft.com', 'telemetry.microsoft.com',
-                            'watson.ppe.telemetry.microsoft.com', 'telemetry.appex.bing.net',
-                            'telemetry.urs.microsoft.com', 'settings-sandbox.data.microsoft.com',
-                            'vortex-sandbox.data.microsoft.com', 'survey.watson.microsoft.com',
-                            'watson.live.com', 'watson.microsoft.com', 'statsfe2.ws.microsoft.com',
-                            'corpext.msitadfs.glbdns2.microsoft.com', 'compatexchange.cloudapp.net',
-                            'cs1.wpc.v0cdn.net', 'a-0001.a-msedge.net', 'statsfe2.update.microsoft.com.akadns.net',
-                            'sls.update.microsoft.com.akadns.net', 'fe2.update.microsoft.com.akadns.net',
-                            'diagnostics.support.microsoft.com', 'corp.sts.microsoft.com', 'statsfe1.ws.microsoft.com',
-                            'pre.footprintpredict.com', 'i1.services.social.microsoft.com',
-                            'i1.services.social.microsoft.com.nsatc.net', 'feedback.windows.com',
-                            'feedback.microsoft-hohm.com', 'feedback.search.microsoft.com', 'rad.msn.com',
-                            'preview.msn.com', 'ad.doubleclick.net', 'ads.msn.com', 'ads1.msads.net', 'ads1.msn.com',
-                            'a.ads1.msn.com', 'a.ads2.msn.com', 'adnexus.net', 'adnxs.com', 'aidps.atdmt.com',
-                            'apps.skype.com', 'az361816.vo.msecnd.net', 'az512334.vo.msecnd.net', 'a.rad.msn.com',
-                            'a.ads2.msads.net', 'ac3.msn.com', 'aka-cdn-ns.adtech.de', 'b.rad.msn.com',
-                            'b.ads2.msads.net', 'b.ads1.msn.com', 'bs.serving-sys.com', 'c.msn.com', 'cdn.atdmt.com',
-                            'cds26.ams9.msecn.net', 'c.atdmt.com', 'db3aqu.atdmt.com', 'ec.atdmt.com', 'flex.msn.com',
-                            'g.msn.com', 'h1.msn.com', 'live.rads.msn.com', 'msntest.serving-sys.com', 'm.adnxs.com',
-                            'm.hotmail.com', 'preview.msn.com', 'pricelist.skype.com', 'rad.msn.com', 'rad.live.com',
-                            'secure.flashtalking.com', 'static.2mdn.net', 's.gateway.messenger.live.com',
-                            'secure.adnxs.com', 'sO.2mdn.net', 'ui.skype.com', 'www.msftncsi.com', 'msftncsi.com',
-                            'view.atdmt.com', 'msnbot-65-55-108-23.search.msn.com', 'settings-win.data.microsoft.com',
-                            'schemas.microsoft.akadns.net ', 'a-0001.a-msedge.net', 'a-0002.a-msedge.net',
+            self.MSHosts = ['adnxs.com', 'c.msn.com', 'g.msn.com', 'h1.msn.com', 'msedge.net', 'rad.msn.com',
+                            'ads.msn.com', 'adnexus.net', 'ac3.msn.com', 'c.atdmt.com', 'm.adnxs.com', 'rad.msn.com',
+                            'sO.2mdn.net', 'ads1.msn.com', 'ec.atdmt.com', 'flex.msn.com', 'rad.live.com',
+                            'ui.skype.com', 'msftncsi.com', 'a-msedge.net', 'a.rad.msn.com', 'b.rad.msn.com',
+                            'cdn.atdmt.com', 'm.hotmail.com', 'ads1.msads.net', 'a.ads1.msn.com', 'a.ads2.msn.com',
+                            'apps.skype.com', 'b.ads1.msn.com', 'view.atdmt.com', 'watson.live.com', 'preview.msn.com',
+                            'aidps.atdmt.com', 'preview.msn.com', 'static.2mdn.net', 'a.ads2.msads.net',
+                            'b.ads2.msads.net', 'db3aqu.atdmt.com', 'secure.adnxs.com', 'www.msftncsi.com',
+                            'cs1.wpc.v0cdn.net', 'live.rads.msn.com', 'ad.doubleclick.net', 'bs.serving-sys.com',
+                            'a-0001.a-msedge.net', 'pricelist.skype.com', 'a-0001.a-msedge.net', 'a-0002.a-msedge.net',
                             'a-0003.a-msedge.net', 'a-0004.a-msedge.net', 'a-0005.a-msedge.net', 'a-0006.a-msedge.net',
-                            'a-0007.a-msedge.net', 'a-0008.a-msedge.net', 'a-0009.a-msedge.net', 'msedge.net',
-                            'a-msedge.net', 'lb1.www.ms.akadns.net', 'pre.footprintpredict.com']
+                            'a-0007.a-msedge.net', 'a-0008.a-msedge.net', 'a-0009.a-msedge.net', 'choice.microsoft.com',
+                            'watson.microsoft.com', 'feedback.windows.com', 'aka-cdn-ns.adtech.de',
+                            'cds26.ams9.msecn.net', 'lb1.www.ms.akadns.net', 'corp.sts.microsoft.com',
+                            'az361816.vo.msecnd.net', 'az512334.vo.msecnd.net', 'telemetry.microsoft.com',
+                            'msntest.serving-sys.com', 'secure.flashtalking.com', 'telemetry.appex.bing.net',
+                            'pre.footprintpredict.com', 'pre.footprintpredict.com', 'vortex.data.microsoft.com',
+                            'statsfe2.ws.microsoft.com', 'statsfe1.ws.microsoft.com', 'df.telemetry.microsoft.com',
+                            'oca.telemetry.microsoft.com', 'sqm.telemetry.microsoft.com', 'telemetry.urs.microsoft.com',
+                            'survey.watson.microsoft.com', 'compatexchange.cloudapp.net', 'feedback.microsoft-hohm.com',
+                            's.gateway.messenger.live.com', 'vortex-win.data.microsoft.com',
+                            'feedback.search.microsoft.com', 'schemas.microsoft.akadns.net ',
+                            'watson.telemetry.microsoft.com', 'choice.microsoft.com.nsatc.net',
+                            'wes.df.telemetry.microsoft.com', 'sqm.df.telemetry.microsoft.com',
+                            'settings-win.data.microsoft.com', 'redir.metaservices.microsoft.com',
+                            'i1.services.social.microsoft.com', 'vortex-sandbox.data.microsoft.com',
+                            'diagnostics.support.microsoft.com', 'watson.ppe.telemetry.microsoft.com',
+                            'msnbot-65-55-108-23.search.msn.com', 'telecommand.telemetry.microsoft.com',
+                            'settings-sandbox.data.microsoft.com', 'sls.update.microsoft.com.akadns.net',
+                            'fe2.update.microsoft.com.akadns.net', 'vortex-bn2.metron.live.com.nsatc.net',
+                            'vortex-cy2.metron.live.com.nsatc.net', 'oca.telemetry.microsoft.com.nsatc.net',
+                            'sqm.telemetry.microsoft.com.nsatc.net', 'reports.wes.df.telemetry.microsoft.com',
+                            'corpext.msitadfs.glbdns2.microsoft.com', 'services.wes.df.telemetry.microsoft.com',
+                            'watson.telemetry.microsoft.com.nsatc.net', 'statsfe2.update.microsoft.com.akadns.net',
+                            'i1.services.social.microsoft.com.nsatc.net',
+                            'telecommand.telemetry.microsoft.com.nsatc.net']
             self.IP = '0.0.0.0 '
             self.MSHosts2 = [self.IP + x for x in self.MSHosts]
-            self.hostslocation = os.path.join(os.environ['WINDIR'], 'System32\\drivers\\etc\\hosts')
+            self.hostslocation = os.path.join(os.environ['SYSTEMROOT'], 'System32\\drivers\\etc\\hosts')
 
             try:
                 with open(self.hostslocation, 'ab') as f:
@@ -254,6 +254,7 @@ class RedirectText(object):
 
     def write(self, string):
         self.out.WriteText(string)
+
 
 if __name__ == '__main__':
     wxwindow = wx.App(False)
