@@ -49,7 +49,7 @@ class WinFrame(wx.Frame):
         self.telebox = wx.CheckBox(wxpanel, label="Telemetry", pos=(10, 15))
         self.telebox.Bind(wx.EVT_CHECKBOX, self.hostcheck)
         self.telebox.SetToolTip(
-            wx.ToolTip("Set \'AllowTelemetry\' to 0. Requires HOST file modification for full effect"))
+            wx.ToolTip("Set \'AllowTelemetry\' to 0. On non-Enterprise OS versions, requires HOSTS file modification."))
         self.telebox.Set3StateValue(0)
 
         self.servicebox = wx.CheckBox(wxpanel, label="Services", pos=(10, 30))
