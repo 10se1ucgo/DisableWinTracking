@@ -143,12 +143,12 @@ class WinFrame(wx.Frame):
                 print "Unable to clear DiagTrack log. Deleted, or is the program not elevated?"
 
         if self.hostbox.IsChecked():
-            self.MSHosts = ['adnxs.com', 'c.msn.com', 'g.msn.com', 'h1.msn.com', 'msedge.net', 'rad.msn.com',
+            self.MSHosts = ['adnxs.com', 'c.msn.com', 'g.msn.com', 'h1.msn.com', 'msedge.net',
                             'ads.msn.com', 'adnexus.net', 'ac3.msn.com', 'c.atdmt.com', 'm.adnxs.com', 'rad.msn.com',
                             'sO.2mdn.net', 'ads1.msn.com', 'ec.atdmt.com', 'flex.msn.com', 'rad.live.com',
                             'ui.skype.com', 'msftncsi.com', 'a-msedge.net', 'a.rad.msn.com', 'b.rad.msn.com',
                             'cdn.atdmt.com', 'm.hotmail.com', 'ads1.msads.net', 'a.ads1.msn.com', 'a.ads2.msn.com',
-                            'apps.skype.com', 'b.ads1.msn.com', 'view.atdmt.com', 'watson.live.com', 'preview.msn.com',
+                            'apps.skype.com', 'b.ads1.msn.com', 'view.atdmt.com', 'watson.live.com',
                             'aidps.atdmt.com', 'preview.msn.com', 'static.2mdn.net', 'a.ads2.msads.net',
                             'b.ads2.msads.net', 'db3aqu.atdmt.com', 'secure.adnxs.com', 'www.msftncsi.com',
                             'cs1.wpc.v0cdn.net', 'live.rads.msn.com', 'ad.doubleclick.net', 'bs.serving-sys.com',
@@ -159,7 +159,7 @@ class WinFrame(wx.Frame):
                             'cds26.ams9.msecn.net', 'lb1.www.ms.akadns.net', 'corp.sts.microsoft.com',
                             'az361816.vo.msecnd.net', 'az512334.vo.msecnd.net', 'telemetry.microsoft.com',
                             'msntest.serving-sys.com', 'secure.flashtalking.com', 'telemetry.appex.bing.net',
-                            'pre.footprintpredict.com', 'pre.footprintpredict.com', 'vortex.data.microsoft.com',
+                            'pre.footprintpredict.com', 'vortex.data.microsoft.com',
                             'statsfe2.ws.microsoft.com', 'statsfe1.ws.microsoft.com', 'df.telemetry.microsoft.com',
                             'oca.telemetry.microsoft.com', 'sqm.telemetry.microsoft.com', 'telemetry.urs.microsoft.com',
                             'survey.watson.microsoft.com', 'compatexchange.cloudapp.net', 'feedback.microsoft-hohm.com',
