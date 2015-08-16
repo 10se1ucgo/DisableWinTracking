@@ -18,8 +18,8 @@ B. Install Python and the dependencies listed below and run the script from an e
 
 ## Dependencies
 
-* wxPython
-* PyWin32
+* wxPython (http://wxpython.org/download.php)
+* PyWin32 (http://sourceforge.net/projects/pywin32/files/pywin32/)
 * Windows 10 (Duh)
 
 ## Methods Used
