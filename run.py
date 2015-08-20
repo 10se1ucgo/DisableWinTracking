@@ -43,7 +43,7 @@ class MainFrame(wx.Frame):
         panel = wx.Panel(self)  # Frame panel
 
         # Test for elevation
-        if windll.shell32.IsUserAnAdmin() != 0:
+        if windll.shell32.IsUserAnAdmin() != 1:
             warn = wx.MessageDialog(parent=None,
                                     message="Program requires elevation, please run it as an administrator",
                                     caption="ERROR", style=wx.OK | wx.ICON_WARNING)
