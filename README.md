@@ -17,9 +17,10 @@ A. [Run the binary uploaded to the Release tab as an Administrator and select wh
 B. Install Python and the dependencies listed below and run the script from an elevated (`admin`) command prompt and select which options you'd like  
 
 ## Dependencies
-
-* wxPython (http://wxpython.org/download.php)
-* PyWin32 (http://sourceforge.net/projects/pywin32/files/pywin32/)
+This is only to run the script from source, [download the exe here](https://github.com/10se1ucgo/DisableWinTracking/releases/)
+* [Python 2.7](https://www.python.org/download/releases/2.7/) (or 3 with 2to3.py or something)
+* [wxPython](http://wxpython.org/download.php)
+* [PyWin32](http://sourceforge.net/projects/pywin32/files/pywin32/)
 * Windows 10 (Duh)
 
 ## Methods Used
