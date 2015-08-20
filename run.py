@@ -1,13 +1,13 @@
-import os
 import ctypes
+import os
 import subprocess
-import _winreg
 import sys
+import _winreg
 
 import win32serviceutil
-from pywintypes import error as pywintypeserror
 import wx
 import wx.lib.wordwrap
+import pywintypes
 
 
 class RedirectText(object):
@@ -20,7 +20,7 @@ class RedirectText(object):
 
 class ConsoleFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, parent=None, title="Console Output", size=[500, 150],
+        wx.Frame.__init__(self, parent=None, title="Console Output", size=[500, 200],
                           style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         panel = wx.Panel(self)  # Frame panel
@@ -28,9 +28,13 @@ class ConsoleFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, sys.exit)  # Close application once log output is closed
 
         # Redirect console output to TextCtrl box
-        self.redirect = RedirectText(wx.TextCtrl(panel, wx.ID_ANY, size=(475, 100),
+        self.redirect = RedirectText(wx.TextCtrl(panel, wx.ID_ANY, size=(475, 125),
                                                  style=wx.TE_MULTILINE | wx.TE_READONLY, pos=(10, 10)))
         sys.stdout = self.redirect
+
+        # Final OK button
+        self.donebutton = wx.Button(panel, wx.ID_ANY, "OK", pos=(398, 140))
+        self.Bind(wx.EVT_BUTTON, sys.exit, self.donebutton)
 
         self.Center()  # Center window
 
@@ -64,8 +68,6 @@ class MainFrame(wx.Frame):
         self.SetMenuBar(menubar)
         self.Bind(wx.EVT_MENU, self.about, aboutitem)
 
-        self.Bind(wx.EVT_CLOSE, sys.exit)  # Close application once log output is closed
-
         # Service checkbox
         self.servicebox = wx.CheckBox(panel, label="Services", pos=(10, 15))
         self.servicebox.SetToolTip(wx.ToolTip("Disables or Deletes tracking services. Choose option in Service Method"))
@@ -73,7 +75,8 @@ class MainFrame(wx.Frame):
 
         # DiagTrack checkbox
         self.diagtrackbox = wx.CheckBox(panel, label="Clear DiagTrack log", pos=(10, 30))
-        self.diagtrackbox.SetToolTip(wx.ToolTip("Clears Diagnostic Tracking log and prevents modification to it."))
+        self.diagtrackbox.SetToolTip(wx.ToolTip("Clears Diagnostic Tracking log and prevents modification to it. "
+                                                "This cannot be undone without doing it manually."))
 
         # Telemetry checkbox
         self.telemetrybox = wx.CheckBox(panel, label="Telemetry", pos=(10, 45))
@@ -87,15 +90,22 @@ class MainFrame(wx.Frame):
 
         self.extrahostbox = wx.CheckBox(panel, label="Block even more tracking servers", pos=(10, 75))
         self.extrahostbox.SetToolTip(wx.ToolTip("For the paranoid. Adds extra domains to the HOSTS file. WARNING: Some "
-                                                "things like Dr. Watson and Error Reporting may be disabled by this"))
+                                                "things like Dr. Watson and Error Reporting may be turned off by this"))
 
         # Service radio box
         self.serviceradbox = wx.RadioBox(panel, label="Service Method", pos=(135, 10), choices=["Disable", "Delete"])
         self.serviceradbox.Disable()
 
         # OK button
-        self.okbutton = wx.Button(panel, wx.ID_OK, "Go Private!", (275, 25))
+        self.okbutton = wx.Button(panel, wx.ID_OK, "Get privacy!", (275, 24))
+        self.okbutton.SetToolTip(wx.ToolTip(""))
         self.Bind(wx.EVT_BUTTON, self.goprivate, self.okbutton)
+
+        # Revert button
+        self.revertbutton = wx.Button(panel, wx.ID_ANY, "Revert", (275, 49))
+        self.Bind(wx.EVT_BUTTON, self.revert, self.revertbutton)
+
+        self.console = ConsoleFrame()  # Call ConsoleFrame to start redirecting stdout to a TextCtrl
 
         # Center and show the window
         self.Centre()
@@ -127,30 +137,49 @@ class MainFrame(wx.Frame):
         wx.AboutBox(aboutpg)
 
     def goprivate(self, event):
-        console = ConsoleFrame()  # Call ConsoleFrame to start redirecting stdout to the TextCtrl in the frame.
+        # Disable buttons
+        self.okbutton.Disable()
+        self.revertbutton.Disable()
         try:
             if self.servicebox.IsChecked():
+                modifyserviceregs(0x0000004)
                 if self.serviceradbox.Selection == 0:
                     disableservice('dmwappushsvc')
                     disableservice('Diagnostics Tracking Service')
-                    modifyserviceregs()
                 elif self.serviceradbox.Selection == 1:
                     deleteservice('dmwappushsvc')
                     deleteservice('Diagnostics Tracking Service')
-                    modifyserviceregs()
             if self.diagtrackbox.IsChecked():
                 cleardiagtracklog()
             if self.telemetrybox.IsChecked():
-                modifytelemetryregs()
+                modifytelemetryregs("0")
             if self.hostbox.IsChecked():
-                modifyhosts(extra=False)
+                modifyhosts(extra=False, undo=False)
             if self.extrahostbox.IsChecked():
-                modifyhosts(extra=True)
+                modifyhosts(extra=True, undo=False)
         finally:
-            console.Show()  # Show console output window after the code is run
+            # Re-enable buttons
+            self.okbutton.Enable()
+            self.revertbutton.Enable()
+            self.console.Show()  # Show console output window after the code is run
+            print "Done. It's recommended that you reboot as soon as possible for the full effect."
+
+    def revert(self, event):
+        # Disable buttons
+        self.okbutton.Disable()
+        self.revertbutton.Disable()
+        try:
+            modifyserviceregs(0x0000003)
+            modifytelemetryregs("1")
+            modifyhosts(extra=False, undo=True)
+        finally:
+            self.okbutton.Enable()
+            self.revertbutton.Enable()
+            self.console.Show()
+            print "Done. It's recommended that you reboot as soon as possible for the full effect."
 
 
-def modifyhosts(extra):
+def modifyhosts(extra, undo):
     nullip = "0.0.0.0 "  # IP to route domains to
 
     # List of tracking domains
@@ -195,14 +224,28 @@ def modifyhosts(extra):
 
     hostspath = os.path.join(os.environ['SYSTEMROOT'], 'System32\\drivers\\etc\\hosts')
 
-    try:
-        with open(hostspath, 'ab') as f:
-            f.write('\r\n' + '\r\n'.join(normallistip))
-            if extra:
-                f.write('\r\n' + '\r\n'.join(extralistip))
-        print "Domains successfully appended to HOSTS file."
-    except WindowsError:
-        print "Could not access HOSTS file. Is the program not elevated?"
+    if not undo:
+        try:
+            with open(hostspath, 'ab') as f:
+                f.write('\r\n' + '\r\n'.join(normallistip))
+                if extra:
+                    f.write('\r\n' + '\r\n'.join(extralistip))
+            print "Domains successfully appended to HOSTS file."
+        except (WindowsError, IOError):
+            print "Could not access HOSTS file. Is the program not elevated?"
+
+    else:
+        try:
+            with open(hostspath, 'r') as hostfile, open(hostspath + "temp", 'w') as tempfile:
+                for line in hostfile:
+                    if not any(domain in line for domain in normallist + extralist):
+                        tempfile.write(line)
+
+            os.remove(hostspath)
+            os.rename(hostspath + "temp", hostspath)
+            print "Domains successfully removed from HOSTS file."
+        except (WindowsError, IOError):
+            print "Could not access HOSTS file. Is the program not elevated?"
 
 
 def cleardiagtracklog():
@@ -223,7 +266,7 @@ def deleteservice(service):
     try:
         win32serviceutil.RemoveService(service)  # Delete service
         print "%s successfully deleted." % service
-    except pywintypeserror:
+    except pywintypes.error:
         print "%s unable to be deleted. Deleted already, or is the program not elevated?" % service
 
 
@@ -231,49 +274,49 @@ def disableservice(service):
     try:
         win32serviceutil.StopService(service)  # Delete service
         print "%s successfully stopped." % service
-    except pywintypeserror:
+    except pywintypes.error:
         print "%s unable to be stopped. Deleted, or is the program not elevated?" % service
 
 
-def modifytelemetryregs():
+def modifytelemetryregs(value):
     telemetrypath = r'SOFTWARE\Policies\Microsoft\Windows\DataCollection'  # Path to Telemetry key
     telemetrypath2 = r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\DataCollection'  # 2nd path
 
     try:
         telemetrykey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, telemetrypath, 0, _winreg.KEY_ALL_ACCESS)
-        _winreg.SetValueEx(telemetrykey, "AllowTelemetry", 0, _winreg.REG_SZ, "0")  # Disable Telemetry
+        _winreg.SetValueEx(telemetrykey, "AllowTelemetry", 0, _winreg.REG_SZ, value)  # Disable Telemetry
         _winreg.CloseKey(telemetrykey)
         print "Telemetry key succesfully modified."
-    except WindowsError:
+    except (WindowsError, IOError):
         print "Unable to modify Telemetry key. Deleted, or is the program not elevated? Trying another method"
 
     try:
         telemetrykey2 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, telemetrypath2, 0, _winreg.KEY_ALL_ACCESS)
-        _winreg.SetValueEx(telemetrykey2, "AllowTelemetry", 0, _winreg.REG_SZ, "0")  # Disable Telemetry
+        _winreg.SetValueEx(telemetrykey2, "AllowTelemetry", 0, _winreg.REG_SZ, value)  # Disable Telemetry
         _winreg.CloseKey(telemetrykey2)
         print "2nd Telemetry key succesfully modified."
-    except WindowsError:
+    except (WindowsError, IOError):
         print "Unable to modify 2nd Telemetry key. Deleted, or is the program not elevated?"
 
 
-def modifyserviceregs():
+def modifyserviceregs(dwordval):
     diagtrackpath = r'SYSTEM\CurrentControlSet\Services\DiagTrack'
     dmwapushhpath = r'SYSTEM\CurrentControlSet\Services\dmwappushsvc'
 
     try:
         diagtrackkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, diagtrackpath, 0, _winreg.KEY_ALL_ACCESS)
-        _winreg.SetValueEx(diagtrackkey, "Start", 0, _winreg.REG_DWORD, 0x0000004)
+        _winreg.SetValueEx(diagtrackkey, "Start", 0, _winreg.REG_DWORD, dwordval)
         _winreg.CloseKey(diagtrackkey)
         print "DiagTrack key successfully modified"
-    except WindowsError:
+    except (WindowsError, IOError):
         print "Unable to modify DiagTrack key. Deleted, or is the program not elevated?"
 
     try:
         dmwapushkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, dmwapushhpath, 0, _winreg.KEY_ALL_ACCESS)
-        _winreg.SetValueEx(dmwapushkey, "Start", 0, _winreg.REG_DWORD, 0x0000004)
+        _winreg.SetValueEx(dmwapushkey, "Start", 0, _winreg.REG_DWORD, dwordval)
         _winreg.CloseKey(dmwapushkey)
         print "dmwappushsvc key successfully modified"
-    except WindowsError:
+    except (WindowsError, IOError):
         print "Unable to modify dmwappushsvc key. Deleted, or is the program not elevated?"
 
 
