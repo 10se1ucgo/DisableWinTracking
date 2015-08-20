@@ -68,6 +68,8 @@ class MainFrame(wx.Frame):
         self.SetMenuBar(menubar)
         self.Bind(wx.EVT_MENU, self.about, aboutitem)
 
+        self.Bind(wx.EVT_CLOSE, sys.exit)  # Close process if window is closed
+
         # Service checkbox
         self.servicebox = wx.CheckBox(panel, label="Services", pos=(10, 15))
         self.servicebox.SetToolTip(wx.ToolTip("Disables or Deletes tracking services. Choose option in Service Method"))
@@ -199,7 +201,7 @@ def modifyhosts(extra, undo):
                   'lb1.www.ms.akadns.net', 'live.rads.msn.com', 'm.adnxs.com', 'm.hotmail.com', 'msedge.net',
                   'msftncsi.com', 'msnbot-65-55-108-23.search.msn.com', 'msntest.serving-sys.com',
                   'oca.telemetry.microsoft.com', 'oca.telemetry.microsoft.com.nsatc.net', 'pre.footprintpredict.com',
-                  'pre.footprintpredict.com', 'preview.msn.com', 'pricelist.skype.com', 'rad.live.com', 'rad.msn.com',
+                  'preview.msn.com', 'pricelist.skype.com', 'rad.live.com', 'rad.msn.com',
                   'redir.metaservices.microsoft.com', 's.gateway.messenger.live.com', 'schemas.microsoft.akadns.net ',
                   'secure.adnxs.com', 'secure.flashtalking.com', 'settings-sandbox.data.microsoft.com',
                   'settings-win.data.microsoft.com', 'sls.update.microsoft.com.akadns.net',
