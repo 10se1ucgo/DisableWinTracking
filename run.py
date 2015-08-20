@@ -1,11 +1,11 @@
-from os import path, environ
-from ctypes import windll
-from subprocess import Popen
+import os
+import ctypes
+import subprocess
 import _winreg
 import sys
 
-from win32serviceutil import RemoveService, StopService
-from pywintypes import error as win32apierror
+import win32serviceutil
+from pywintypes import error as pywintypeserror
 import wx
 import wx.lib.wordwrap
 
@@ -43,7 +43,7 @@ class MainFrame(wx.Frame):
         panel = wx.Panel(self)  # Frame panel
 
         # Test for elevation
-        if windll.shell32.IsUserAnAdmin() != 1:
+        if ctypes.windll.shell32.IsUserAnAdmin() != 1:
             warn = wx.MessageDialog(parent=None,
                                     message="Program requires elevation, please run it as an administrator",
                                     caption="ERROR", style=wx.OK | wx.ICON_WARNING)
@@ -51,7 +51,7 @@ class MainFrame(wx.Frame):
             sys.exit()
 
         # Get icon
-        shell32file = path.join(environ['SYSTEMROOT'], 'System32\\shell32.dll')
+        shell32file = os.path.join(os.environ['SYSTEMROOT'], 'System32\\shell32.dll')
         self.SetIcon(wx.Icon(shell32file + ";315", wx.BITMAP_TYPE_ICO))
 
         # Info bar w/ about menu
@@ -193,7 +193,7 @@ def modifyhosts(extra):
     normallistip = [nullip + x for x in normallist]
     extralistip = [nullip + x for x in extralist]
 
-    hostspath = path.join(environ['SYSTEMROOT'], 'System32\\drivers\\etc\\hosts')
+    hostspath = os.path.join(os.environ['SYSTEMROOT'], 'System32\\drivers\\etc\\hosts')
 
     try:
         with open(hostspath, 'ab') as f:
@@ -206,14 +206,14 @@ def modifyhosts(extra):
 
 
 def cleardiagtracklog():
-    logfile = path.join(environ['SYSTEMDRIVE'],
-                        '\\ProgramData\\Microsoft\\Diagnosis\\ETLLogs\\AutoLogger\\AutoLogger-Diagtrack-Listener.etl')
+    logfile = os.path.join(os.environ['SYSTEMDRIVE'], '\\ProgramData\\Microsoft\\Diagnosis\\ETLLogs\\AutoLogger\\'
+                                                      'AutoLogger-Diagtrack-Listener.etl')
 
     disableservice('Diagnostics Tracking Service')
 
     try:
         open(logfile, 'w').close()  # Clear the AutoLogger file
-        Popen(["echo", "y|cacls", logfile, "/d", "SYSTEM"], shell=True)  # Prevent modification to file
+        subprocess.Popen(["echo", "y|cacls", logfile, "/d", "SYSTEM"], shell=True)  # Prevent modification to file
         print "DiagTrack log succesfully cleared and locked."
     except IOError:
         print "Unable to clear DiagTrack log. Deleted, or is the program not elevated?"
@@ -221,17 +221,17 @@ def cleardiagtracklog():
 
 def deleteservice(service):
     try:
-        RemoveService(service)  # Delete service
+        win32serviceutil.RemoveService(service)  # Delete service
         print "%s successfully deleted." % service
-    except win32apierror:
+    except pywintypeserror:
         print "%s unable to be deleted. Deleted already, or is the program not elevated?" % service
 
 
 def disableservice(service):
     try:
-        StopService(service)  # Delete service
+        win32serviceutil.StopService(service)  # Delete service
         print "%s successfully stopped." % service
-    except win32apierror:
+    except pywintypeserror:
         print "%s unable to be stopped. Deleted, or is the program not elevated?" % service
 
 
