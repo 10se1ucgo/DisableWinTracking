@@ -185,7 +185,7 @@ def modifyhosts(extra, undo):
     nullip = "0.0.0.0 "  # IP to route domains to
 
     # List of tracking domains
-    normallist = ['a-0001.a-msedge.net', 'a-0001.a-msedge.net', 'a-0002.a-msedge.net', 'a-0003.a-msedge.net',
+    normallist = ['a-0001.a-msedge.net', 'a-0002.a-msedge.net', 'a-0003.a-msedge.net',
                   'a-0004.a-msedge.net', 'a-0005.a-msedge.net', 'a-0006.a-msedge.net', 'a-0007.a-msedge.net',
                   'a-0008.a-msedge.net', 'a-0009.a-msedge.net', 'a-msedge.net', 'a.ads1.msn.com', 'a.ads2.msads.net',
                   'a.ads2.msn.com', 'a.rad.msn.com', 'ac3.msn.com', 'ad.doubleclick.net', 'adnexus.net', 'adnxs.com',
