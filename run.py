@@ -215,7 +215,7 @@ def modifyhosts(extra, undo):
                   'watson.live.com', 'www.msftncsi.com']
 
     extralist = ['fe2.update.microsoft.com.akadns.net', 'reports.wes.df.telemetry.microsoft.com', 's0.2mdn.net',
-                 'schemas.microsoft.akadns.net', 'services.wes.df.telemetry.microsoft.com',
+                 'services.wes.df.telemetry.microsoft.com',
                  'statsfe2.update.microsoft.com.akadns.net', 'survey.watson.microsoft.com', 'view.atdmt.com',
                  'watson.microsoft.com', 'watson.ppe.telemetry.microsoft.com', 'watson.telemetry.microsoft.com',
                  'watson.telemetry.microsoft.com.nsatc.net', 'wes.df.telemetry.microsoft.com']
