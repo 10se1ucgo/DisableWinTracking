@@ -182,7 +182,7 @@ class MainFrame(wx.Frame):
 
 
 def modifyhosts(extra, undo):
-    nullip = "0.0.0.0 "  # IP to route domains to
+    nullip = "127.0.0.0 "  # IP to route domains to
 
     # List of tracking domains
     normallist = ['a-0001.a-msedge.net', 'a-0002.a-msedge.net', 'a-0003.a-msedge.net',
@@ -227,16 +227,23 @@ def modifyhosts(extra, undo):
     hostspath = os.path.join(os.environ['SYSTEMROOT'], 'System32\\drivers\\etc\\hosts')
 
     if not undo:
-        try:
-            with open(hostspath, 'ab') as f:
-                f.write('\r\n' + '\r\n'.join(normallistip))
-                if extra:
-                    f.write('\r\n' + '\r\n'.join(extralistip))
-            print "Domains successfully appended to HOSTS file."
-        except (WindowsError, IOError):
-            print "Could not access HOSTS file. Is the program not elevated?"
+        if not extra:
+            try:
+                with open(hostspath, 'ab') as f:
+                    f.write('\r\n' + '\r\n'.join(normallistip))
+                print "Domains successfully appended to HOSTS file."
+            except (WindowsError, IOError):
+                print "Could not access HOSTS file. Is the program not elevated?"
 
-    else:
+        elif extra:
+            try:
+                with open(hostspath, 'ab') as f:
+                    f.write('\r\n' + '\r\n'.join(extralistip))
+                print "Extra domains successfully appended to HOSTS file."
+            except (WindowsError, IOError):
+                print "Could not access HOSTS file. Is the program not elevated?"
+
+    elif undo:
         try:
             with open(hostspath, 'r') as hostfile, open(hostspath + "temp", 'w') as tempfile:
                 for line in hostfile:
