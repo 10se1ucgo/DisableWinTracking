@@ -20,28 +20,33 @@ class RedirectText(object):
 
 class ConsoleFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, parent=None, title="Console Output", size=[500, 200],
+        wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="Console Output", size=[500, 200],
                           style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         panel = wx.Panel(self)  # Frame panel
 
-        self.Bind(wx.EVT_CLOSE, sys.exit)  # Close application once log output is closed
-
         # Redirect console output to TextCtrl box
-        self.redirect = RedirectText(wx.TextCtrl(panel, wx.ID_ANY, size=(475, 125),
-                                                 style=wx.TE_MULTILINE | wx.TE_READONLY, pos=(10, 10)))
+        self.textctrl = wx.TextCtrl(panel, wx.ID_ANY, size=(475, 125), style=wx.TE_MULTILINE | wx.TE_READONLY,
+                                    pos=(10, 10))
+
+        self.redirect = RedirectText(self.textctrl)
         sys.stdout = self.redirect
 
         # Final OK button
-        self.donebutton = wx.Button(panel, wx.ID_ANY, "OK", pos=(398, 140))
-        self.Bind(wx.EVT_BUTTON, sys.exit, self.donebutton)
+        self.okbutton = wx.Button(panel, wx.ID_ANY, "OK", pos=(398, 140))
+        self.okbutton.Bind(wx.EVT_BUTTON, self.onok)
 
         self.Center()  # Center window
+
+    def onok(self, event):
+        self.textctrl.Clear()
+        self.Hide()
+
 
 
 class MainFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, parent=None, title='Disable Windows 10 Tracking', size=[375, 150],
+        wx.Frame.__init__(self, parent=None, title='Disable Windows 10 Tracking', size=[375, 165],
                           style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         panel = wx.Panel(self)  # Frame panel
@@ -68,8 +73,6 @@ class MainFrame(wx.Frame):
         self.SetMenuBar(menubar)
         self.Bind(wx.EVT_MENU, self.about, aboutitem)
 
-        self.Bind(wx.EVT_CLOSE, sys.exit)  # Close process if window is closed
-
         # Service checkbox
         self.servicebox = wx.CheckBox(panel, label="Services", pos=(10, 15))
         self.servicebox.SetToolTip(wx.ToolTip("Disables or Deletes tracking services. Choose option in Service Method"))
@@ -87,12 +90,17 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_CHECKBOX, self.telemetryhostcheck, self.telemetrybox)
 
         # HOSTS file checkbox
-        self.hostbox = wx.CheckBox(panel, label="Block tracking servers with HOSTS file", pos=(10, 60))
+        self.hostbox = wx.CheckBox(panel, label="Block tracking domains", pos=(10, 60))
         self.hostbox.SetToolTip(wx.ToolTip("Add known tracking domains to HOSTS file. Required to disable Telemetry"))
 
-        self.extrahostbox = wx.CheckBox(panel, label="Block even more tracking servers", pos=(10, 75))
+        # Extra HOSTS checkbox
+        self.extrahostbox = wx.CheckBox(panel, label="Block even more tracking domains", pos=(10, 75))
         self.extrahostbox.SetToolTip(wx.ToolTip("For the paranoid. Adds extra domains to the HOSTS file. WARNING: Some "
                                                 "things like Dr. Watson and Error Reporting may be turned off by this"))
+
+        # IP block checkbox
+        self.ipbox = wx.CheckBox(panel, label="Block tracking IP addresses", pos=(10, 90))
+        self.ipbox.SetToolTip(wx.ToolTip("Blocks known tracking IP addresses with Windows Firewall."))
 
         # Service radio box
         self.serviceradbox = wx.RadioBox(panel, label="Service Method", pos=(135, 10), choices=["Disable", "Delete"])
@@ -100,11 +108,12 @@ class MainFrame(wx.Frame):
 
         # OK button
         self.okbutton = wx.Button(panel, wx.ID_OK, "Get privacy!", (275, 24))
-        self.okbutton.SetToolTip(wx.ToolTip(""))
+        self.okbutton.SetToolTip(wx.ToolTip("Give me my privacy, damn it!"))
         self.Bind(wx.EVT_BUTTON, self.goprivate, self.okbutton)
 
         # Revert button
         self.revertbutton = wx.Button(panel, wx.ID_ANY, "Revert", (275, 49))
+        self.revertbutton.SetToolTip(wx.ToolTip("I wanna go back! :("))
         self.Bind(wx.EVT_BUTTON, self.revert, self.revertbutton)
 
         self.console = ConsoleFrame()  # Call ConsoleFrame to start redirecting stdout to a TextCtrl
@@ -131,7 +140,7 @@ class MainFrame(wx.Frame):
 
         aboutpg = wx.AboutDialogInfo()
         aboutpg.Name = "Windows 10 Tracking Disable Tool"
-        aboutpg.Version = "v2.1"
+        aboutpg.Version = "v2.2"
         aboutpg.Copyright = "(c) 2015 10se1ucgo"
         aboutpg.Description = "A tool to disable nasty tracking in Windows 10"
         aboutpg.WebSite = ("https://github.com/10se1ucgo/DisableWinTracking", "GitHub Project Page")
@@ -159,6 +168,8 @@ class MainFrame(wx.Frame):
                 modifyhosts(extra=False, undo=False)
             if self.extrahostbox.IsChecked():
                 modifyhosts(extra=True, undo=False)
+            if self.ipbox.IsChecked():
+                blockips(undo=False)
         finally:
             # Re-enable buttons
             self.okbutton.Enable()
@@ -174,6 +185,7 @@ class MainFrame(wx.Frame):
             modifyserviceregs(0x0000003)
             modifytelemetryregs("1")
             modifyhosts(extra=False, undo=True)
+            blockips(undo=True)
         finally:
             self.okbutton.Enable()
             self.revertbutton.Enable()
@@ -182,10 +194,10 @@ class MainFrame(wx.Frame):
 
 
 def modifyhosts(extra, undo):
-    nullip = "127.0.0.0 "  # IP to route domains to
+    nullip = "0.0.0.0 "  # IP to route domains to
 
-    # List of tracking domains
-    normallist = ['a-0001.a-msedge.net', 'a-0002.a-msedge.net', 'a-0003.a-msedge.net',
+    # List of tracking domains.
+    normallist = ['0.0.0.0', 'a-0001.a-msedge.net', 'a-0002.a-msedge.net', 'a-0003.a-msedge.net',
                   'a-0004.a-msedge.net', 'a-0005.a-msedge.net', 'a-0006.a-msedge.net', 'a-0007.a-msedge.net',
                   'a-0008.a-msedge.net', 'a-0009.a-msedge.net', 'a-msedge.net', 'a.ads1.msn.com', 'a.ads2.msads.net',
                   'a.ads2.msn.com', 'a.rad.msn.com', 'ac3.msn.com', 'ad.doubleclick.net', 'adnexus.net', 'adnxs.com',
@@ -257,6 +269,30 @@ def modifyhosts(extra, undo):
             print "Could not access HOSTS file. Is the program not elevated?"
 
 
+def blockips(undo):
+    iplist = ['2.22.61.43', '2.22.61.66', '65.39.117.230', '65.55.108.23', '23.218.212.69',
+              '134.170.30.202', '137.116.81.24', '157.56.106.189', '204.79.197.200']
+
+    if not undo:
+        try:
+            for ip in iplist:
+                subprocess.call("netsh advfirewall firewall add rule name=""TrackingIP{0}"" dir=out"
+                                " protocol=any remoteip=""{0}"" profile=any action=block".format(ip))
+            print "IPs succesfully blocked."
+        except (WindowsError, IOError):
+            print "One or more IPs were unable to be blocked."
+
+    elif undo:
+        try:
+            for ip in iplist:
+                subprocess.call("netsh advfirewall firewall delete rule name=""TrackingIP{0}""".format(ip))
+            print "IPs succesfully removed."
+        except (WindowsError, IOError):
+            print "One or more IPs were unable to be removed."
+
+
+
+
 def cleardiagtracklog():
     logfile = os.path.join(os.environ['SYSTEMDRIVE'], '\\ProgramData\\Microsoft\\Diagnosis\\ETLLogs\\AutoLogger\\'
                                                       'AutoLogger-Diagtrack-Listener.etl')
@@ -267,7 +303,7 @@ def cleardiagtracklog():
         open(logfile, 'w').close()  # Clear the AutoLogger file
         subprocess.Popen(["echo", "y|cacls", logfile, "/d", "SYSTEM"], shell=True)  # Prevent modification to file
         print "DiagTrack log succesfully cleared and locked."
-    except IOError:
+    except (WindowsError, IOError):
         print "Unable to clear DiagTrack log. Deleted, or is the program not elevated?"
 
 
