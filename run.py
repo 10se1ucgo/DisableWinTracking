@@ -148,6 +148,10 @@ class MainFrame(wx.Frame):
         wx.AboutBox(aboutpg)
 
     def goprivate(self, event):
+        print "Reverting before setting privacy stuff. Ignore everything below"
+        self.revert(event=None)  # Revert first so that the latest settings can be applied and old ones removed.
+        print "Finished reverting. Everything above can be ignored."
+        print "----------------------------------------------------------------------"
         # Disable buttons
         self.okbutton.Disable()
         self.revertbutton.Disable()
@@ -182,10 +186,14 @@ class MainFrame(wx.Frame):
         self.okbutton.Disable()
         self.revertbutton.Disable()
         try:
-            modifyserviceregs(0x0000003)
-            modifytelemetryregs("1")
-            modifyhosts(extra=False, undo=True)
-            blockips(undo=True)
+            if self.servicebox.IsChecked():
+                modifyserviceregs(0x0000003)
+            if self.telemetrybox.IsChecked():
+                modifytelemetryregs("1")
+            if self.hostbox.IsChecked() or self.extrahostbox.IsChecked():
+                modifyhosts(extra=False, undo=True)
+            if self.ipbox.IsChecked():
+                blockips(undo=True)
         finally:
             self.okbutton.Enable()
             self.revertbutton.Enable()
