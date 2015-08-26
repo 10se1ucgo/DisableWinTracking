@@ -267,7 +267,7 @@ def modifyhosts(extra, undo):
         try:
             with open(hostspath, 'r') as hostfile, open(hostspath + "temp", 'w') as tempfile:
                 for line in hostfile:
-                    if not any(domain in line for domain in normallist[1:] + extralist):
+                    if not any(domain in line for domain in normallist + extralist):
                         tempfile.write(line)
 
             os.remove(hostspath)
