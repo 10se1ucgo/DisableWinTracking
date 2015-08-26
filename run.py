@@ -232,7 +232,7 @@ def modifyhosts(extra, undo):
                   'telemetry.microsoft.com', 'telemetry.urs.microsoft.com', 'ui.skype.com',
                   'vortex-bn2.metron.live.com.nsatc.net', 'vortex-cy2.metron.live.com.nsatc.net',
                   'vortex-sandbox.data.microsoft.com', 'vortex-win.data.microsoft.com', 'vortex.data.microsoft.com',
-                  'watson.live.com', 'www.msftncsi.com']
+                  'watson.live.com', 'www.msftncsi.com', 'ssw.live.com']
 
     extralist = ['fe2.update.microsoft.com.akadns.net', 'reports.wes.df.telemetry.microsoft.com', 's0.2mdn.net',
                  'services.wes.df.telemetry.microsoft.com',
