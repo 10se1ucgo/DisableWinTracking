@@ -45,7 +45,7 @@ class ConsoleFrame(wx.Frame):
 
 class MainFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, parent=None, title='Disable Windows 10 Tracking', size=[375, 165],
+        wx.Frame.__init__(self, parent=None, title='Disable Windows 10 Tracking', size=[375, 190],
                           style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         panel = wx.Panel(self)  # Frame panel
@@ -73,36 +73,39 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.about, aboutitem)
 
         # Service checkbox
-        self.servicebox = wx.CheckBox(panel, label="Services", pos=(10, 15))
+        self.servicebox = wx.CheckBox(panel, label="Services", pos=(10, 10))
         self.servicebox.SetToolTip(wx.ToolTip("Disables or Deletes tracking services. Choose option in Service Method"))
         self.Bind(wx.EVT_CHECKBOX, self.serviceradioboxcheck, self.servicebox)
 
         # DiagTrack checkbox
-        self.diagtrackbox = wx.CheckBox(panel, label="Clear DiagTrack log", pos=(10, 30))
+        self.diagtrackbox = wx.CheckBox(panel, label="Clear DiagTrack log", pos=(10, 25))
         self.diagtrackbox.SetToolTip(wx.ToolTip("Clears Diagnostic Tracking log and prevents modification to it. "
                                                 "This cannot be undone without doing it manually."))
 
         # Telemetry checkbox
-        self.telemetrybox = wx.CheckBox(panel, label="Telemetry", pos=(10, 45))
+        self.telemetrybox = wx.CheckBox(panel, label="Telemetry", pos=(10, 40))
         self.telemetrybox.SetToolTip(
             wx.ToolTip("Sets \'AllowTelemetry\' to 0. On non-Enterprise OS editions, requires HOSTS file modification"))
         self.Bind(wx.EVT_CHECKBOX, self.telemetryhostcheck, self.telemetrybox)
 
         # HOSTS file checkbox
-        self.hostbox = wx.CheckBox(panel, label="Block tracking domains", pos=(10, 60))
+        self.hostbox = wx.CheckBox(panel, label="Block tracking domains", pos=(10, 55))
         self.hostbox.SetToolTip(wx.ToolTip("Add known tracking domains to HOSTS file. Required to disable Telemetry"))
 
         # Extra HOSTS checkbox
-        self.extrahostbox = wx.CheckBox(panel, label="Block even more tracking domains", pos=(10, 75))
+        self.extrahostbox = wx.CheckBox(panel, label="Block even more tracking domains", pos=(10, 70))
         self.extrahostbox.SetToolTip(wx.ToolTip("For the paranoid. Adds extra domains to the HOSTS file. WARNING: Some "
                                                 "things like Dr. Watson and Error Reporting may be turned off by this"))
 
         # IP block checkbox
-        self.ipbox = wx.CheckBox(panel, label="Block tracking IP addresses", pos=(10, 90))
+        self.ipbox = wx.CheckBox(panel, label="Block tracking IP addresses", pos=(10, 85))
         self.ipbox.SetToolTip(wx.ToolTip("Blocks known tracking IP addresses with Windows Firewall."))
 
+        self.onedrivedbox = wx.CheckBox(panel, label="Uninstall OneDrive", pos=(10, 115))
+        self.onedrivedbox.SetToolTip(wx.ToolTip("Uninstalls OneDrive from your computer."))
+
         # Service radio box
-        self.serviceradbox = wx.RadioBox(panel, label="Service Method", pos=(135, 10), choices=["Disable", "Delete"])
+        self.serviceradbox = wx.RadioBox(panel, label="Service Method", pos=(135, 5), choices=["Disable", "Delete"])
         self.serviceradbox.Disable()
 
         # OK button
@@ -147,7 +150,8 @@ class MainFrame(wx.Frame):
         wx.AboutBox(aboutpg)
 
     def goprivate(self, event):
-        self.revert(event=None)  # Revert first so that the latest settings can be applied and old ones removed.
+        modifyhosts(extra=False,
+                    undo=True)  # Revert hosts file mod as it will just constantly append it even if it was done already
         self.console.textctrl.Clear()  # Clear log to prevent confusion
         # Disable buttons
         self.okbutton.Disable()
@@ -171,6 +175,8 @@ class MainFrame(wx.Frame):
                 modifyhosts(extra=True, undo=False)
             if self.ipbox.IsChecked():
                 blockips(undo=False)
+            if self.onedrivedbox.IsChecked():
+                modifyonedrive("uninstall")
         finally:
             # Re-enable buttons
             self.okbutton.Enable()
@@ -191,6 +197,8 @@ class MainFrame(wx.Frame):
                 modifyhosts(extra=False, undo=True)
             if self.ipbox.IsChecked():
                 blockips(undo=True)
+            if self.onedrivedbox.IsChecked():
+                modifyonedrive("install")
         finally:
             self.okbutton.Enable()
             self.revertbutton.Enable()
@@ -366,6 +374,26 @@ def modifyserviceregs(dwordval):
         print "dmwappushsvc key successfully modified"
     except (WindowsError, IOError):
         print "Unable to modify dmwappushsvc key. Deleted, or is the program not elevated?"
+
+
+def modifyonedrive(type):
+    onedrivepath = r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive'  # Path to OneDrive key
+
+    try:
+        onedrivekey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, onedrivepath, 0, _winreg.KEY_ALL_ACCESS)
+        _winreg.SetValueEx(onedrivekey, "DisableFileSyncNGSC", 0, _winreg.REG_DWORD, 1)  # Disable Telemetry
+        _winreg.CloseKey(onedrivekey)
+        print "OneDrive key succesfully modified."
+    except WindowsError:
+        print "Unable to modify OneDrive key. Deleted, or is the program not elevated?"
+
+    onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "SysWOW64/OneDriveSetup.exe")
+    if os.path.isfile(onedrivesetup):
+        subprocess.call("{0} /{1}".format(onedrivesetup, type), shell=True)
+    else:
+        onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "System32/OneDriveSetup.exe")
+        subprocess.call("{0} /{1}".format(onedrivesetup, type), shell=True)
+
 
 
 if __name__ == '__main__':
