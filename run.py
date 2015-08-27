@@ -26,10 +26,10 @@ class ConsoleFrame(wx.Frame):
         panel = wx.Panel(self)  # Frame panel
 
         # Redirect console output to TextCtrl box
-        self.textctrl = wx.TextCtrl(panel, wx.ID_ANY, size=(475, 125), style=wx.TE_MULTILINE | wx.TE_READONLY,
-                                    pos=(10, 10))
+        self.consolebox = wx.TextCtrl(panel, wx.ID_ANY, size=(475, 125), style=wx.TE_MULTILINE | wx.TE_READONLY,
+                                      pos=(10, 10))
 
-        self.redirect = RedirectText(self.textctrl)
+        self.redirect = RedirectText(self.consolebox)
         sys.stdout = self.redirect
 
         # Final OK button
@@ -39,7 +39,7 @@ class ConsoleFrame(wx.Frame):
         self.Center()  # Center window
 
     def onok(self, event):
-        self.textctrl.Clear()
+        self.consolebox.Clear()
         self.Hide()
 
 
@@ -150,12 +150,11 @@ class MainFrame(wx.Frame):
         wx.AboutBox(aboutpg)
 
     def goprivate(self, event):
-        modifyhosts(extra=False,
-                    undo=True)  # Revert hosts file mod as it will just constantly append it even if it was done already
-        self.console.textctrl.Clear()  # Clear log to prevent confusion
         # Disable buttons
         self.okbutton.Disable()
         self.revertbutton.Disable()
+
+        self.cluttercontrol()  # If we don't do this, the hosts file and firewall will become a mess after some time.
         try:
             if self.servicebox.IsChecked():
                 modifyserviceregs(0x0000004)
@@ -184,6 +183,15 @@ class MainFrame(wx.Frame):
             self.console.Show()  # Show console output window after the code is run
             print "Done. It's recommended that you reboot as soon as possible for the full effect."
 
+    def cluttercontrol(self):
+        if self.hostbox.IsChecked():
+            modifyhosts(extra=False, undo=True)
+        if self.extrahostbox.IsChecked():
+            modifyhosts(extra=True, undo=True)
+        if self.ipbox.IsChecked():
+            blockips(undo=True)
+        self.console.consolebox.Clear()
+
     def revert(self, event):
         # Disable buttons
         self.okbutton.Disable()
@@ -193,8 +201,10 @@ class MainFrame(wx.Frame):
                 modifyserviceregs(0x0000003)
             if self.telemetrybox.IsChecked():
                 modifytelemetryregs("1")
-            if self.hostbox.IsChecked() or self.extrahostbox.IsChecked():
+            if self.hostbox.IsChecked():
                 modifyhosts(extra=False, undo=True)
+            if self.extrahostbox.IsChecked():
+                modifyhosts(extra=True, undo=True)
             if self.ipbox.IsChecked():
                 blockips(undo=True)
             if self.onedrivedbox.IsChecked():
@@ -269,17 +279,31 @@ def modifyhosts(extra, undo):
                 print "Could not access HOSTS file. Is the program not elevated?"
 
     elif undo:
-        try:
-            with open(hostspath, 'r') as hostfile, open(hostspath + "temp", 'w') as tempfile:
-                for line in hostfile:
-                    if not any(domain in line for domain in normallist + extralist):
-                        tempfile.write(line)
+        if not extra:
+            try:
+                with open(hostspath, 'r') as hostfile, open(hostspath + "temp", 'w') as tempfile:
+                    for line in hostfile:
+                        if not any(domain in line for domain in normallist):
+                            tempfile.write(line)
 
-            os.remove(hostspath)
-            os.rename(hostspath + "temp", hostspath)
-            print "Domains successfully removed from HOSTS file."
-        except (WindowsError, IOError):
-            print "Could not access HOSTS file. Is the program not elevated?"
+                os.remove(hostspath)
+                os.rename(hostspath + "temp", hostspath)
+                print "Domains successfully removed from HOSTS file."
+            except (WindowsError, IOError):
+                print "Could not access HOSTS file. Is the program not elevated?"
+
+        elif extra:
+            try:
+                with open(hostspath, 'r') as hostfile, open(hostspath + "temp", 'w') as tempfile:
+                    for line in hostfile:
+                        if not any(domain in line for domain in extralist):
+                            tempfile.write(line)
+
+                os.remove(hostspath)
+                os.rename(hostspath + "temp", hostspath)
+                print "Extra domains successfully removed from HOSTS file."
+            except (WindowsError, IOError):
+                print "Could not access HOSTS file. Is the program not elevated?"
 
 
 def blockips(undo):
@@ -393,7 +417,6 @@ def modifyonedrive(type):
     else:
         onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "System32/OneDriveSetup.exe")
         subprocess.call("{0} /{1}".format(onedrivesetup, type), shell=True)
-
 
 
 if __name__ == '__main__':
