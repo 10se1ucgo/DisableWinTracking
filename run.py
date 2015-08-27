@@ -43,7 +43,6 @@ class ConsoleFrame(wx.Frame):
         self.Hide()
 
 
-
 class MainFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, parent=None, title='Disable Windows 10 Tracking', size=[375, 165],
@@ -148,10 +147,8 @@ class MainFrame(wx.Frame):
         wx.AboutBox(aboutpg)
 
     def goprivate(self, event):
-        print "Reverting before setting privacy stuff. Ignore everything below"
         self.revert(event=None)  # Revert first so that the latest settings can be applied and old ones removed.
-        print "Finished reverting. Everything above can be ignored."
-        print "----------------------------------------------------------------------"
+        self.console.textctrl.Clear()  # Clear log to prevent confusion
         # Disable buttons
         self.okbutton.Disable()
         self.revertbutton.Disable()
@@ -285,7 +282,7 @@ def blockips(undo):
         try:
             for ip in iplist:
                 subprocess.call("netsh advfirewall firewall add rule name=""TrackingIP{0}"" dir=out"
-                                " protocol=any remoteip=""{0}"" profile=any action=block".format(ip))
+                                " protocol=any remoteip=""{0}"" profile=any action=block".format(ip), shell=True)
             print "IPs succesfully blocked."
         except (WindowsError, IOError):
             print "One or more IPs were unable to be blocked."
@@ -293,12 +290,10 @@ def blockips(undo):
     elif undo:
         try:
             for ip in iplist:
-                subprocess.call("netsh advfirewall firewall delete rule name=""TrackingIP{0}""".format(ip))
+                subprocess.call("netsh advfirewall firewall delete rule name=""TrackingIP{0}""".format(ip), shell=True)
             print "IPs succesfully removed."
         except (WindowsError, IOError):
             print "One or more IPs were unable to be removed."
-
-
 
 
 def cleardiagtracklog():
@@ -309,7 +304,7 @@ def cleardiagtracklog():
 
     try:
         open(logfile, 'w').close()  # Clear the AutoLogger file
-        subprocess.Popen(["echo", "y|cacls", logfile, "/d", "SYSTEM"], shell=True)  # Prevent modification to file
+        subprocess.call("echo y|cacls {0} /d SYSTEM".format(logfile), shell=True)  # Prevent modification to file
         print "DiagTrack log succesfully cleared and locked."
     except (WindowsError, IOError):
         print "Unable to clear DiagTrack log. Deleted, or is the program not elevated?"
