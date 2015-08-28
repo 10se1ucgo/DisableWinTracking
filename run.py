@@ -109,14 +109,18 @@ class MainFrame(wx.Frame):
         self.serviceradbox.Disable()
 
         # OK button
-        self.okbutton = wx.Button(panel, wx.ID_OK, "Get privacy!", (275, 24))
+        self.okbutton = wx.Button(panel, wx.ID_OK, label="Get privacy!", pos=(275, 25))
         self.okbutton.SetToolTip(wx.ToolTip("Give me my privacy, damn it!"))
         self.Bind(wx.EVT_BUTTON, self.goprivate, self.okbutton)
 
         # Revert button
-        self.revertbutton = wx.Button(panel, wx.ID_ANY, "Revert", (275, 49))
+        self.revertbutton = wx.Button(panel, wx.ID_ANY, label="Revert", pos=(275, 50))
         self.revertbutton.SetToolTip(wx.ToolTip("I wanna go back! :("))
         self.Bind(wx.EVT_BUTTON, self.revert, self.revertbutton)
+
+        self.fixbutton = wx.Button(panel, wx.ID_ANY, label="Fix Skype/Mail", pos=(266, 75))
+        self.fixbutton.SetToolTip(wx.ToolTip("Press this if you're having issues with Skype or the Mail app"))
+        self.Bind(wx.EVT_BUTTON, self.fix, self.fixbutton)
 
         self.console = ConsoleFrame()  # Call ConsoleFrame to start redirecting stdout to a TextCtrl
 
@@ -153,7 +157,7 @@ class MainFrame(wx.Frame):
         # Disable buttons
         self.okbutton.Disable()
         self.revertbutton.Disable()
-
+        self.fixbutton.Enable()
         self.cluttercontrol()  # If we don't do this, the hosts file and firewall will become a mess after some time.
         try:
             if self.servicebox.IsChecked():
@@ -180,6 +184,7 @@ class MainFrame(wx.Frame):
             # Re-enable buttons
             self.okbutton.Enable()
             self.revertbutton.Enable()
+            self.fixbutton.Enable()
             self.console.Show()  # Show console output window after the code is run
             print "Done. It's recommended that you reboot as soon as possible for the full effect."
 
@@ -196,6 +201,7 @@ class MainFrame(wx.Frame):
         # Disable buttons
         self.okbutton.Disable()
         self.revertbutton.Disable()
+        self.fixbutton.Disable()
         try:
             if self.servicebox.IsChecked():
                 modifyserviceregs(0x0000003)
@@ -212,9 +218,22 @@ class MainFrame(wx.Frame):
         finally:
             self.okbutton.Enable()
             self.revertbutton.Enable()
+            self.fixbutton.Enable()
             self.console.Show()
             print "Done. It's recommended that you reboot as soon as possible for the full effect."
 
+    def fix(self, event):
+        self.okbutton.Disable()
+        self.revertbutton.Disable()
+        self.fixbutton.Disable()
+        try:
+            skypemailfix()
+        finally:
+            self.okbutton.Enable()
+            self.revertbutton.Enable()
+            self.fixbutton.Enable()
+            self.console.Show()
+            print "Done. It's recommended that you reboot as soon as possible for the fix to work."
 
 def modifyhosts(extra, undo):
     nullip = "0.0.0.0 "  # IP to route domains to
@@ -233,12 +252,12 @@ def modifyhosts(extra, undo):
                   'diagnostics.support.microsoft.com', 'ec.atdmt.com', 'feedback.microsoft-hohm.com',
                   'feedback.search.microsoft.com', 'feedback.windows.com', 'flex.msn.com', 'g.msn.com', 'h1.msn.com',
                   'i1.services.social.microsoft.com', 'i1.services.social.microsoft.com.nsatc.net',
-                  'lb1.www.ms.akadns.net', 'live.rads.msn.com', 'm.adnxs.com', 'm.hotmail.com', 'msedge.net',
+                  'lb1.www.ms.akadns.net', 'live.rads.msn.com', 'm.adnxs.com', 'msedge.net',
                   'msftncsi.com', 'msnbot-65-55-108-23.search.msn.com', 'msntest.serving-sys.com',
                   'oca.telemetry.microsoft.com', 'oca.telemetry.microsoft.com.nsatc.net', 'pre.footprintpredict.com',
                   'preview.msn.com', 'rad.live.com', 'rad.msn.com', 'redir.metaservices.microsoft.com',
-                  's.gateway.messenger.live.com', 'schemas.microsoft.akadns.net ', 'secure.adnxs.com',
-                  'secure.flashtalking.com', 'settings-sandbox.data.microsoft.com', 'settings-win.data.microsoft.com',
+                  'schemas.microsoft.akadns.net ', 'secure.adnxs.com', 'secure.flashtalking.com',
+                  'settings-sandbox.data.microsoft.com', 'settings-win.data.microsoft.com',
                   'sls.update.microsoft.com.akadns.net', 'sqm.df.telemetry.microsoft.com',
                   'sqm.telemetry.microsoft.com', 'sqm.telemetry.microsoft.com.nsatc.net', 'static.2mdn.net',
                   'statsfe1.ws.microsoft.com', 'statsfe2.ws.microsoft.com', 'telecommand.telemetry.microsoft.com',
@@ -249,10 +268,11 @@ def modifyhosts(extra, undo):
                   'watson.live.com', 'www.msftncsi.com', 'ssw.live.com']
 
     extralist = ['fe2.update.microsoft.com.akadns.net', 'reports.wes.df.telemetry.microsoft.com', 's0.2mdn.net',
-                 'services.wes.df.telemetry.microsoft.com', 'ui.skype.com', 'pricelist.skype.com', 'apps.skype.com',
-                 'statsfe2.update.microsoft.com.akadns.net', 'survey.watson.microsoft.com', 'view.atdmt.com',
-                 'watson.microsoft.com', 'watson.ppe.telemetry.microsoft.com', 'watson.telemetry.microsoft.com',
-                 'watson.telemetry.microsoft.com.nsatc.net', 'wes.df.telemetry.microsoft.com']
+                 'services.wes.df.telemetry.microsoft.com', 'statsfe2.update.microsoft.com.akadns.net',
+                 'survey.watson.microsoft.com', 'view.atdmt.com', 'watson.microsoft.com',
+                 'watson.ppe.telemetry.microsoft.com', 'watson.telemetry.microsoft.com',
+                 'watson.telemetry.microsoft.com.nsatc.net', 'wes.df.telemetry.microsoft.com', 'ui.skype.com',
+                 'pricelist.skype.com', 'apps.skype.com', 'm.hotmail.com', 's.gateway.messenger.live.com']
 
     # Domains with 0.0.0.0 added to the beginning of each.
     normallistip = [nullip + x for x in normallist]
@@ -407,7 +427,7 @@ def modifyonedrive(type):
         _winreg.SetValueEx(onedrivekey, "DisableFileSyncNGSC", 0, _winreg.REG_DWORD, 1)  # Disable Telemetry
         _winreg.CloseKey(onedrivekey)
         print "OneDrive key succesfully modified."
-    except WindowsError:
+    except (WindowsError, IOError):
         print "Unable to modify OneDrive key. Deleted, or is the program not elevated?"
 
     onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "SysWOW64/OneDriveSetup.exe")
@@ -417,6 +437,24 @@ def modifyonedrive(type):
         onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "System32/OneDriveSetup.exe")
         subprocess.call("{0} /{1}".format(onedrivesetup, type), shell=True)
 
+
+def skypemailfix():
+    fixlist = ['ui.skype.com', 'pricelist.skype.com', 'apps.skype.com',
+               's.gateway.messenger.live.com', 'm.hotmail.com']
+
+    hostspath = os.path.join(os.environ['SYSTEMROOT'], 'System32\\drivers\\etc\\hosts')
+
+    try:
+        with open(hostspath, 'r') as hostfile, open(hostspath + "temp", 'w') as tempfile:
+            for line in hostfile:
+                if not any(domain in line for domain in fixlist):
+                    tempfile.write(line)
+
+        os.remove(hostspath)
+        os.rename(hostspath + "temp", hostspath)
+        print "Skype and Mail domains successfully removed from HOSTS file."
+    except (WindowsError, IOError):
+        print "Could not access HOSTS file. Is the program not elevated?"
 
 if __name__ == '__main__':
     wxwindow = wx.App(False)
