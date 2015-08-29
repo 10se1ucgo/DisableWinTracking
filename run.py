@@ -1,4 +1,5 @@
 import ctypes
+import logging
 import os
 import subprocess
 import sys
@@ -9,6 +10,10 @@ import wx
 import wx.lib.wordwrap
 import pywintypes
 
+
+# Configure the Logging module
+logging.basicConfig(filename='DisableWinTracking.log', level=logging.DEBUG,
+                    format='\n%(asctime)s %(levelname)s: %(message)s', datefmt='%H:%M:%S')
 
 class RedirectText(object):
     def __init__(self, console):
@@ -188,6 +193,7 @@ class MainFrame(wx.Frame):
             self.fixbutton.Enable()
             self.console.Show()  # Show console output window after the code is run
             print "Done. It's recommended that you reboot as soon as possible for the full effect."
+            print "If any errors were found, please make a GitHub ticket with the contents of DisableWinTracking.log"
 
     def cluttercontrol(self):
         if self.hostbox.IsChecked():
@@ -222,6 +228,7 @@ class MainFrame(wx.Frame):
             self.fixbutton.Enable()
             self.console.Show()
             print "Done. It's recommended that you reboot as soon as possible for the full effect."
+            print "If any errors were found, please make a GitHub ticket with the contents of DisableWinTracking.log"
 
     def fix(self, event):
         self.okbutton.Disable()
@@ -235,6 +242,7 @@ class MainFrame(wx.Frame):
             self.fixbutton.Enable()
             self.console.Show()
             print "Done. It's recommended that you reboot as soon as possible for the fix to work."
+            print "If any errors were found, please make a GitHub ticket with the contents of DisableWinTracking.log"
 
 
 def modifyhosts(extra, undo):
@@ -287,17 +295,19 @@ def modifyhosts(extra, undo):
             try:
                 with open(hostspath, 'ab') as f:
                     f.write('\r\n' + '\r\n'.join(normallistip))
-                print "Domains successfully appended to HOSTS file."
+                print "Hosts mod: Domains succesfully appended."
             except (WindowsError, IOError):
-                print "Could not access HOSTS file. Is the program not elevated?"
+                logging.exception("Hosts mod: Could not append domains")
+                print "Hosts mod: Could not append domains"
 
         elif extra:
             try:
                 with open(hostspath, 'ab') as f:
                     f.write('\r\n' + '\r\n'.join(extralistip))
-                print "Extra domains successfully appended to HOSTS file."
+                print "Extra hosts mod: Domains succesfully appended."
             except (WindowsError, IOError):
-                print "Could not access HOSTS file. Is the program not elevated?"
+                logging.exception("Extra hosts mod: Could not append domains.")
+                print "Extra hosts mod: Could not append domains."
 
     elif undo:
         if not extra:
@@ -309,9 +319,10 @@ def modifyhosts(extra, undo):
 
                 os.remove(hostspath)
                 os.rename(hostspath + "temp", hostspath)
-                print "Domains successfully removed from HOSTS file."
+                print "Hosts mod: Domains successfully removed."
             except (WindowsError, IOError):
-                print "Could not access HOSTS file. Is the program not elevated?"
+                logging.exception("Hosts mod: Could not remove domains.")
+                print "Hosts mod: Could not remove domains."
 
         elif extra:
             try:
@@ -322,9 +333,10 @@ def modifyhosts(extra, undo):
 
                 os.remove(hostspath)
                 os.rename(hostspath + "temp", hostspath)
-                print "Extra domains successfully removed from HOSTS file."
+                print "Extra hosts mod: Domains successfully removed."
             except (WindowsError, IOError):
-                print "Could not access HOSTS file. Is the program not elevated?"
+                logging.exception("Extra hosts mod: Could not remove domains.")
+                print "Extra hosts mod: Could not remove domains."
 
 
 def blockips(undo):
@@ -336,17 +348,19 @@ def blockips(undo):
             for ip in iplist:
                 subprocess.call("netsh advfirewall firewall add rule name=""TrackingIP{0}"" dir=out"
                                 " protocol=any remoteip=""{0}"" profile=any action=block".format(ip), shell=True)
-            print "IPs succesfully blocked."
+            print "IP Blocking: Succesfully blocked."
         except (WindowsError, IOError):
-            print "One or more IPs were unable to be blocked."
+            logging.exception("IP Blocking: One or more were unable to be blocked.")
+            print "IP Blocking: One or more were unable to be blocked."
 
     elif undo:
         try:
             for ip in iplist:
                 subprocess.call("netsh advfirewall firewall delete rule name=""TrackingIP{0}""".format(ip), shell=True)
-            print "IP blocks succesfully removed."
+            print "IP Blocking: Succesfully unblocked."
         except (WindowsError, IOError):
-            print "One or more IPs were unable to be unblocked."
+            logging.exception("IP Blocking: One or more were unable to be unblocked.")
+            print "IP Blocking: One or more were unable to be unblocked."
 
 
 def cleardiagtracklog():
@@ -358,25 +372,28 @@ def cleardiagtracklog():
     try:
         open(logfile, 'w').close()  # Clear the AutoLogger file
         subprocess.call("echo y|cacls {0} /d SYSTEM".format(logfile), shell=True)  # Prevent modification to file
-        print "DiagTrack log succesfully cleared and locked."
+        print "DiagTrack Log: Succesfully cleared and locked."
     except (WindowsError, IOError):
-        print "Unable to clear DiagTrack log."
+        logging.exception("DiagTrack Log: Unable to clear/lock")
+        print "DiagTrack Log: Unable to clear/lock"
 
 
 def deleteservice(service):
     try:
         win32serviceutil.RemoveService(service)  # Delete service
-        print "%s successfully deleted." % service
+        print "Services: {0} successfully deleted.".format(service)
     except pywintypes.error:
-        print "%s unable to be deleted." % service
+        logging.exception("Services: {0} unable to be deleted.".format(service))
+        print "Services: {0} unable to be deleted.".format(service)
 
 
 def disableservice(service):
     try:
         win32serviceutil.StopService(service)  # Delete service
-        print "%s successfully stopped." % service
+        print "Services: {0} successfully stopped.".format(service)
     except pywintypes.error:
-        print "%s unable to be stopped." % service
+        logging.exception("Services: {0} unable to be stopped.".format(service))
+        print "Services: {0} unable to be stopped.".format(service)
 
 
 def modifytelemetryregs(telemetryval):
@@ -389,9 +406,10 @@ def modifytelemetryregs(telemetryval):
             telemetrykey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, telemetrypath, 0, _winreg.KEY_ALL_ACCESS)
             _winreg.SetValueEx(telemetrykey, "AllowTelemetry", 0, _winreg.REG_SZ, telemetryval)  # Disable Telemetry
             _winreg.CloseKey(telemetrykey)
-            print "Telemetry: {0} key succesfully modified."
+            print "Telemetry: {0} key succesfully modified.".format(bit)
         except (WindowsError, IOError):
-            print "Telemetry: Unable to modify {0} key."
+            logging.exception("Telemetry: Unable to modify {0} key.".format(bit))
+            print "Telemetry: Unable to modify {0} key.".format(bit)
 
 def modifyserviceregs(dwordval):
     # Service regkey paths
@@ -405,6 +423,7 @@ def modifyserviceregs(dwordval):
             _winreg.CloseKey(servicekey)
             print "Services: {0} key successfully modified".format(servicename)
         except (WindowsError, IOError):
+            logging.exception("Services: Unable to modify {0} key.".format(servicename))
             print "Services: Unable to modify {0} key.".format(servicename)
 
 
@@ -421,6 +440,7 @@ def modifyonedrive(function, filesyncval):
         _winreg.CloseKey(filesynckey)
         print "OneDrive: FileSync key succesfully modified.".format(filesyncpath)
     except (WindowsError, IOError):
+        logging.exception("OneDrive: Unable to modify FileSync key.")
         print "OneDrive: Unable to modify FileSync key."
 
     for bit, listpinpath in listpinpathsdict.viewitems():
@@ -431,6 +451,7 @@ def modifyonedrive(function, filesyncval):
             _winreg.CloseKey(listpinregkey)
             print "OneDrive: {0} Windows Explorer pin successfully removed.".format(bit)
         except (WindowsError, IOError):
+            logging.exception("OneDrive: Unable to modify {0} Windows Explorer pin key.".format(bit))
             print "OneDrive: Unable to modify {0} Windows Explorer pin key.".format(bit)
 
     onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "SysWOW64/OneDriveSetup.exe")
@@ -439,6 +460,7 @@ def modifyonedrive(function, filesyncval):
             subprocess.call("{0} /{1}".format(onedrivesetup, function), shell=True)
             print "OneDrive: Succesfully {0}ed.".format(function)
         except:
+            logging.exception("OneDrive: Unable to {0}.".format(function))
             print "OneDrive: Unable to {0}.".format(function)
     else:
         onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "System32/OneDriveSetup.exe")
@@ -446,6 +468,7 @@ def modifyonedrive(function, filesyncval):
             subprocess.call("{0} /{1}".format(onedrivesetup, function), shell=True)
             print "OneDrive: Succesfully {0}ed.".format(function)
         except:
+            logging.exception("OneDrive: Unable to {0}.".format(function))
             print "OneDrive: Unable to {0}.".format(function)
 
 
@@ -465,6 +488,7 @@ def skypemailfix():
         os.rename(hostspath + "temp", hostspath)
         print "Skype/Mail Fix: Domains successfully removed from HOSTS file."
     except (WindowsError, IOError):
+        logging.exception("Skype/Mail Fix: Could not remove domains from HOSTS file.")
         print "Skype/Mail Fix: Could not remove domains from HOSTS file."
 
 if __name__ == '__main__':
