@@ -47,13 +47,32 @@ Action:
 
 Append known tracking domains to the `HOSTS` file located in `C:\Windows\System32\drivers\etc`
 
+#### IP Blocking
+
+Blocks known tracking IPs with the Windows Firewall. The rules are named TrackingIPX, replacing X with the IP numbers.
+
+#### OneDrive
+
+Runs `C:\Windows\SysWOW64\OneDriveSetup.exe /uninstall` (64 bit) or  
+`C:\Windows\System32\OneDriveSetup.exe /uninstall` (32 bit)
+
 ## Delete Services vs Disable Services?
 
 Selecting "Disable" will simply stop the services from being able to run.
 Selecting the "Delete" choice will completely delete the tracking services.
 
+## License
 
+Copyright 2015 10se1ucgo
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
