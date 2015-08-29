@@ -106,6 +106,10 @@ class MainFrame(wx.Frame):
         self.ipbox = wx.CheckBox(panel, label="Block tracking IP addresses", pos=(10, 85))
         self.ipbox.SetToolTip(wx.ToolTip("Blocks known tracking IP addresses with Windows Firewall."))
 
+        # Windows Defender/Wifisense
+        self.defendwifibox = wx.CheckBox(panel, label="Stop Defender/Wifisense Data Collection", pos=(10, 100))
+        self.defendwifibox.SetToolTip(wx.ToolTip("Modifies registry to stop Windows Defender and WifiSense from Data Collecting.")
+
         # OneDrive uninstall checkbox
         self.onedrivedbox = wx.CheckBox(panel, label="Uninstall OneDrive", pos=(10, 115))
         self.onedrivedbox.SetToolTip(wx.ToolTip("Uninstalls OneDrive from your computer and removes it from Explorer."))
@@ -184,6 +188,8 @@ class MainFrame(wx.Frame):
                 modifyhosts(extra=True, undo=False)
             if self.ipbox.IsChecked():
                 blockips(undo=False)
+            if self.defendwifibox.IsChecked():
+                stopdefendwifi(undo=False)
             if self.onedrivedbox.IsChecked():
                 modifyonedrive(function="uninstall", filesyncval=1)
         finally:
@@ -220,6 +226,8 @@ class MainFrame(wx.Frame):
                 modifyhosts(extra=True, undo=True)
             if self.ipbox.IsChecked():
                 blockips(undo=True)
+            if self.defendwifibox.IsChecked():
+                stopdefendwifi(undo=True)
             if self.onedrivedbox.IsChecked():
                 modifyonedrive(function="install", filesyncval=0)
         finally:
@@ -426,6 +434,96 @@ def modifyserviceregs(dwordval):
             logging.exception("Services: Unable to modify {0} key.".format(servicename))
             print "Services: Unable to modify {0} key.".format(servicename)
 
+def stopdefendwifi(undo):
+    dodlpath = r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config'  # DODL Key
+    wfscspath = r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features'  # WFS Credential Share Key
+    wfsopath = r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features'  # WFSOpeness Key
+    wdspynetpath = r'SOFTWARE\Microsoft\Windows Defender\Spynet'  # Path to OneDrive key
+    wdsamplepath = r'SOFTWARE\Microsoft\Windows Defender\Spynet'  # Path to OneDrive key
+
+    if not undo:
+        
+        try:
+            dodlkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, dodlpath, 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(dodlkey, "DODownloadMode", 0, _winreg.REG_DWORD, 0)  # Disable Delivery Optimization Download
+            _winreg.CloseKey(dodlkey)
+            print "Delivery Optimization Download key successfully modified."
+        except (WindowsError, IOError):
+            print "Unable to modify Delivery Optimization Download key. Deleted, or is the program not elevated?"
+            
+        try:
+            wfcskey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, wfcspath, 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(wfcskey, "WiFiSenseCredShared", 0, _winreg.REG_DWORD, 0)  # Disable Wifisense Credential Share
+            _winreg.CloseKey(wfcskey)
+            print "WifiSense Credential Share key successfully modified."
+        except (WindowsError, IOError):
+            print "Unable to modify WifiSense Credential Share key. Deleted, or is the program not elevated?"
+            
+        try:
+            wfsokey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, wfsopath, 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(wfsokey, "WiFiSenseOpen", 0, _winreg.REG_DWORD, 0)  # Disable Wifisense Open-ness
+            _winreg.CloseKey(wfsokey)
+            print "WifiSense Open-ness key successfully modified."
+        except (WindowsError, IOError):
+            print "Unable to modify WifiSense Open-ness key. Deleted, or is the program not elevated?"
+            
+        try:
+            wdspynetkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, wdspynetpath, 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(wdspynetkey, "SpyNetReporting", 0, _winreg.REG_DWORD, 0)  # Disable Windows Defender Spynet
+            _winreg.CloseKey(wdspynetkey)
+            print "Windows Defender Spynet key successfully modified."
+        except (WindowsError, IOError):
+            print "Unable to modify Windows Defender Spynet key. Deleted, or is the program not elevated?"
+            
+        try:
+            wdsamplekey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, wdsamplepath, 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(wdsamplekey, "SubmitSamplesConsent", 0, _winreg.REG_DWORD, 0)  # Disable Windows Defender Sample
+            _winreg.CloseKey(wdsamplekey)
+            print "Windows Defender Sample Submission key successfully modified."
+        except (WindowsError, IOError):
+            print "Unable to modify Windows Defender Sample Submission key. Deleted, or is the program not elevated?"
+        
+    elif undo:
+        
+        try:
+            dodlkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, dodlpath, 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(dodlkey, "DODownloadMode", 0, _winreg.REG_DWORD, 1)  # Enable Delivery Optimization Download
+            _winreg.CloseKey(dodlkey)
+            print "Delivery Optimization Download key successfully modified."
+        except (WindowsError, IOError):
+            print "Unable to modify Delivery Optimization Download key. Deleted, or is the program not elevated?"
+            
+        try:
+            wfcskey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, wfcspath, 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(wfcskey, "WiFiSenseCredShared", 0, _winreg.REG_DWORD, 1)  # Enable Wifisense Credential Share
+            _winreg.CloseKey(wfcskey)
+            print "WifiSense Credential Share key successfully modified."
+        except (WindowsError, IOError):
+            print "Unable to modify WifiSense Credential Share key. Deleted, or is the program not elevated?"
+            
+        try:
+            wfsokey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, wfsopath, 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(wfsokey, "WiFiSenseOpen", 0, _winreg.REG_DWORD, 1)  # Enable Wifisense Open-ness
+            _winreg.CloseKey(wfsokey)
+            print "WifiSense Open-ness key successfully modified."
+        except (WindowsError, IOError):
+            print "Unable to modify WifiSense Open-ness key. Deleted, or is the program not elevated?"
+            
+        try:
+            wdspynetkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, wdspynetpath, 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(wdspynetkey, "SpyNetReporting", 0, _winreg.REG_DWORD, 1)  # Enable Windows Defender Spynet
+            _winreg.CloseKey(wdspynetkey)
+            print "Windows Defender Spynet key successfully modified."
+        except (WindowsError, IOError):
+            print "Unable to modify Windows Defender Spynet key. Deleted, or is the program not elevated?"
+            
+        try:
+            wdsamplekey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, wdsamplepath, 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(wdsamplekey, "SubmitSamplesConsent", 0, _winreg.REG_DWORD, 1)  # Enable Windows Defender Sample
+            _winreg.CloseKey(wdsamplekey)
+            print "Windows Defender Sample Submission key successfully modified."
+        except (WindowsError, IOError):
+            print "Unable to modify Windows Defender Sample Submission key. Deleted, or is the program not elevated?"
 
 def modifyonedrive(function, filesyncval):
     filesyncpath = r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive'  # OneDrive regkey path
