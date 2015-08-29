@@ -434,7 +434,7 @@ def modifyonedrive(type):
         print "Unable to modify OneDrive FileSync key. Deleted, or is the program not elevated?"
         
     try:
-        odxkey32 = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, odxkey32, 0, _winreg.KEY_ALL_ACCESS)
+        odxkey32 = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, odxpath32, 0, _winreg.KEY_ALL_ACCESS)
         _winreg.SetValueEx(odxkey32, "System.IsPinnedToNameSpaceTree", 0, _winreg.REG_DWORD, 0)  # Disable Explorer List-Pin
         _winreg.CloseKey(odxkey32)
         print "OneDrive 32-bit Windows Explorer pin successfully removed."
@@ -442,7 +442,7 @@ def modifyonedrive(type):
         print "Unable to modify OneDrive 32-bit Windows Explorer pin key. Deleted, or is the program not elevated?"
         
     try:
-        odxkey64 = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, odxkey64, 0, _winreg.KEY_ALL_ACCESS)
+        odxkey64 = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, odxpath64, 0, _winreg.KEY_ALL_ACCESS)
         _winreg.SetValueEx(odxkey64, "System.IsPinnedToNameSpaceTree", 0, _winreg.REG_DWORD, 0)  # Disable Explorer List-Pin
         _winreg.CloseKey(odxkey64)
         print "OneDrive 64-bit Windows Explorer pin successfully removed."
