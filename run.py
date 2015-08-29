@@ -103,7 +103,7 @@ class MainFrame(wx.Frame):
 
         # OneDrive uninstall checkbox
         self.onedrivedbox = wx.CheckBox(panel, label="Uninstall OneDrive", pos=(10, 115))
-        self.onedrivedbox.SetToolTip(wx.ToolTip("Uninstalls OneDrive from your computer and removes OneDrive from explorer."))
+        self.onedrivedbox.SetToolTip(wx.ToolTip("Uninstalls OneDrive from your computer and removes it from Explorer."))
 
         # Service radio box
         self.serviceradbox = wx.RadioBox(panel, label="Service Method", pos=(135, 5), choices=["Disable", "Delete"])
@@ -162,17 +162,17 @@ class MainFrame(wx.Frame):
         self.cluttercontrol()  # If we don't do this, the hosts file and firewall will become a mess after some time.
         try:
             if self.servicebox.IsChecked():
-                modifyserviceregs(0x0000004)
+                modifyserviceregs(dwordval=0x0000004)
                 if self.serviceradbox.Selection == 0:
-                    disableservice('dmwappushsvc')
-                    disableservice('Diagnostics Tracking Service')
+                    disableservice(service='dmwappushsvc')
+                    disableservice(service='Diagnostics Tracking Service')
                 elif self.serviceradbox.Selection == 1:
-                    deleteservice('dmwappushsvc')
-                    deleteservice('Diagnostics Tracking Service')
+                    deleteservice(service='dmwappushsvc')
+                    deleteservice(service='Diagnostics Tracking Service')
             if self.diagtrackbox.IsChecked():
                 cleardiagtracklog()
             if self.telemetrybox.IsChecked():
-                modifytelemetryregs("0")
+                modifytelemetryregs(telemetryval="0")
             if self.hostbox.IsChecked():
                 modifyhosts(extra=False, undo=False)
             if self.extrahostbox.IsChecked():
@@ -180,7 +180,7 @@ class MainFrame(wx.Frame):
             if self.ipbox.IsChecked():
                 blockips(undo=False)
             if self.onedrivedbox.IsChecked():
-                modifyonedrive("uninstall")
+                modifyonedrive(function="uninstall", filesyncval=1)
         finally:
             # Re-enable buttons
             self.okbutton.Enable()
@@ -205,9 +205,9 @@ class MainFrame(wx.Frame):
         self.fixbutton.Disable()
         try:
             if self.servicebox.IsChecked():
-                modifyserviceregs(0x0000003)
+                modifyserviceregs(dwordval=0x0000003)
             if self.telemetrybox.IsChecked():
-                modifytelemetryregs("1")
+                modifytelemetryregs(telemetryval="1")
             if self.hostbox.IsChecked():
                 modifyhosts(extra=False, undo=True)
             if self.extrahostbox.IsChecked():
@@ -215,7 +215,7 @@ class MainFrame(wx.Frame):
             if self.ipbox.IsChecked():
                 blockips(undo=True)
             if self.onedrivedbox.IsChecked():
-                modifyonedrive("install")
+                modifyonedrive(function="install", filesyncval=0)
         finally:
             self.okbutton.Enable()
             self.revertbutton.Enable()
@@ -235,6 +235,7 @@ class MainFrame(wx.Frame):
             self.fixbutton.Enable()
             self.console.Show()
             print "Done. It's recommended that you reboot as soon as possible for the fix to work."
+
 
 def modifyhosts(extra, undo):
     nullip = "0.0.0.0 "  # IP to route domains to
@@ -343,9 +344,9 @@ def blockips(undo):
         try:
             for ip in iplist:
                 subprocess.call("netsh advfirewall firewall delete rule name=""TrackingIP{0}""".format(ip), shell=True)
-            print "IPs succesfully removed."
+            print "IP blocks succesfully removed."
         except (WindowsError, IOError):
-            print "One or more IPs were unable to be removed."
+            print "One or more IPs were unable to be unblocked."
 
 
 def cleardiagtracklog():
@@ -359,7 +360,7 @@ def cleardiagtracklog():
         subprocess.call("echo y|cacls {0} /d SYSTEM".format(logfile), shell=True)  # Prevent modification to file
         print "DiagTrack log succesfully cleared and locked."
     except (WindowsError, IOError):
-        print "Unable to clear DiagTrack log. Deleted, or is the program not elevated?"
+        print "Unable to clear DiagTrack log."
 
 
 def deleteservice(service):
@@ -367,7 +368,7 @@ def deleteservice(service):
         win32serviceutil.RemoveService(service)  # Delete service
         print "%s successfully deleted." % service
     except pywintypes.error:
-        print "%s unable to be deleted. Deleted already, or is the program not elevated?" % service
+        print "%s unable to be deleted." % service
 
 
 def disableservice(service):
@@ -375,86 +376,77 @@ def disableservice(service):
         win32serviceutil.StopService(service)  # Delete service
         print "%s successfully stopped." % service
     except pywintypes.error:
-        print "%s unable to be stopped. Deleted, or is the program not elevated?" % service
+        print "%s unable to be stopped." % service
 
 
-def modifytelemetryregs(value):
-    telemetrypath = r'SOFTWARE\Policies\Microsoft\Windows\DataCollection'  # Path to Telemetry key
-    telemetrypath2 = r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\DataCollection'  # 2nd path
+def modifytelemetryregs(telemetryval):
+    # Telemetry regkey paths
+    telemetrypathsdict = {'32bit': r'SOFTWARE\Policies\Microsoft\Windows\DataCollection',
+                          '64bit': r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\DataCollection'}
 
-    try:
-        telemetrykey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, telemetrypath, 0, _winreg.KEY_ALL_ACCESS)
-        _winreg.SetValueEx(telemetrykey, "AllowTelemetry", 0, _winreg.REG_SZ, value)  # Disable Telemetry
-        _winreg.CloseKey(telemetrykey)
-        print "Telemetry key succesfully modified."
-    except (WindowsError, IOError):
-        print "Unable to modify Telemetry key. Deleted, or is the program not elevated? Trying another method"
-
-    try:
-        telemetrykey2 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, telemetrypath2, 0, _winreg.KEY_ALL_ACCESS)
-        _winreg.SetValueEx(telemetrykey2, "AllowTelemetry", 0, _winreg.REG_SZ, value)  # Disable Telemetry
-        _winreg.CloseKey(telemetrykey2)
-        print "2nd Telemetry key succesfully modified."
-    except (WindowsError, IOError):
-        print "Unable to modify 2nd Telemetry key. Deleted, or is the program not elevated?"
-
+    for bit, telemetrypath in telemetrypathsdict.viewitems():
+        try:
+            telemetrykey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, telemetrypath, 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(telemetrykey, "AllowTelemetry", 0, _winreg.REG_SZ, telemetryval)  # Disable Telemetry
+            _winreg.CloseKey(telemetrykey)
+            print "Telemetry: {0} key succesfully modified."
+        except (WindowsError, IOError):
+            print "Telemetry: Unable to modify {0} key."
 
 def modifyserviceregs(dwordval):
-    diagtrackpath = r'SYSTEM\CurrentControlSet\Services\DiagTrack'
-    dmwapushhpath = r'SYSTEM\CurrentControlSet\Services\dmwappushsvc'
+    # Service regkey paths
+    servicepathsdict = {'dmwappushsvc': 'SYSTEM\\CurrentControlSet\\Services\\dmwappushsvc',
+                        'DiagTrack': 'SYSTEM\\CurrentControlSet\\Services\\DiagTrack'}
 
-    try:
-        diagtrackkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, diagtrackpath, 0, _winreg.KEY_ALL_ACCESS)
-        _winreg.SetValueEx(diagtrackkey, "Start", 0, _winreg.REG_DWORD, dwordval)
-        _winreg.CloseKey(diagtrackkey)
-        print "DiagTrack key successfully modified"
-    except (WindowsError, IOError):
-        print "Unable to modify DiagTrack key. Deleted, or is the program not elevated?"
-
-    try:
-        dmwapushkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, dmwapushhpath, 0, _winreg.KEY_ALL_ACCESS)
-        _winreg.SetValueEx(dmwapushkey, "Start", 0, _winreg.REG_DWORD, dwordval)
-        _winreg.CloseKey(dmwapushkey)
-        print "dmwappushsvc key successfully modified"
-    except (WindowsError, IOError):
-        print "Unable to modify dmwappushsvc key. Deleted, or is the program not elevated?"
+    for servicename, servicepath in servicepathsdict.viewitems():
+        try:
+            servicekey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, servicepath, 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(servicepath, "Start", 0, _winreg.REG_DWORD, dwordval)
+            _winreg.CloseKey(servicekey)
+            print "Services: {0} key successfully modified".format(servicename)
+        except (WindowsError, IOError):
+            print "Services: Unable to modify {0} key.".format(servicename)
 
 
-def modifyonedrive(type):
-    onedrivepath = r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive'  # Path to OneDrive key
-    odxpath32 = r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}' # Path to 32-bit Key
-    odxpath64 = r'Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}' # Path to 64-bit Key
+def modifyonedrive(function, filesyncval):
+    filesyncpath = r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive'  # OneDrive regkey path
+    # OneDrive shellext regkey paths
+    listpinpathsdict = {'32bit': r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
+                        '64bit': r'Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}'}
 
     try:
-        onedrivekey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, onedrivepath, 0, _winreg.KEY_ALL_ACCESS)
-        _winreg.SetValueEx(onedrivekey, "DisableFileSyncNGSC", 0, _winreg.REG_DWORD, 1)  # Disable Telemetry
-        _winreg.CloseKey(onedrivekey)
-        print "OneDrive key succesfully modified."
+        # Disable FileSync
+        filesynckey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, filesyncpath, 0, _winreg.KEY_ALL_ACCESS)
+        _winreg.SetValueEx(filesynckey, "DisableFileSyncNGSC", 0, _winreg.REG_DWORD, filesyncval)
+        _winreg.CloseKey(filesynckey)
+        print "OneDrive: FileSync key succesfully modified.".format(filesyncpath)
     except (WindowsError, IOError):
-        print "Unable to modify OneDrive FileSync key. Deleted, or is the program not elevated?"
-        
-    try:
-        odxkey32 = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, odxpath32, 0, _winreg.KEY_ALL_ACCESS)
-        _winreg.SetValueEx(odxkey32, "System.IsPinnedToNameSpaceTree", 0, _winreg.REG_DWORD, 0)  # Disable Explorer List-Pin
-        _winreg.CloseKey(odxkey32)
-        print "OneDrive 32-bit Windows Explorer pin successfully removed."
-    except (WindowsError, IOError):
-        print "Unable to modify OneDrive 32-bit Windows Explorer pin key. Deleted, or is the program not elevated?"
-        
-    try:
-        odxkey64 = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, odxpath64, 0, _winreg.KEY_ALL_ACCESS)
-        _winreg.SetValueEx(odxkey64, "System.IsPinnedToNameSpaceTree", 0, _winreg.REG_DWORD, 0)  # Disable Explorer List-Pin
-        _winreg.CloseKey(odxkey64)
-        print "OneDrive 64-bit Windows Explorer pin successfully removed."
-    except (WindowsError, IOError):
-        print "Unable to modify OneDrive 64-bit Windows Explorer pin key. If your system is 32-bit, ignore this message. Deleted, or is the program not elevated?"
+        print "OneDrive: Unable to modify FileSync key."
+
+    for bit, listpinpath in listpinpathsdict.viewitems():
+        # Disable Explorer List-Pin
+        try:
+            listpinregkey = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, listpinpath, 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(listpinregkey, "System.IsPinnedToNameSpaceTree", 0, _winreg.REG_DWORD, filesyncval)
+            _winreg.CloseKey(listpinregkey)
+            print "OneDrive: {0} Windows Explorer pin successfully removed.".format(bit)
+        except (WindowsError, IOError):
+            print "OneDrive: Unable to modify {0} Windows Explorer pin key.".format(bit)
 
     onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "SysWOW64/OneDriveSetup.exe")
     if os.path.isfile(onedrivesetup):
-        subprocess.call("{0} /{1}".format(onedrivesetup, type), shell=True)
+        try:
+            subprocess.call("{0} /{1}".format(onedrivesetup, function), shell=True)
+            print "OneDrive: Succesfully {0}ed.".format(function)
+        except:
+            print "OneDrive: Unable to {0}.".format(function)
     else:
         onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "System32/OneDriveSetup.exe")
-        subprocess.call("{0} /{1}".format(onedrivesetup, type), shell=True)
+        try:
+            subprocess.call("{0} /{1}".format(onedrivesetup, function), shell=True)
+            print "OneDrive: Succesfully {0}ed.".format(function)
+        except:
+            print "OneDrive: Unable to {0}.".format(function)
 
 
 def skypemailfix():
@@ -471,9 +463,9 @@ def skypemailfix():
 
         os.remove(hostspath)
         os.rename(hostspath + "temp", hostspath)
-        print "Skype and Mail domains successfully removed from HOSTS file."
+        print "Skype/Mail Fix: Domains successfully removed from HOSTS file."
     except (WindowsError, IOError):
-        print "Could not access HOSTS file. Is the program not elevated?"
+        print "Skype/Mail Fix: Could not remove domains from HOSTS file."
 
 if __name__ == '__main__':
     wxwindow = wx.App(False)
