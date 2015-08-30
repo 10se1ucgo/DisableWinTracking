@@ -443,10 +443,10 @@ def stopdefendwifi(regdwordval):
   
     # Windows Defender and WifiSense keys
     stopdefendwifidict = {'Delivery Optimization Download': [r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config', 'DODownloadMode'],
-                        'WifiSense Credential Share': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features': 'WiFiSenseCredShared'],
-                        'WifiSense Open-ness': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features': 'WiFiSenseOpen'],
-                        'Windows Defender Spynet': [r'SOFTWARE\Microsoft\Windows Defender\Spynet': 'SpyNetReporting'],
-                        'Windows Defender Sample Submission': [r'SOFTWARE\Microsoft\Windows Defender\Spynet': 'SubmitSamplesConsent']}
+                        'WifiSense Credential Share': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features', 'WiFiSenseCredShared'],
+                        'WifiSense Open-ness': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features', 'WiFiSenseOpen'],
+                        'Windows Defender Spynet': [r'SOFTWARE\Microsoft\Windows Defender\Spynet', 'SpyNetReporting'],
+                        'Windows Defender Sample Submission': [r'SOFTWARE\Microsoft\Windows Defender\Spynet', 'SubmitSamplesConsent']}
 
     for title, registry in stopdefendwifidict.viewitems():
       # Disable Windows Defender and WifiSense Privacy-Destroying Datamining attempts
