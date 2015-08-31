@@ -454,7 +454,7 @@ def stopdefendwifi(regdwordval):
           wdwfsregkey = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, registry[0], 0, _winreg.KEY_ALL_ACCESS)
           _winreg.SetValueEx(wdwfsregkey, registry[1], 0, _winreg.REG_DWORD, regdwordval)
           _winreg.CloseKey(wdwfsregkey)
-          if regval = 0:
+          if regdwordval == 0:
             print "Defender/WifiSense: {0} key successfully disabled.".format(title)
           else:
             print "Defender/WifiSense: {0} key successfully enabled.".format(title)
