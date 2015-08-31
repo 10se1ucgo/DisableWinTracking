@@ -443,24 +443,24 @@ def stopdefendwifi(regdwordval):
   
     # Windows Defender and WifiSense keys
     stopdefendwifidict = {'Delivery Optimization Download': [r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config', 'DODownloadMode'],
-                        'WifiSense Credential Share': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features', 'WiFiSenseCredShared'],
-                        'WifiSense Open-ness': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features', 'WiFiSenseOpen'],
-                        'Windows Defender Spynet': [r'SOFTWARE\Microsoft\Windows Defender\Spynet', 'SpyNetReporting'],
-                        'Windows Defender Sample Submission': [r'SOFTWARE\Microsoft\Windows Defender\Spynet', 'SubmitSamplesConsent']}
+                          'WifiSense Credential Share': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
+                                                         'WiFiSenseCredShared'],
+                          'WifiSense Open-ness': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
+                                                  'WiFiSenseOpen'],
+                          'Windows Defender Spynet': [r'SOFTWARE\Microsoft\Windows Defender\Spynet', 'SpyNetReporting'],
+                          'Windows Defender Sample Submission': [r'SOFTWARE\Microsoft\Windows Defender\Spynet',
+                                                                 'SubmitSamplesConsent']}
 
     for title, registry in stopdefendwifidict.viewitems():
-      # Disable Windows Defender and WifiSense Privacy-Destroying Datamining attempts
-      try:
-          wdwfsregkey = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, registry[0], 0, _winreg.KEY_ALL_ACCESS)
-          _winreg.SetValueEx(wdwfsregkey, registry[1], 0, _winreg.REG_DWORD, regdwordval)
-          _winreg.CloseKey(wdwfsregkey)
-          if regdwordval == 0:
-            print "Defender/WifiSense: {0} key successfully disabled.".format(title)
-          else:
-            print "Defender/WifiSense: {0} key successfully enabled.".format(title)
-      except (WindowsError, IOError):
-          logging.exception("Unable to modify {0} key.".format(title))
-          print "Unable to modify {0} key.".format(title)
+        # Disable Windows Defender and WifiSense Privacy-Destroying Datamining attempts
+        try:
+            wdwfsregkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, registry[0], 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(wdwfsregkey, registry[1], 0, _winreg.REG_DWORD, regdwordval)
+            _winreg.CloseKey(wdwfsregkey)
+            print "Defender/WifiSense: {0} key successfully modified.".format(title)
+        except (WindowsError, IOError):
+            logging.exception("Unable to modify {0} key.".format(title))
+            print "Unable to modify {0} key.".format(title)
 
 def modifyonedrive(function, filesyncval):
     filesyncpath = r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive'  # OneDrive regkey path
