@@ -400,7 +400,7 @@ def deleteservice(service):
 
 def disableservice(service):
     try:
-        win32serviceutil.StopService(service)  # Delete service
+        win32serviceutil.StopService(service)  # Disable service
         print "Services: {0} successfully stopped.".format(service)
     except pywintypes.error:
         logging.exception("Services: {0} unable to be stopped.".format(service))
@@ -411,26 +411,16 @@ def modifytelemetryregs(telemetryval):
     # Telemetry regkey paths
     telemetrydict =
     { '32bit Telemetry Key': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Policies\Microsoft\Windows\DataCollection', "AllowTelemetry", telemetryval],
-      '64bit Telemetry Key': [HKEY_LOCAL_MACHINE, HKEY_LOCAL_MACHINE, r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\DataCollection', "AllowTelemetry", telemetryval]}
+      '64bit Telemetry Key': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\DataCollection', "AllowTelemetry", telemetryval]}
 
     modbooleanregkeys(regdict=telemetrydict)
 
-
 def modifyserviceregs(dwordval):
     # Service regkey paths
-    servicepathsdict = {'Service dmwappushsvc': [HKEY_LOCAL_MACHINE, r'SYSTEM\\CurrentControlSet\\Services\\dmwappushsvc', 'Start', dwordval],
-                        'Service DiagTrack': [HKEY_LOCAL_MACHINE, r'SYSTEM\\CurrentControlSet\\Services\\DiagTrack', 'Start', dwordval]}
+    servicesdict = {'Service dmwappushsvc': [HKEY_LOCAL_MACHINE, r'SYSTEM\\CurrentControlSet\\Services\\dmwappushsvc', 'Start', dwordval],
+                    'Service DiagTrack': [HKEY_LOCAL_MACHINE, r'SYSTEM\\CurrentControlSet\\Services\\DiagTrack', 'Start', dwordval]}
 
-    for servicename, servicepath in servicepathsdict.viewitems():
-        try:
-            servicekey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, servicepath, 0, _winreg.KEY_ALL_ACCESS)
-            _winreg.SetValueEx(servicepath, "Start", 0, _winreg.REG_DWORD, dwordval)
-            _winreg.CloseKey(servicekey)
-            print "Services: {0} key successfully modified".format(servicename)
-        except (WindowsError, IOError):
-            logging.exception("Services: Unable to modify {0} key.".format(servicename))
-            print "Services: Unable to modify {0} key.".format(servicename)
-
+    modbooleanregkeys(regdict=servicesdict)
 
 def stopdefendwifi(regdwordval):
   
@@ -494,7 +484,7 @@ def skypemailfix():
 def modbooleanregkeys(regdict):
   
     #This function, when provided with a properly formatted dictionary, wil perform registry changes.
-    # EX; PROPER FORMAT: dictionary = { Title: [r'Registry/Path', 'registrykey', keyvalue] }
+    # EX; PROPER FORMAT: dictionary = { Title: [HKEY, r'Registry/Path', 'registrykey', keyvalue] }
     # Title=String, keyvalue must be either 1(Re-enable) or 0(Disable)
     
     for title, registry in regdict.viewitems():
