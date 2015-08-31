@@ -4,11 +4,13 @@ import os
 import subprocess
 import sys
 import _winreg
+import platform
 
 import win32serviceutil
 import wx
 import wx.lib.wordwrap
 import pywintypes
+
 
 
 
@@ -431,7 +433,7 @@ def modifyserviceregs(dwordval):
     for servicename, servicepath in servicepathsdict.viewitems():
         try:
             servicekey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, servicepath, 0, _winreg.KEY_ALL_ACCESS)
-            _winreg.SetValueEx(servicepath, "Start", 0, _winreg.REG_DWORD, dwordval)
+            _winreg.SetValueEx(servicekey, "Start", 0, _winreg.REG_DWORD, dwordval)
             _winreg.CloseKey(servicekey)
             print "Services: {0} key successfully modified".format(servicename)
         except (WindowsError, IOError):
@@ -440,7 +442,11 @@ def modifyserviceregs(dwordval):
 
 
 def stopdefendwifi(regdwordval):
-  
+    if platform.machine().endswith('64'):
+        accessmask = _winreg.KEY_WOW64_64KEY + _winreg.KEY_ALL_ACCESS
+    else:
+        accessmask = _winreg.KEY_ALL_ACCESS
+
     # Windows Defender and WifiSense keys
     stopdefendwifidict = {'Delivery Optimization Download': [r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config', 'DODownloadMode'],
                           'WifiSense Credential Share': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
@@ -453,8 +459,9 @@ def stopdefendwifi(regdwordval):
 
     for title, registry in stopdefendwifidict.viewitems():
         # Disable Windows Defender and WifiSense Privacy-Destroying Datamining attempts
+        bittype = _winreg.KEY_ALL_ACCESS
         try:
-            wdwfsregkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, registry[0], 0, _winreg.KEY_ALL_ACCESS)
+            wdwfsregkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, registry[0], 0, (accessmask))
             _winreg.SetValueEx(wdwfsregkey, registry[1], 0, _winreg.REG_DWORD, regdwordval)
             _winreg.CloseKey(wdwfsregkey)
             print "Defender/WifiSense: {0} key successfully modified.".format(title)
