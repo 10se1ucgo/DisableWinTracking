@@ -11,9 +11,6 @@ import wx
 import wx.lib.wordwrap
 import pywintypes
 
-
-
-
 # Configure the Logging module
 logging.basicConfig(filename='DisableWinTracking.log', level=logging.DEBUG,
                     format='\n%(asctime)s %(levelname)s: %(message)s', datefmt='%H:%M:%S')
@@ -443,31 +440,33 @@ def modifyserviceregs(dwordval):
 
 def stopdefendwifi(regdwordval):
     if platform.machine().endswith('64'):
-        accessmask = _winreg.KEY_WOW64_64KEY + _winreg.KEY_ALL_ACCESS
+        accessmask = (_winreg.KEY_WOW64_64KEY + _winreg.KEY_ALL_ACCESS)
     else:
         accessmask = _winreg.KEY_ALL_ACCESS
 
     # Windows Defender and WifiSense keys
-    stopdefendwifidict = {'Delivery Optimization Download': [r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config', 'DODownloadMode'],
+    stopdefendwifidict = {'Delivery Optimization Download': [r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config',
+                                                             'DODownloadMode'],
                           'WifiSense Credential Share': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
                                                          'WiFiSenseCredShared'],
                           'WifiSense Open-ness': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
                                                   'WiFiSenseOpen'],
-                          'Windows Defender Spynet': [r'SOFTWARE\Microsoft\Windows Defender\Spynet', 'SpyNetReporting'],
+                          'Windows Defender Spynet': [r'SOFTWARE\Microsoft\Windows Defender\Spynet',
+                                                      'SpyNetReporting'],
                           'Windows Defender Sample Submission': [r'SOFTWARE\Microsoft\Windows Defender\Spynet',
                                                                  'SubmitSamplesConsent']}
 
     for title, registry in stopdefendwifidict.viewitems():
         # Disable Windows Defender and WifiSense Privacy-Destroying Datamining attempts
-        bittype = _winreg.KEY_ALL_ACCESS
         try:
-            wdwfsregkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, registry[0], 0, (accessmask))
+            wdwfsregkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, registry[0], 0, accessmask)
             _winreg.SetValueEx(wdwfsregkey, registry[1], 0, _winreg.REG_DWORD, regdwordval)
             _winreg.CloseKey(wdwfsregkey)
             print "Defender/WifiSense: {0} key successfully modified.".format(title)
         except (WindowsError, IOError):
             logging.exception("Unable to modify {0} key.".format(title))
             print "Unable to modify {0} key.".format(title)
+
 
 def modifyonedrive(function, filesyncval):
     filesyncpath = r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive'  # OneDrive regkey path
