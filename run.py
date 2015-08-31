@@ -4,13 +4,12 @@ import os
 import subprocess
 import sys
 import _winreg
+import platform
 
 import win32serviceutil
 import wx
 import wx.lib.wordwrap
 import pywintypes
-
-
 
 # Configure the Logging module
 logging.basicConfig(filename='DisableWinTracking.log', level=logging.DEBUG,
@@ -352,7 +351,7 @@ def modifyhosts(extra, undo):
 
 def blockips(undo):
     iplist = ['2.22.61.43', '2.22.61.66', '65.39.117.230', '65.55.108.23', '23.218.212.69',
-              '134.170.30.202', '137.116.81.24', '157.56.106.189', '204.79.197.200']
+              '134.170.30.202', '137.116.81.24', '157.56.106.189', '204.79.197.200', '65.52.108.33']
 
     if not undo:
         try:
@@ -417,14 +416,34 @@ def modifytelemetryregs(telemetryval):
 
 def modifyserviceregs(dwordval):
     # Service regkey paths
+<<<<<<< HEAD
     servicesdict = {'Service dmwappushsvc': [HKEY_LOCAL_MACHINE, r'SYSTEM\\CurrentControlSet\\Services\\dmwappushsvc', 'Start', dwordval],
                     'Service DiagTrack': [HKEY_LOCAL_MACHINE, r'SYSTEM\\CurrentControlSet\\Services\\DiagTrack', 'Start', dwordval]}
+=======
+    servicepathsdict = {'dmwappushsvc': 'SYSTEM\\CurrentControlSet\\Services\\dmwappushsvc',
+                        'DiagTrack': 'SYSTEM\\CurrentControlSet\\Services\\DiagTrack'}
+
+    for servicename, servicepath in servicepathsdict.viewitems():
+        try:
+            servicekey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, servicepath, 0, _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(servicekey, "Start", 0, _winreg.REG_DWORD, dwordval)
+            _winreg.CloseKey(servicekey)
+            print "Services: {0} key successfully modified".format(servicename)
+        except (WindowsError, IOError):
+            logging.exception("Services: Unable to modify {0} key.".format(servicename))
+            print "Services: Unable to modify {0} key.".format(servicename)
+>>>>>>> 10se1ucgo/master
 
     modbooleanregkeys(regdict=servicesdict)
 
 def stopdefendwifi(regdwordval):
-  
+    if platform.machine().endswith('64'):
+        accessmask = (_winreg.KEY_WOW64_64KEY + _winreg.KEY_ALL_ACCESS)
+    else:
+        accessmask = _winreg.KEY_ALL_ACCESS
+
     # Windows Defender and WifiSense keys
+<<<<<<< HEAD
     wdwfsdict = 
     { 'Windows Defender Delivery Optimization Download': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config', 'DODownloadMode', regdwordval],
       'WifiSense Credential Share': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features', 'WiFiSenseCredShared', regdwordval],
@@ -433,6 +452,30 @@ def stopdefendwifi(regdwordval):
       'Windows Defender Sample Submission': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\Windows Defender\Spynet', 'SubmitSamplesConsent', regdwordval]}
 
     modbooleanregkeys(regdict=wdwfsdict)
+=======
+    stopdefendwifidict = {'Delivery Optimization Download': [r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config',
+                                                             'DODownloadMode'],
+                          'WifiSense Credential Share': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
+                                                         'WiFiSenseCredShared'],
+                          'WifiSense Open-ness': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
+                                                  'WiFiSenseOpen'],
+                          'Windows Defender Spynet': [r'SOFTWARE\Microsoft\Windows Defender\Spynet',
+                                                      'SpyNetReporting'],
+                          'Windows Defender Sample Submission': [r'SOFTWARE\Microsoft\Windows Defender\Spynet',
+                                                                 'SubmitSamplesConsent']}
+
+    for title, registry in stopdefendwifidict.viewitems():
+        # Disable Windows Defender and WifiSense Privacy-Destroying Datamining attempts
+        try:
+            wdwfsregkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, registry[0], 0, accessmask)
+            _winreg.SetValueEx(wdwfsregkey, registry[1], 0, _winreg.REG_DWORD, regdwordval)
+            _winreg.CloseKey(wdwfsregkey)
+            print "Defender/WifiSense: {0} key successfully modified.".format(title)
+        except (WindowsError, IOError):
+            logging.exception("Unable to modify {0} key.".format(title))
+            print "Unable to modify {0} key.".format(title)
+
+>>>>>>> 10se1ucgo/master
 
 def modifyonedrive(function, filesyncval):
     
