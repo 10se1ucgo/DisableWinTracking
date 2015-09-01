@@ -416,7 +416,7 @@ def modifytelemetryregs(telemetryval):
                                              r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\DataCollection',
                                              "AllowTelemetry", _winreg.REG_SZ, telemetryval]}
 
-    modifyregistry(regdict=telemetrydict)
+    modifyregistry(regdict=telemetrydict,bit=32)
 
 def modifyserviceregs(startval):
     # Service regkey paths
@@ -428,7 +428,7 @@ def modifyserviceregs(startval):
                                           r'SYSTEM\\CurrentControlSet\\Services\\DiagTrack',
                                           'Start', _winreg.REG_DWORD, startval]}
 
-    modifyregistry(regdict=servicesdict)
+    modifyregistry(regdict=servicesdict,bit=32)
 
 def stopdefendwifi(defendersenseval):
     # Windows Defender and WifiSense keys
@@ -454,9 +454,9 @@ def stopdefendwifi(defendersenseval):
                                                         'SubmitSamplesConsent', _winreg.REG_DWORD, defendersenseval]}
 
     if platform.machine().endswith('64'):
-        modifyregistry64(wdwfsdict)
+        modifyregistry(wdwfsdict,bit=64)
     else:
-        modifyregistry(wdwfsdict)
+        modifyregistry(wdwfsdict,bit=32)
 
 
 def modifyonedrive(function, filesyncval):
@@ -475,7 +475,7 @@ def modifyonedrive(function, filesyncval):
                                                r'Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
                                                'System.IsPinnedToNameSpaceTree', _winreg.REG_DWORD, 0]}
 
-    modifyregistry(regdict=listpindict)
+    modifyregistry(regdict=listpindict,bit=32)
 
     onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "SysWOW64/OneDriveSetup.exe")
     if os.path.isfile(onedrivesetup):
@@ -514,7 +514,7 @@ def skypemailfix():
         logging.exception("Skype/Mail Fix: Could not remove domains from HOSTS file.")
         print "Skype/Mail Fix: Could not remove domains from HOSTS file."
         
-def modifyregistry(regdict):
+def modifyregistry(regdict,bit):
   
     # Modifies registry keys from a dictionary
     # FORMAT: regdict = {"Title": [_winreg.HKEY, r'regkeypath', 'regkey', _winreg.REG_[DWORD/SZ/etc.], keyvalue
@@ -522,25 +522,15 @@ def modifyregistry(regdict):
     
     for title, registry in regdict.viewitems():
         try:
-            modreg = _winreg.OpenKey(registry[0], registry[1], 0, _winreg.KEY_ALL_ACCESS)
+            if bit == 32:
+                modreg = _winreg.OpenKey(registry[0], registry[1], 0, _winreg.KEY_ALL_ACCESS)
+            elif bit == 64:
+                modreg = _winreg.OpenKey(registry[0], registry[1], 0, _winreg.KEY_WOW64_64KEY + _winreg.KEY_ALL_ACCESS)
+            else:
+                logging.exception("Registry: INVALID DICTIONARY FORMAT IN {0} DICTIONARY. {1} bit.".format(title, bit))
+                print "An important error has been logged. Please upload \"DisableWinTracking.log\" to the issue tracker."
             _winreg.SetValueEx(modreg, registry[2], 0, registry[3], registry[4])
             _winreg.CloseKey(modreg)
-            print "Registry: {0} key successfully modified.".format(title)
-        except (WindowsError, IOError):
-            logging.exception("Registry: Unable to modify {0} key.".format(title))
-            print "Registry: Unable to modify {0} key.".format(title)
-
-def modifyregistry64(regdict):
-
-    # Modifies registry keys from a dictionary. This one accesses the registry in a 64 bit access mask.
-    # FORMAT: regdict = {"Title": [_winreg.HKEY, r'regkeypath', 'regkey', _winreg.REG_[DWORD/SZ/etc.], keyvalue
-    # keyvalue = String, only if REG_SZ.
-
-    for title, registry in regdict.viewitems():
-        try:
-            modreg64 = _winreg.OpenKey(registry[0], registry[1], 0, _winreg.KEY_WOW64_64KEY + _winreg.KEY_ALL_ACCESS)
-            _winreg.SetValueEx(modreg64, registry[2], 0, registry[3], registry[4])
-            _winreg.CloseKey(modreg64)
             print "Registry: {0} key successfully modified.".format(title)
         except (WindowsError, IOError):
             logging.exception("Registry: Unable to modify {0} key.".format(title))
