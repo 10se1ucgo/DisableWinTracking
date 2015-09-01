@@ -527,7 +527,7 @@ def modifyregistry(regdict,bit):
             elif bit == 64:
                 modreg = _winreg.OpenKey(registry[0], registry[1], 0, _winreg.KEY_WOW64_64KEY + _winreg.KEY_ALL_ACCESS)
             else:
-                logging.exception("Registry: INVALID DICTIONARY FORMAT IN {0} DICTIONARY.".format(title))
+                logging.exception("Registry: INVALID DICTIONARY FORMAT IN {0} DICTIONARY. {1} bit.".format(title, bit))
                 print "An important error has been logged. Please upload \"DisableWinTracking.log\" to the issue tracker."
             _winreg.SetValueEx(modreg, registry[2], 0, registry[3], registry[4])
             _winreg.CloseKey(modreg)
