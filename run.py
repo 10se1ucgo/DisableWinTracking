@@ -428,7 +428,6 @@ def stopdefendwifi(regdwordval):
         accessmask = _winreg.KEY_ALL_ACCESS
 
     # Windows Defender and WifiSense keys
-<<<<<<< HEAD
     wdwfsdict = 
     { 'Windows Defender Delivery Optimization Download': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config', 'DODownloadMode', REG_DWORD, regdwordval],
       'WifiSense Credential Share': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features', 'WiFiSenseCredShared', REG_DWORD, regdwordval],
