@@ -409,30 +409,15 @@ def disableservice(service):
 def modifytelemetryregs(telemetryval):
     # Telemetry regkey paths
     telemetrydict =
-    { '32bit Telemetry Key': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Policies\Microsoft\Windows\DataCollection', "AllowTelemetry", telemetryval],
-      '64bit Telemetry Key': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\DataCollection', "AllowTelemetry", telemetryval]}
+    { '32bit Telemetry Key': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Policies\Microsoft\Windows\DataCollection', "AllowTelemetry", REG_SZ, telemetryval],
+      '64bit Telemetry Key': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\DataCollection', "AllowTelemetry", REG_SZ, telemetryval]}
 
     modbooleanregkeys(regdict=telemetrydict)
 
 def modifyserviceregs(dwordval):
     # Service regkey paths
-<<<<<<< HEAD
-    servicesdict = {'Service dmwappushsvc': [HKEY_LOCAL_MACHINE, r'SYSTEM\\CurrentControlSet\\Services\\dmwappushsvc', 'Start', dwordval],
-                    'Service DiagTrack': [HKEY_LOCAL_MACHINE, r'SYSTEM\\CurrentControlSet\\Services\\DiagTrack', 'Start', dwordval]}
-=======
-    servicepathsdict = {'dmwappushsvc': 'SYSTEM\\CurrentControlSet\\Services\\dmwappushsvc',
-                        'DiagTrack': 'SYSTEM\\CurrentControlSet\\Services\\DiagTrack'}
-
-    for servicename, servicepath in servicepathsdict.viewitems():
-        try:
-            servicekey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, servicepath, 0, _winreg.KEY_ALL_ACCESS)
-            _winreg.SetValueEx(servicekey, "Start", 0, _winreg.REG_DWORD, dwordval)
-            _winreg.CloseKey(servicekey)
-            print "Services: {0} key successfully modified".format(servicename)
-        except (WindowsError, IOError):
-            logging.exception("Services: Unable to modify {0} key.".format(servicename))
-            print "Services: Unable to modify {0} key.".format(servicename)
->>>>>>> 10se1ucgo/master
+    servicesdict = {'Service dmwappushsvc': [HKEY_LOCAL_MACHINE, r'SYSTEM\\CurrentControlSet\\Services\\dmwappushsvc', 'Start', REG_DWORD, dwordval],
+                    'Service DiagTrack': [HKEY_LOCAL_MACHINE, r'SYSTEM\\CurrentControlSet\\Services\\DiagTrack', 'Start', REG_DWORD, dwordval]}
 
     modbooleanregkeys(regdict=servicesdict)
 
@@ -445,45 +430,21 @@ def stopdefendwifi(regdwordval):
     # Windows Defender and WifiSense keys
 <<<<<<< HEAD
     wdwfsdict = 
-    { 'Windows Defender Delivery Optimization Download': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config', 'DODownloadMode', regdwordval],
-      'WifiSense Credential Share': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features', 'WiFiSenseCredShared', regdwordval],
-      'WifiSense Open-ness': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features', 'WiFiSenseOpen', regdwordval],
-      'Windows Defender Spynet': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\Windows Defender\Spynet', 'SpyNetReporting', regdwordval],
-      'Windows Defender Sample Submission': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\Windows Defender\Spynet', 'SubmitSamplesConsent', regdwordval]}
+    { 'Windows Defender Delivery Optimization Download': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config', 'DODownloadMode', REG_DWORD, regdwordval],
+      'WifiSense Credential Share': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features', 'WiFiSenseCredShared', REG_DWORD, regdwordval],
+      'WifiSense Open-ness': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features', 'WiFiSenseOpen', REG_DWORD, regdwordval],
+      'Windows Defender Spynet': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\Windows Defender\Spynet', 'SpyNetReporting', REG_DWORD, regdwordval],
+      'Windows Defender Sample Submission': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\Windows Defender\Spynet', 'SubmitSamplesConsent', REG_DWORD, regdwordval]}
 
     modbooleanregkeys(regdict=wdwfsdict)
-=======
-    stopdefendwifidict = {'Delivery Optimization Download': [r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config',
-                                                             'DODownloadMode'],
-                          'WifiSense Credential Share': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
-                                                         'WiFiSenseCredShared'],
-                          'WifiSense Open-ness': [r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
-                                                  'WiFiSenseOpen'],
-                          'Windows Defender Spynet': [r'SOFTWARE\Microsoft\Windows Defender\Spynet',
-                                                      'SpyNetReporting'],
-                          'Windows Defender Sample Submission': [r'SOFTWARE\Microsoft\Windows Defender\Spynet',
-                                                                 'SubmitSamplesConsent']}
-
-    for title, registry in stopdefendwifidict.viewitems():
-        # Disable Windows Defender and WifiSense Privacy-Destroying Datamining attempts
-        try:
-            wdwfsregkey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, registry[0], 0, accessmask)
-            _winreg.SetValueEx(wdwfsregkey, registry[1], 0, _winreg.REG_DWORD, regdwordval)
-            _winreg.CloseKey(wdwfsregkey)
-            print "Defender/WifiSense: {0} key successfully modified.".format(title)
-        except (WindowsError, IOError):
-            logging.exception("Unable to modify {0} key.".format(title))
-            print "Unable to modify {0} key.".format(title)
-
->>>>>>> 10se1ucgo/master
 
 def modifyonedrive(function, filesyncval):
     
     # OneDrive shellext regkey paths
     listpindict = 
-    { 'OneDrive FileSync NGSC': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive', 'DisableFileSyncNGSC', filesyncval],
-      'OneDrive 32bit List Pin': [HKEY_CLASSES_ROOT, r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}', 'System.IsPinnedToNameSpaceTree', filesyncval],
-      'OneDrive 64bit List Pin': [HKEY_CLASSES_ROOT, r'Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}', 'System.IsPinnedToNameSpaceTree', filesyncval]}
+    { 'OneDrive FileSync NGSC': [HKEY_LOCAL_MACHINE, r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive', 'DisableFileSyncNGSC', REG_DWORD, filesyncval],
+      'OneDrive 32bit List Pin': [HKEY_CLASSES_ROOT, r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}', 'System.IsPinnedToNameSpaceTree', REG_DWORD, filesyncval],
+      'OneDrive 64bit List Pin': [HKEY_CLASSES_ROOT, r'Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}', 'System.IsPinnedToNameSpaceTree', REG_DWORD, filesyncval]}
 
     modbooleanregkeys(regdict=listpindict)
 
@@ -527,13 +488,13 @@ def skypemailfix():
 def modbooleanregkeys(regdict):
   
     #This function, when provided with a properly formatted dictionary, wil perform registry changes.
-    # EX; PROPER FORMAT: dictionary = { Title: [HKEY, r'Registry/Path', 'registrykey', keyvalue] }
-    # Title=String, keyvalue must be either 1(Re-enable) or 0(Disable)
+    # EX; PROPER FORMAT: dictionary = { Title: [HKEY, r'Registry/Path', 'registrykey', keytype, keyvalue] }
+    # Title=String, keytype is the type of key such as REG_DWORD, keyvalue must be either 1(Re-enable) or 0(Disable)
     
     for title, registry in regdict.viewitems():
           try:
               modreg = _winreg.OpenKey(_winreg.registry[0], registry[1], 0, _winreg.KEY_ALL_ACCESS)
-              _winreg.SetValueEx(modreg, registry[2], 0, _winreg.REG_DWORD, registry[3])
+              _winreg.SetValueEx(modreg, registry[2], 0, _winreg.registry[3], registry[4])
               _winreg.CloseKey(modreg)
               if registry[4] == 0:
                 print "Registry: {0} key successfully disabled.".format(title)
