@@ -305,7 +305,6 @@ def domainblock(extra, undo):
             modifyhostfile(undo=True, domainlist=extralist, name="Extra domain block")
 
 
-
 def blockips(undo):
     iplist = ['2.22.61.43', '2.22.61.66', '65.39.117.230', '65.55.108.23', '23.218.212.69',
               '134.170.30.202', '137.116.81.24', '157.56.106.189', '204.79.197.200', '65.52.108.33']
@@ -457,7 +456,7 @@ def skypemailfix():
     fixlist = ['ui.skype.com', 'pricelist.skype.com', 'apps.skype.com',
                's.gateway.messenger.live.com', 'm.hotmail.com']
 
-    modifyhostfile(undo=True, domainlist=fixlist, name="Skype/Mail Fix"
+    modifyhostfile(undo=True, domainlist=fixlist, name="Skype/Mail Fix")
 
 
 def modifyregistry(regdict, bit):
@@ -482,10 +481,10 @@ def modifyregistry(regdict, bit):
 
 
 def modifyhostfile(undo, domainlist, name):
-    ''' Modifies the hosts file with a list
-    FORMAT: domainlist = ['www.example.com', 'www.etc.com']
-    undo: Specifies wether or not to remove the lines from the registry or append them
-    name: Name displayed in error/completion message. '''
+    # Modifies the hosts file with a list
+    # FORMAT: domainlist = ['www.example.com', 'www.etc.com']
+    # undo: Specifies whether or not to remove the lines from the host file or append them
+    # name: Name displayed in error/completion message.
     
     nullip = "0.0.0.0 "  # IP to route domains to
 
