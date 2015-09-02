@@ -367,11 +367,11 @@ def modifytelemetryregs(telemetryval):
     # Telemetry regkey paths
     telemetrydict = {'32bit Telemetry Key': [_winreg.HKEY_LOCAL_MACHINE,
                                              r'SOFTWARE\Policies\Microsoft\Windows\DataCollection',
-                                             "AllowTelemetry", _winreg.REG_SZ, telemetryval],
+                                             "AllowTelemetry", _winreg.REG_DWORD, telemetryval],
 
                      '64bit Telemetry Key': [_winreg.HKEY_LOCAL_MACHINE,
                                              r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\DataCollection',
-                                             "AllowTelemetry", _winreg.REG_SZ, telemetryval]}
+                                             "AllowTelemetry", _winreg.REG_DWORD, telemetryval]}
 
     modifyregistry(regdict=telemetrydict, bit=32)
 
