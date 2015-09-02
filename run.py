@@ -457,20 +457,7 @@ def skypemailfix():
     fixlist = ['ui.skype.com', 'pricelist.skype.com', 'apps.skype.com',
                's.gateway.messenger.live.com', 'm.hotmail.com']
 
-    hostspath = os.path.join(os.environ['SYSTEMROOT'], 'System32\\drivers\\etc\\hosts')
-
-    try:
-        with open(hostspath, 'r') as hostfile, open(hostspath + "temp", 'w') as tempfile:
-            for line in hostfile:
-                if not any(domain in line for domain in fixlist):
-                    tempfile.write(line)
-
-        os.remove(hostspath)
-        os.rename(hostspath + "temp", hostspath)
-        print "Skype/Mail Fix: Domains successfully removed from HOSTS file."
-    except (WindowsError, IOError):
-        logging.exception("Skype/Mail Fix: Could not remove domains from HOSTS file.")
-        print "Skype/Mail Fix: Could not remove domains from HOSTS file."
+    modifyhostfile(undo=True, domainlist=fixlist, name="Skype/Mail Fix"
 
 
 def modifyregistry(regdict, bit):
@@ -495,6 +482,11 @@ def modifyregistry(regdict, bit):
 
 
 def modifyhostfile(undo, domainlist, name):
+    ''' Modifies the hosts file with a list
+    FORMAT: domainlist = ['www.example.com', 'www.etc.com']
+    undo: Specifies wether or not to remove the lines from the registry or append them
+    name: Name displayed in error/completion message. '''
+    
     nullip = "0.0.0.0 "  # IP to route domains to
 
     # Domains with 0.0.0.0 added to the beginning of each.
