@@ -8,3 +8,6 @@
 build/
 dist/
 *.spec
+
+# Log
+DisableWinTracking.log

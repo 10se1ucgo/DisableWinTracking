@@ -185,9 +185,9 @@ class MainFrame(wx.Frame):
             if self.telemetrybox.IsChecked():
                 modifytelemetryregs(telemetryval="0")
             if self.hostbox.IsChecked():
-                modifyhosts(extra=False, undo=False)
+                domainblock(extra=False, undo=False)
             if self.extrahostbox.IsChecked():
-                modifyhosts(extra=True, undo=False)
+                domainblock(extra=True, undo=False)
             if self.ipbox.IsChecked():
                 blockips(undo=False)
             if self.defendwifibox.IsChecked():
@@ -205,9 +205,9 @@ class MainFrame(wx.Frame):
 
     def cluttercontrol(self):
         if self.hostbox.IsChecked():
-            modifyhosts(extra=False, undo=True)
+            domainblock(extra=False, undo=True)
         if self.extrahostbox.IsChecked():
-            modifyhosts(extra=True, undo=True)
+            domainblock(extra=True, undo=True)
         if self.ipbox.IsChecked():
             blockips(undo=True)
         self.console.consolebox.Clear()
@@ -223,9 +223,9 @@ class MainFrame(wx.Frame):
             if self.telemetrybox.IsChecked():
                 modifytelemetryregs(telemetryval="1")
             if self.hostbox.IsChecked():
-                modifyhosts(extra=False, undo=True)
+                domainblock(extra=False, undo=True)
             if self.extrahostbox.IsChecked():
-                modifyhosts(extra=True, undo=True)
+                domainblock(extra=True, undo=True)
             if self.ipbox.IsChecked():
                 blockips(undo=True)
             if self.defendwifibox.IsChecked():
@@ -255,8 +255,7 @@ class MainFrame(wx.Frame):
             print "If any errors were found, please make a GitHub ticket with the contents of DisableWinTracking.log"
 
 
-def modifyhosts(extra, undo):
-    nullip = "0.0.0.0 "  # IP to route domains to
+def domainblock(extra, undo):
 
     # List of tracking domains.
     normallist = ['a-0001.a-msedge.net', 'a-0002.a-msedge.net', 'a-0003.a-msedge.net',
@@ -294,59 +293,17 @@ def modifyhosts(extra, undo):
                  'watson.telemetry.microsoft.com.nsatc.net', 'wes.df.telemetry.microsoft.com', 'ui.skype.com',
                  'pricelist.skype.com', 'apps.skype.com', 'm.hotmail.com', 's.gateway.messenger.live.com']
 
-    # Domains with 0.0.0.0 added to the beginning of each.
-    normallistip = [nullip + x for x in normallist]
-    extralistip = [nullip + x for x in extralist]
-
-    hostspath = os.path.join(os.environ['SYSTEMROOT'], 'System32\\drivers\\etc\\hosts')
-
     if not undo:
         if not extra:
-            try:
-                with open(hostspath, 'ab') as f:
-                    f.write('\r\n' + '\r\n'.join(normallistip))
-                print "Hosts mod: Domains succesfully appended."
-            except (WindowsError, IOError):
-                logging.exception("Hosts mod: Could not append domains")
-                print "Hosts mod: Could not append domains"
-
+            modifyhostfile(undo=False, domainlist=normallist, name="Domain block")
         elif extra:
-            try:
-                with open(hostspath, 'ab') as f:
-                    f.write('\r\n' + '\r\n'.join(extralistip))
-                print "Extra hosts mod: Domains succesfully appended."
-            except (WindowsError, IOError):
-                logging.exception("Extra hosts mod: Could not append domains.")
-                print "Extra hosts mod: Could not append domains."
-
-    elif undo:
+            modifyhostfile(undo=False, domainlist=extralist, name="Extra domain block")
+    if undo:
         if not extra:
-            try:
-                with open(hostspath, 'r') as hostfile, open(hostspath + "temp", 'w') as tempfile:
-                    for line in hostfile:
-                        if not any(domain in line for domain in normallist):
-                            tempfile.write(line)
-
-                os.remove(hostspath)
-                os.rename(hostspath + "temp", hostspath)
-                print "Hosts mod: Domains successfully removed."
-            except (WindowsError, IOError):
-                logging.exception("Hosts mod: Could not remove domains.")
-                print "Hosts mod: Could not remove domains."
-
+            modifyhostfile(undo=True, domainlist=normallist, name="Domain block")
         elif extra:
-            try:
-                with open(hostspath, 'r') as hostfile, open(hostspath + "temp", 'w') as tempfile:
-                    for line in hostfile:
-                        if not any(domain in line for domain in extralist):
-                            tempfile.write(line)
+            modifyhostfile(undo=True, domainlist=extralist, name="Extra domain block")
 
-                os.remove(hostspath)
-                os.rename(hostspath + "temp", hostspath)
-                print "Extra hosts mod: Domains successfully removed."
-            except (WindowsError, IOError):
-                logging.exception("Extra hosts mod: Could not remove domains.")
-                print "Extra hosts mod: Could not remove domains."
 
 
 def blockips(undo):
@@ -416,7 +373,8 @@ def modifytelemetryregs(telemetryval):
                                              r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\DataCollection',
                                              "AllowTelemetry", _winreg.REG_SZ, telemetryval]}
 
-    modifyregistry(regdict=telemetrydict,bit=32)
+    modifyregistry(regdict=telemetrydict, bit=32)
+
 
 def modifyserviceregs(startval):
     # Service regkey paths
@@ -428,7 +386,8 @@ def modifyserviceregs(startval):
                                           r'SYSTEM\\CurrentControlSet\\Services\\DiagTrack',
                                           'Start', _winreg.REG_DWORD, startval]}
 
-    modifyregistry(regdict=servicesdict,bit=32)
+    modifyregistry(regdict=servicesdict, bit=32)
+
 
 def stopdefendwifi(defendersenseval):
     # Windows Defender and WifiSense keys
@@ -454,19 +413,18 @@ def stopdefendwifi(defendersenseval):
                                                         'SubmitSamplesConsent', _winreg.REG_DWORD, defendersenseval]}
 
     if platform.machine().endswith('64'):
-        modifyregistry(wdwfsdict,bit=64)
+        modifyregistry(wdwfsdict, bit=64)
     else:
-        modifyregistry(wdwfsdict,bit=32)
+        modifyregistry(wdwfsdict, bit=32)
 
 
 def modifyonedrive(function, filesyncval):
-    
     # OneDrive shellext regkey paths
     listpindict = {'OneDrive FileSync NGSC': [_winreg.HKEY_LOCAL_MACHINE,
                                               r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive',
                                               'DisableFileSyncNGSC', _winreg.REG_DWORD, filesyncval],
 
-                    # If reverting, users can add this back to explorer themselves, without any registry trickery.
+                   # If reverting, users can add this back to explorer themselves, without any registry trickery.
                    'OneDrive 32bit List Pin': [_winreg.HKEY_CLASSES_ROOT,
                                                r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
                                                'System.IsPinnedToNameSpaceTree', _winreg.REG_DWORD, 0],
@@ -475,7 +433,7 @@ def modifyonedrive(function, filesyncval):
                                                r'Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
                                                'System.IsPinnedToNameSpaceTree', _winreg.REG_DWORD, 0]}
 
-    modifyregistry(regdict=listpindict,bit=32)
+    modifyregistry(regdict=listpindict, bit=32)
 
     onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "SysWOW64/OneDriveSetup.exe")
     if os.path.isfile(onedrivesetup):
@@ -513,29 +471,60 @@ def skypemailfix():
     except (WindowsError, IOError):
         logging.exception("Skype/Mail Fix: Could not remove domains from HOSTS file.")
         print "Skype/Mail Fix: Could not remove domains from HOSTS file."
-        
-def modifyregistry(regdict,bit):
-  
+
+
+def modifyregistry(regdict, bit):
     # Modifies registry keys from a dictionary
     # FORMAT: regdict = {"Title": [_winreg.HKEY, r'regkeypath', 'regkey', _winreg.REG_[DWORD/SZ/etc.], keyvalue
     # keyvalue = String, only if REG_SZ.
-    
+
+    if bit == 64:
+        accessmask = _winreg.KEY_WOW64_64KEY + _winreg.KEY_ALL_ACCESS
+    else:
+        accessmask = _winreg.KEY_ALL_ACCESS
+
     for title, registry in regdict.viewitems():
         try:
-            if bit == 32:
-                modreg = _winreg.OpenKey(registry[0], registry[1], 0, _winreg.KEY_ALL_ACCESS)
-            elif bit == 64:
-                modreg = _winreg.OpenKey(registry[0], registry[1], 0, _winreg.KEY_WOW64_64KEY + _winreg.KEY_ALL_ACCESS)
-            else:
-                logging.exception("Registry: INVALID DICTIONARY FORMAT IN {0} DICTIONARY. {1} bit.".format(title, bit))
-                print "An important error has been logged. Please upload \"DisableWinTracking.log\" to the issue tracker."
+            modreg = _winreg.OpenKey(registry[0], registry[1], 0, accessmask)
             _winreg.SetValueEx(modreg, registry[2], 0, registry[3], registry[4])
             _winreg.CloseKey(modreg)
             print "Registry: {0} key successfully modified.".format(title)
         except (WindowsError, IOError):
             logging.exception("Registry: Unable to modify {0} key.".format(title))
             print "Registry: Unable to modify {0} key.".format(title)
-              
+
+
+def modifyhostfile(undo, domainlist, name):
+    nullip = "0.0.0.0 "  # IP to route domains to
+
+    # Domains with 0.0.0.0 added to the beginning of each.
+    nulledlist = [nullip + x for x in domainlist]
+
+    hostspath = os.path.join(os.environ['SYSTEMROOT'], 'System32\\drivers\\etc\\hosts')
+
+    if not undo:
+        try:
+            with open(hostspath, 'ab') as f:
+                f.write('\r\n' + '\r\n'.join(nulledlist))
+            print "{0}: Domains succesfully appended.".format(name)
+        except (WindowsError, IOError):
+            logging.exception("{0}: Could not append domains".format(name))
+            print "{0}: Could not append domains".format(name)
+
+    elif undo:
+        try:
+            with open(hostspath, 'r') as hostfile, open(hostspath + "temp", 'w') as tempfile:
+                for line in hostfile:
+                    if not any(domain in line for domain in domainlist):
+                        tempfile.write(line)
+
+            os.remove(hostspath)
+            os.rename(hostspath + "temp", hostspath)
+            print "{0}: Domains successfully removed.".format(name)
+        except (WindowsError, IOError):
+            logging.exception("{0}: Could not remove domains.".format(name))
+            print "{0}: Could not remove domains.".format(name)
+
 if __name__ == '__main__':
     wxwindow = wx.App(False)
     frame = MainFrame()  # Create Window
