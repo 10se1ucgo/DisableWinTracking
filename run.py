@@ -371,7 +371,7 @@ def modifytelemetryregs(telemetryval):
                                              r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\DataCollection',
                                              "AllowTelemetry", _winreg.REG_DWORD, telemetryval]}
 
-    modifyregistry(regdict=telemetrydict, title="Telemetry")
+    modifyregistry(regdict=telemetrydict, name="Telemetry")
 
 
 def modifyserviceregs(startval):
@@ -384,7 +384,7 @@ def modifyserviceregs(startval):
                                           r'SYSTEM\\CurrentControlSet\\Services\\DiagTrack',
                                           'Start', _winreg.REG_DWORD, startval]}
 
-    modifyregistry(regdict=servicesdict, title="Services")
+    modifyregistry(regdict=servicesdict, name="Services")
 
 
 def stopdefendwifi(defendersenseval):
@@ -411,9 +411,9 @@ def stopdefendwifi(defendersenseval):
                                                         'SubmitSamplesConsent', _winreg.REG_DWORD, defendersenseval]}
 
     if platform.machine().endswith('64'):
-        modifyregistry(wdwfsdict, title="WifiSense/Defender", bit=64)
+        modifyregistry(wdwfsdict, name="WifiSense/Defender", bit=64)
     else:
-        modifyregistry(wdwfsdict, title="WifiSense/Defender")
+        modifyregistry(wdwfsdict, name="WifiSense/Defender")
 
 
 def modifyonedrive(function, filesyncval):
@@ -431,7 +431,7 @@ def modifyonedrive(function, filesyncval):
                                                r'Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
                                                'System.IsPinnedToNameSpaceTree', _winreg.REG_DWORD, 0]}
 
-    modifyregistry(regdict=listpindict, title="OneDrive")
+    modifyregistry(regdict=listpindict, name="OneDrive")
 
     onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "SysWOW64/OneDriveSetup.exe")
     if os.path.isfile(onedrivesetup):
