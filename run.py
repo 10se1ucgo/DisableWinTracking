@@ -371,7 +371,7 @@ def modifytelemetryregs(telemetryval):
                                              r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\DataCollection',
                                              "AllowTelemetry", _winreg.REG_DWORD, telemetryval]}
 
-    modifyregistry(regdict=telemetrydict, bit=32)
+    modifyregistry(regdict=telemetrydict, title="Telemetry")
 
 
 def modifyserviceregs(startval):
@@ -384,7 +384,7 @@ def modifyserviceregs(startval):
                                           r'SYSTEM\\CurrentControlSet\\Services\\DiagTrack',
                                           'Start', _winreg.REG_DWORD, startval]}
 
-    modifyregistry(regdict=servicesdict, bit=32)
+    modifyregistry(regdict=servicesdict, title="Services")
 
 
 def stopdefendwifi(defendersenseval):
@@ -411,9 +411,9 @@ def stopdefendwifi(defendersenseval):
                                                         'SubmitSamplesConsent', _winreg.REG_DWORD, defendersenseval]}
 
     if platform.machine().endswith('64'):
-        modifyregistry(wdwfsdict, bit=64)
+        modifyregistry(wdwfsdict, title="WifiSense/Defender", bit=64)
     else:
-        modifyregistry(wdwfsdict, bit=32)
+        modifyregistry(wdwfsdict, title="WifiSense/Defender")
 
 
 def modifyonedrive(function, filesyncval):
@@ -431,7 +431,7 @@ def modifyonedrive(function, filesyncval):
                                                r'Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
                                                'System.IsPinnedToNameSpaceTree', _winreg.REG_DWORD, 0]}
 
-    modifyregistry(regdict=listpindict, bit=32)
+    modifyregistry(regdict=listpindict, title="OneDrive")
 
     onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "SysWOW64/OneDriveSetup.exe")
     if os.path.isfile(onedrivesetup):
@@ -458,7 +458,7 @@ def skypemailfix():
     modifyhostfile(undo=True, domainlist=fixlist, name="Skype/Mail Fix")
 
 
-def modifyregistry(regdict, bit):
+def modifyregistry(regdict, name, bit=32):
     # Modifies registry keys from a dictionary
     # FORMAT: regdict = {"Title": [_winreg.HKEY, r'regkeypath', 'regkey', _winreg.REG_[DWORD/SZ/etc.], keyvalue
     # keyvalue = String, only if REG_SZ.
@@ -473,10 +473,10 @@ def modifyregistry(regdict, bit):
             modreg = _winreg.OpenKey(registry[0], registry[1], 0, accessmask)
             _winreg.SetValueEx(modreg, registry[2], 0, registry[3], registry[4])
             _winreg.CloseKey(modreg)
-            print "Registry: {0} key successfully modified.".format(title)
+            print "{1}: {0} key successfully modified.".format(title, name)
         except (WindowsError, IOError):
-            logging.exception("Registry: Unable to modify {0} key.".format(title))
-            print "Registry: Unable to modify {0} key.".format(title)
+            logging.exception("Registry: Unable to modify {0} key.".format(title, name))
+            print "{1}: Unable to modify {0} key.".format(title, name)
 
 
 def modifyhostfile(undo, domainlist, name):
