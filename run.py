@@ -45,8 +45,7 @@ class ConsoleFrame(wx.Frame):
         self.Center()  # Center window
 
     def onok(self, event):
-        self.consolebox.Clear()
-        self.Hide()
+        sys.exit()
 
 
 class MainFrame(wx.Frame):
