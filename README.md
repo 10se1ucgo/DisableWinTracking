@@ -51,10 +51,23 @@ Append known tracking domains to the `HOSTS` file located in `C:\Windows\System3
 
 Blocks known tracking IPs with the Windows Firewall. The rules are named TrackingIPX, replacing X with the IP numbers.
 
+#### Registry Entries
+
+Set disabled value to keys in registry for things such as:
+- Windows Defender
+    - Automatic Sample Submission
+    - Delivery Optimization Download Mode
+- WifiSense
+    - Credential Share
+    - Open-ness
+
 #### OneDrive
 
 Runs `C:\Windows\SysWOW64\OneDriveSetup.exe /uninstall` (64 bit) or  
 `C:\Windows\System32\OneDriveSetup.exe /uninstall` (32 bit)
+
+Also disables registry entries that keep the OneDrive Icon pinned to your Windows Explorer list:
+![OneDrive Example Image](http://i.imgur.com/Z8HaTWqm.png)
 
 ## Delete Services vs Disable Services?
 
