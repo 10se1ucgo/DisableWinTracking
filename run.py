@@ -1,4 +1,4 @@
-import ctypes
+﻿import ctypes
 import logging
 import os
 import subprocess
@@ -339,7 +339,8 @@ def cleardiagtracklog():
         subprocess.call("echo y|cacls {0} /d SYSTEM".format(logfile), shell=True)  # Prevent modification to file
         print "DiagTrack Log: Succesfully cleared and locked."
     except (WindowsError, IOError):
-        logging.exception("DiagTrack Log: Unable to clear/lock")
+        logging.exception("DiagTrack Log: Unable to clear/lock. THIS IS ONLY AN ISSUE IF THIS IS YOUR FIRST TIME "
+                          "RUNNING THIS PROGRAM! Please DO NOT submit issues on GitHub otherwise.")
         print "DiagTrack Log: Unable to clear/lock"
 
 
@@ -348,7 +349,8 @@ def deleteservice(service):
         win32serviceutil.RemoveService(service)  # Delete service
         print "Services: {0} successfully deleted.".format(service)
     except pywintypes.error:
-        logging.exception("Services: {0} unable to be deleted.".format(service))
+        logging.exception("Services: {0} unable to be deleted. THIS IS ONLY AN ISSUE IF THIS IS YOUR FIRST TIME "
+                          "RUNNING THIS PROGRAM! Please DO NOT submit issues on GitHub otherwise.".format(service))
         print "Services: {0} unable to be deleted.".format(service)
 
 
@@ -357,7 +359,8 @@ def disableservice(service):
         win32serviceutil.StopService(service)  # Disable service
         print "Services: {0} successfully stopped.".format(service)
     except pywintypes.error:
-        logging.exception("Services: {0} unable to be stopped.".format(service))
+        logging.exception("Services: {0} unable to be stopped. THIS IS ONLY AN ISSUE IF THIS IS YOUR FIRST TIME "
+                          "RUNNING THIS PROGRAM! Please DO NOT submit issues on GitHub otherwise.".format(service))
         print "Services: {0} unable to be stopped.".format(service)
 
 
