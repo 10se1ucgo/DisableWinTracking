@@ -1,4 +1,4 @@
-﻿import ctypes
+import ctypes
 import logging
 import os
 import subprocess
@@ -12,7 +12,7 @@ import wx.lib.wordwrap
 import pywintypes
 
 #Global Variables
-Version = "2.4.2"
+vernumber = "2.4.2"
 
 # Configure the Logging module
 logging.basicConfig(filename='DisableWinTracking.log', level=logging.DEBUG,
@@ -82,7 +82,7 @@ class MainFrame(wx.Frame):
 
         # Notify Label
         self.notelbl = wx.StaticText(panel, label="Pre-Release Version: {0} - Some things are disabled intentionally."
-                                     .format(Version), pos=(10, 5))
+                                     .format(vernumber), pos=(10, 5))
 
         # Service checkbox
         self.servicebox = wx.CheckBox(panel, label="Services", pos=(10, 25))
@@ -172,7 +172,7 @@ class MainFrame(wx.Frame):
 
         aboutpg = wx.AboutDialogInfo()
         aboutpg.Name = "Windows 10 Tracking Disable Tool"
-        aboutpg.Version = Version
+        aboutpg.Version = vernumber
         aboutpg.Copyright = "(c) 2015 10se1ucgo"
         aboutpg.Description = "A tool to disable nasty tracking in Windows 10"
         aboutpg.WebSite = ("https://github.com/10se1ucgo/DisableWinTracking", "GitHub Project Page")
@@ -185,7 +185,7 @@ class MainFrame(wx.Frame):
         self.revertbutton.Disable()
         self.fixbutton.Enable()
         self.cluttercontrol()  # If we don't do this, the hosts file and firewall will become a mess after some time.
-        logging.info("DisableWinTracking Version: {0}".format(Version))
+        logging.info("DisableWinTracking Version: {0}".format(vernumber))
         try:
             if self.servicebox.IsChecked():
                 modifyserviceregs(startval=0x0000004)
@@ -232,7 +232,7 @@ class MainFrame(wx.Frame):
         self.okbutton.Disable()
         self.revertbutton.Disable()
         self.fixbutton.Disable()
-        logging.info("DisableWinTracking Version: {0}".format(Version))
+        logging.info("DisableWinTracking Version: {0}".format(vernumber))
         try:
             if self.servicebox.IsChecked():
                 modifyserviceregs(startval=0x0000003)
@@ -260,7 +260,7 @@ class MainFrame(wx.Frame):
         self.okbutton.Disable()
         self.revertbutton.Disable()
         self.fixbutton.Disable()
-        logging.info("DisableWinTracking Version: {0}".format(Version))
+        logging.info("DisableWinTracking Version: {0}".format(vernumber))
         try:
             skypemailfix()
         finally:
@@ -431,31 +431,33 @@ def stopdefendwifi(defendersenseval):
                                                         r'SOFTWARE\Microsoft\Windows Defender\Spynet',
                                                         'SubmitSamplesConsent', _winreg.REG_DWORD, defendersenseval]}
 
-    #if platform.machine().endswith('64'):
-    #     modifyregistry(wdwfsdict, name="WifiSense/Defender", bit=64)
-    #else:
-    modifyregistry(wdwfsdict, name="WifiSense/Defender")
+    if platform.machine().endswith('64'):
+        modifyregistry(wdwfsdict, name="WifiSense/Defender", bit=64)
+    else:
+        modifyregistry(wdwfsdict, name="WifiSense/Defender")
 
 
 def modifyonedrive(function, filesyncval):
     # OneDrive shellext regkey paths
     ngscdict = {'OneDrive FileSync NGSC': [_winreg.HKEY_LOCAL_MACHINE,
-                                              r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive',
-                                              'DisableFileSyncNGSC', _winreg.REG_DWORD, filesyncval]}
+                                           r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive',
+                                           'DisableFileSyncNGSC', _winreg.REG_DWORD, filesyncval]}
 
-    # We should be making it as convenient as possible for the end user, so this will work until something
-    # more optimized replaces it. This will flip the value for the list pin entries to coincide with NGSC
-    filesyncval = 1 if filesyncval == 0 else 0
+    # The two key values are opposites, so we have to flip them.
+    if filesyncval == 0:
+        pinval = 1
+    else:
+        pinval = 0
 
     listpindict = {'OneDrive 32bit List Pin': [_winreg.HKEY_CLASSES_ROOT,
                                                r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
-                                               'System.IsPinnedToNameSpaceTree', _winreg.REG_DWORD, filesyncval],
+                                               'System.IsPinnedToNameSpaceTree', _winreg.REG_DWORD, pinval],
 
                    'OneDrive 64bit List Pin': [_winreg.HKEY_CLASSES_ROOT,
                                                r'Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
-                                               'System.IsPinnedToNameSpaceTree', _winreg.REG_DWORD, filesyncval]}
+                                               'System.IsPinnedToNameSpaceTree', _winreg.REG_DWORD, pinval]}
     
-    #We specifically need to CREATE the FileSync NGSC key, List Pin already exists
+    # We specifically need to CREATE the FileSync NGSC key, List Pin already exists
     modifyregistry(regdict=ngscdict, name="OneDrive FileSync")
     modifyregistry(regdict=listpindict, name="OneDrive List Pin")
 
