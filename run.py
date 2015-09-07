@@ -52,13 +52,13 @@ class ConsoleFrame(wx.Frame):
 
 class MainFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, parent=None, title='Disable Windows 10 Tracking', size=[375, 205],
+        wx.Frame.__init__(self, parent=None, title='Disable Windows 10 Tracking', size=[375, 190],
                           style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         panel = wx.Panel(self)  # Frame panel
 
         # Test for elevation
-        if ctypes.windll.shell32.IsUserAnAdmin() != 1:
+        if ctypes.windll.shell32.IsUserAnAdmin() != 0:
             warn = wx.MessageDialog(parent=None,
                                     message="Program requires elevation, please run it as an administrator",
                                     caption="ERROR", style=wx.OK | wx.ICON_WARNING)
@@ -79,50 +79,46 @@ class MainFrame(wx.Frame):
         self.SetMenuBar(menubar)
         self.Bind(wx.EVT_MENU, self.about, aboutitem)
 
-        # Notify Label
-        self.notelbl = wx.StaticText(panel, label="Pre-Release Version: {0} - Some things are disabled intentionally."
-                                     .format(vernumber), pos=(10, 5))
-
         # Service checkbox
-        self.servicebox = wx.CheckBox(panel, label="Services", pos=(10, 25))
+        self.servicebox = wx.CheckBox(panel, label="Services", pos=(10, 10))
         self.servicebox.SetToolTip(wx.ToolTip("Disables or Deletes tracking services. Choose option in Service Method"))
         self.Bind(wx.EVT_CHECKBOX, self.serviceradioboxcheck, self.servicebox)
 
         # DiagTrack checkbox
-        self.diagtrackbox = wx.CheckBox(panel, label="Clear DiagTrack log", pos=(10, 40))
+        self.diagtrackbox = wx.CheckBox(panel, label="Clear DiagTrack log", pos=(10, 25))
         self.diagtrackbox.SetToolTip(wx.ToolTip("Clears Diagnostic Tracking log and prevents modification to it. "
                                                 "This cannot be undone without doing it manually."))
 
         # Telemetry checkbox
-        self.telemetrybox = wx.CheckBox(panel, label="Telemetry", pos=(10, 55))
+        self.telemetrybox = wx.CheckBox(panel, label="Telemetry", pos=(10, 40))
         self.telemetrybox.SetToolTip(
             wx.ToolTip("Sets \'AllowTelemetry\' to 0. On non-Enterprise OS editions, requires HOSTS file modification"))
         self.Bind(wx.EVT_CHECKBOX, self.telemetryhostcheck, self.telemetrybox)
 
         # HOSTS file checkbox
-        self.hostbox = wx.CheckBox(panel, label="Block tracking domains", pos=(10, 70))
+        self.hostbox = wx.CheckBox(panel, label="Block tracking domains", pos=(10, 55))
         self.hostbox.SetToolTip(wx.ToolTip("Add known tracking domains to HOSTS file. Required to disable Telemetry"))
 
         # Extra HOSTS checkbox
-        self.extrahostbox = wx.CheckBox(panel, label="Block even more tracking domains", pos=(10, 85))
+        self.extrahostbox = wx.CheckBox(panel, label="Block even more tracking domains", pos=(10, 70))
         self.extrahostbox.SetToolTip(wx.ToolTip("For the paranoid. Adds extra domains to the HOSTS file. WARNING: Some "
                                                 "things like Dr. Watson and Error Reporting may be turned off by this"))
 
         # IP block checkbox
-        self.ipbox = wx.CheckBox(panel, label="Block tracking IP addresses", pos=(10, 100))
+        self.ipbox = wx.CheckBox(panel, label="Block tracking IP addresses", pos=(10, 85))
         self.ipbox.SetToolTip(wx.ToolTip("Blocks known tracking IP addresses with Windows Firewall."))
 
         # Windows Defender/Wifisense
-        self.defendwifibox = wx.CheckBox(panel, label="Stop Defender/Wifisense Data Collection", pos=(10, 115))
+        self.defendwifibox = wx.CheckBox(panel, label="Stop Defender/Wifisense Data Collection", pos=(10, 100))
         self.defendwifibox.SetToolTip(wx.ToolTip("Modifies registry to stop Windows Defender and WifiSense from "
                                                  "Data Collecting."))
 
         # OneDrive uninstall checkbox
-        self.onedrivedbox = wx.CheckBox(panel, label="Uninstall OneDrive", pos=(10, 130))
+        self.onedrivedbox = wx.CheckBox(panel, label="Uninstall OneDrive", pos=(10, 115))
         self.onedrivedbox.SetToolTip(wx.ToolTip("Uninstalls OneDrive from your computer and removes it from Explorer."))
 
         # Service radio box
-        self.serviceradbox = wx.RadioBox(panel, label="Service Method", pos=(135, 20), choices=["Disable", "Delete"])
+        self.serviceradbox = wx.RadioBox(panel, label="Service Method", pos=(135, 5), choices=["Disable", "Delete"])
         self.serviceradbox.Disable()
 
         # OK button
@@ -150,8 +146,7 @@ class MainFrame(wx.Frame):
         self.serviceradbox.Enable(self.servicebox.IsChecked())
 
     def telemetryhostcheck(self, event):
-        pass
-        # self.hostbox.SetValue(self.telemetrybox.IsChecked())
+        self.hostbox.SetValue(self.telemetrybox.IsChecked())
 
     def about(self, event):
         licensetext = "Copyright 2015 10se1ucgo\r\n\r\nLicensed under the Apache License, Version 2.0" \
@@ -264,6 +259,13 @@ class MainFrame(wx.Frame):
             print "Done. It's recommended that you reboot as soon as possible for the fix to work."
             print "If any errors were found, please make a GitHub ticket with the contents of DisableWinTracking.log"
 
+
+def osis64bit():
+    # Detect if OS is 64bit
+    if platform.machine().endswith('64'):
+        return True
+    else:
+        return False
 
 def domainblock(extra, undo):
 
@@ -474,7 +476,7 @@ def modifyregistry(regdict, name):
     # FORMAT: regdict = {"Title": [_winreg.HKEY, r'regkeypath', 'regkey', _winreg.REG_[DWORD/SZ/etc.], keyvalue
     # keyvalue = String, only if REG_SZ.
 
-    if platform.machine().endswith('64'):
+    if osis64bit():
         accessmask = _winreg.KEY_WOW64_64KEY + _winreg.KEY_ALL_ACCESS
     else:
         accessmask = _winreg.KEY_ALL_ACCESS
