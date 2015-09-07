@@ -88,13 +88,8 @@ class MainFrame(wx.Frame):
         self.servicebox.SetToolTip(wx.ToolTip("Disables or Deletes tracking services. Choose option in Service Method"))
         self.Bind(wx.EVT_CHECKBOX, self.serviceradioboxcheck, self.servicebox)
 
-        # Only SYSTEM has access to the File we need, so even ADMINISTRATOR prompt won't gain access to it
-        # Image: http://i.imgur.com/asktUGl.png
-        # Tricky tricky Micro$oft, we'll disable it for now.
-        #
         # DiagTrack checkbox
         self.diagtrackbox = wx.CheckBox(panel, label="Clear DiagTrack log", pos=(10, 40))
-        self.diagtrackbox.Disable()
         self.diagtrackbox.SetToolTip(wx.ToolTip("Clears Diagnostic Tracking log and prevents modification to it. "
                                                 "This cannot be undone without doing it manually."))
 
@@ -106,14 +101,14 @@ class MainFrame(wx.Frame):
 
         # HOSTS file checkbox
         self.hostbox = wx.CheckBox(panel, label="Block tracking domains", pos=(10, 70))
-        self.hostbox.Disable()
         self.hostbox.SetToolTip(wx.ToolTip("Add known tracking domains to HOSTS file. Required to disable Telemetry"))
+        self.hostbox.Disable()
 
         # Extra HOSTS checkbox
         self.extrahostbox = wx.CheckBox(panel, label="Block even more tracking domains", pos=(10, 85))
-        self.extrahostbox.Disable()
         self.extrahostbox.SetToolTip(wx.ToolTip("For the paranoid. Adds extra domains to the HOSTS file. WARNING: Some "
                                                 "things like Dr. Watson and Error Reporting may be turned off by this"))
+        self.extrahostbox.Disable()
 
         # IP block checkbox
         self.ipbox = wx.CheckBox(panel, label="Block tracking IP addresses", pos=(10, 100))
@@ -353,6 +348,7 @@ def cleardiagtracklog():
     disableservice('Diagnostics Tracking Service')
 
     try:
+        subprocess.call("takeown /f {0} && icacls {0} /grant administrators:F".format(logfile), shell=True)
         open(logfile, 'w').close()  # Clear the AutoLogger file
         subprocess.call("echo y|cacls {0} /d SYSTEM".format(logfile), shell=True)  # Prevent modification to file
         print "DiagTrack Log: Succesfully cleared and locked."
