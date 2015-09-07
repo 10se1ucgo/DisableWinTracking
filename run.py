@@ -157,7 +157,8 @@ class MainFrame(wx.Frame):
         self.serviceradbox.Enable(self.servicebox.IsChecked())
 
     def telemetryhostcheck(self, event):
-        self.hostbox.SetValue(self.telemetrybox.IsChecked())
+        pass
+        # self.hostbox.SetValue(self.telemetrybox.IsChecked())
 
     def about(self, event):
         licensetext = "Copyright 2015 10se1ucgo\r\n\r\nLicensed under the Apache License, Version 2.0" \
