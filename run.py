@@ -11,8 +11,7 @@ import wx
 import wx.lib.wordwrap
 import pywintypes
 
-#Global Variables
-vernumber = "2.4.2"
+vernumber = "2.4.2"  # Version number
 
 # Configure the Logging module
 logging.basicConfig(filename='DisableWinTracking.log', level=logging.DEBUG,
@@ -384,12 +383,8 @@ def disableservice(service):
 
 def modifytelemetryregs(telemetryval):
     # Telemetry regkey paths
-    telemetrydict = {'32bit Telemetry Key': [_winreg.HKEY_LOCAL_MACHINE,
+    telemetrydict = {'AllowTelemetry': [_winreg.HKEY_LOCAL_MACHINE,
                                              r'SOFTWARE\Policies\Microsoft\Windows\DataCollection',
-                                             "AllowTelemetry", _winreg.REG_DWORD, telemetryval],
-
-                     '64bit Telemetry Key': [_winreg.HKEY_LOCAL_MACHINE,
-                                             r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\DataCollection',
                                              "AllowTelemetry", _winreg.REG_DWORD, telemetryval]}
 
     modifyregistry(regdict=telemetrydict, name="Telemetry")
@@ -397,11 +392,11 @@ def modifytelemetryregs(telemetryval):
 
 def modifyserviceregs(startval):
     # Service regkey paths
-    servicesdict = {'Service dmwappushsvc': [_winreg.HKEY_LOCAL_MACHINE,
+    servicesdict = {'dmwappushsvc': [_winreg.HKEY_LOCAL_MACHINE,
                                              r'SYSTEM\\CurrentControlSet\\Services\\dmwappushsvc',
                                              'Start', _winreg.REG_DWORD, startval],
 
-                    'Service DiagTrack': [_winreg.HKEY_LOCAL_MACHINE,
+                    'DiagTrack': [_winreg.HKEY_LOCAL_MACHINE,
                                           r'SYSTEM\\CurrentControlSet\\Services\\DiagTrack',
                                           'Start', _winreg.REG_DWORD, startval]}
 
@@ -432,16 +427,12 @@ def stopdefendwifi(defendersenseval):
                                                         'SubmitSamplesConsent', _winreg.REG_DWORD, defendersenseval]}
 
     if platform.machine().endswith('64'):
-        modifyregistry(wdwfsdict, name="WifiSense/Defender", bit=64)
+        modifyregistry(wdwfsdict, name="WifiSense/Defender")
     else:
         modifyregistry(wdwfsdict, name="WifiSense/Defender")
 
 
 def modifyonedrive(function, filesyncval):
-    # OneDrive shellext regkey paths
-    ngscdict = {'OneDrive FileSync NGSC': [_winreg.HKEY_LOCAL_MACHINE,
-                                           r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive',
-                                           'DisableFileSyncNGSC', _winreg.REG_DWORD, filesyncval]}
 
     # The two key values are opposites, so we have to flip them.
     if filesyncval == 0:
@@ -449,17 +440,17 @@ def modifyonedrive(function, filesyncval):
     else:
         pinval = 0
 
-    listpindict = {'OneDrive 32bit List Pin': [_winreg.HKEY_CLASSES_ROOT,
-                                               r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
-                                               'System.IsPinnedToNameSpaceTree', _winreg.REG_DWORD, pinval],
+    # OneDrive shellext regkey paths
+    ngscdict = {'FileSync': [_winreg.HKEY_LOCAL_MACHINE,
+                             r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive',
+                             'DisableFileSyncNGSC', _winreg.REG_DWORD, filesyncval],
 
-                   'OneDrive 64bit List Pin': [_winreg.HKEY_CLASSES_ROOT,
-                                               r'Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
-                                               'System.IsPinnedToNameSpaceTree', _winreg.REG_DWORD, pinval]}
+                'ListPin': [_winreg.HKEY_CLASSES_ROOT,
+                            r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
+                            'System.IsPinnedToNameSpaceTree', _winreg.REG_DWORD, pinval]}
     
     # We specifically need to CREATE the FileSync NGSC key, List Pin already exists
-    modifyregistry(regdict=ngscdict, name="OneDrive FileSync")
-    modifyregistry(regdict=listpindict, name="OneDrive List Pin")
+    modifyregistry(regdict=ngscdict, name="OneDrive: ")
 
     onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "SysWOW64/OneDriveSetup.exe")
     if os.path.isfile(onedrivesetup):
@@ -486,12 +477,12 @@ def skypemailfix():
     modifyhostfile(undo=True, domainlist=fixlist, name="Skype/Mail Fix")
 
 
-def modifyregistry(regdict, name, bit=32):
+def modifyregistry(regdict, name):
     # Modifies registry keys from a dictionary
     # FORMAT: regdict = {"Title": [_winreg.HKEY, r'regkeypath', 'regkey', _winreg.REG_[DWORD/SZ/etc.], keyvalue
     # keyvalue = String, only if REG_SZ.
 
-    if bit == 64:
+    if platform.machine().endswith('64'):
         accessmask = _winreg.KEY_WOW64_64KEY + _winreg.KEY_ALL_ACCESS
     else:
         accessmask = _winreg.KEY_ALL_ACCESS
