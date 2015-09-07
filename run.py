@@ -11,7 +11,7 @@ import wx
 import wx.lib.wordwrap
 import pywintypes
 
-vernumber = "2.4.2"  # Version number
+vernumber = "2.4.3"  # Version number
 
 # Configure the Logging module
 logging.basicConfig(filename='DisableWinTracking.log', level=logging.DEBUG,
