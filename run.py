@@ -102,13 +102,11 @@ class MainFrame(wx.Frame):
         # HOSTS file checkbox
         self.hostbox = wx.CheckBox(panel, label="Block tracking domains", pos=(10, 70))
         self.hostbox.SetToolTip(wx.ToolTip("Add known tracking domains to HOSTS file. Required to disable Telemetry"))
-        self.hostbox.Disable()
 
         # Extra HOSTS checkbox
         self.extrahostbox = wx.CheckBox(panel, label="Block even more tracking domains", pos=(10, 85))
         self.extrahostbox.SetToolTip(wx.ToolTip("For the paranoid. Adds extra domains to the HOSTS file. WARNING: Some "
                                                 "things like Dr. Watson and Error Reporting may be turned off by this"))
-        self.extrahostbox.Disable()
 
         # IP block checkbox
         self.ipbox = wx.CheckBox(panel, label="Block tracking IP addresses", pos=(10, 100))
@@ -439,7 +437,7 @@ def modifyonedrive(function, filesyncval):
 
     # OneDrive shellext regkey paths
     ngscdict = {'FileSync': [_winreg.HKEY_LOCAL_MACHINE,
-                             r'SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive',
+                             r'SOFTWARE\Policies\Microsoft\Windows\OneDrive',
                              'DisableFileSyncNGSC', _winreg.REG_DWORD, filesyncval],
 
                 'ListPin': [_winreg.HKEY_CLASSES_ROOT,
