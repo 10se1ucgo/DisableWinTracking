@@ -67,7 +67,7 @@ Runs `C:\Windows\SysWOW64\OneDriveSetup.exe /uninstall` (64 bit) or
 `C:\Windows\System32\OneDriveSetup.exe /uninstall` (32 bit)
 
 Also disables registry entries that keep the OneDrive Icon pinned to your Windows Explorer list:
-![OneDrive Example Image](http://i.imgur.com/Z8HaTWqm.png?1)
+![OneDrive Example Image](http://i.imgur.com/26yfnGD.png)
 
 ## Delete Services vs Disable Services?
 
