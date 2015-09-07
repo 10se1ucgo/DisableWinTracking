@@ -421,10 +421,7 @@ def stopdefendwifi(defendersenseval):
                                                         r'SOFTWARE\Microsoft\Windows Defender\Spynet',
                                                         'SubmitSamplesConsent', _winreg.REG_DWORD, defendersenseval]}
 
-    if platform.machine().endswith('64'):
-        modifyregistry(wdwfsdict, name="WifiSense/Defender")
-    else:
-        modifyregistry(wdwfsdict, name="WifiSense/Defender")
+    modifyregistry(wdwfsdict, name="WifiSense/Defender")
 
 
 def modifyonedrive(function, filesyncval):
@@ -445,7 +442,7 @@ def modifyonedrive(function, filesyncval):
                             'System.IsPinnedToNameSpaceTree', _winreg.REG_DWORD, pinval]}
     
     # We specifically need to CREATE the FileSync NGSC key, List Pin already exists
-    modifyregistry(regdict=ngscdict, name="OneDrive: ")
+    modifyregistry(regdict=ngscdict, name="OneDrive")
 
     onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "SysWOW64/OneDriveSetup.exe")
     if os.path.isfile(onedrivesetup):
