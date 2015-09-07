@@ -509,6 +509,11 @@ def modifyhostfile(undo, domainlist, name):
 
     hostspath = os.path.join(os.environ['SYSTEMROOT'], 'System32\\drivers\\etc\\hosts')
 
+    try:
+        subprocess.call("takeown /f {0} && icacls {0} /grant administrators:F".format(hostspath), shell=True)
+    except:
+        pass
+
     if not undo:
         try:
             with open(hostspath, 'ab') as f:
