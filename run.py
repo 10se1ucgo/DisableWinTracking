@@ -11,7 +11,7 @@ import wx
 import wx.lib.wordwrap
 import pywintypes
 
-vernumber = "2.4.3"  # Version number
+vernumber = "v2.4.3"  # Version number
 
 # Configure the Logging module
 logging.basicConfig(filename='DisableWinTracking.log', level=logging.DEBUG,
@@ -40,14 +40,20 @@ class ConsoleFrame(wx.Frame):
         self.redirect = RedirectText(self.consolebox)
         sys.stdout = self.redirect
 
+        self.issuebutton = wx.Button(panel, wx.ID_ANY, label="Report an issue", pos=(9, 140))
+        self.issuebutton.Bind(wx.EVT_BUTTON, self.submitissue)
+
         # Final OK button
-        self.okbutton = wx.Button(panel, wx.ID_ANY, "OK", pos=(398, 140))
+        self.okbutton = wx.Button(panel, wx.ID_OK, label="OK", pos=(398, 140))
         self.okbutton.Bind(wx.EVT_BUTTON, self.onok)
 
         self.Center()  # Center window
 
     def onok(self, event):
         sys.exit()
+
+    def submitissue(self, event):
+        os.startfile("http://bit.ly/DWTIssue")
 
 
 class MainFrame(wx.Frame):
@@ -159,12 +165,13 @@ class MainFrame(wx.Frame):
                       " the License."
 
         aboutpg = wx.AboutDialogInfo()
-        aboutpg.Name = "Windows 10 Tracking Disable Tool"
+        aboutpg.Name = "Disable Windows 10 Tracking"
         aboutpg.Version = vernumber
         aboutpg.Copyright = "(c) 2015 10se1ucgo"
         aboutpg.Description = "A tool to disable nasty tracking in Windows 10"
         aboutpg.WebSite = ("https://github.com/10se1ucgo/DisableWinTracking", "GitHub Project Page")
         aboutpg.License = wx.lib.wordwrap.wordwrap(licensetext, 500, wx.ClientDC(self))
+        aboutpg.Developers = ["10se1ucgo and Ruined1 on GitHub"]
         wx.AboutBox(aboutpg)
 
     def goprivate(self, event):
@@ -204,7 +211,8 @@ class MainFrame(wx.Frame):
             self.fixbutton.Enable()
             self.console.Show()  # Show console output window after the code is run
             print "Done. It's recommended that you reboot as soon as possible for the full effect."
-            print "If any errors were found, please make a GitHub ticket with the contents of DisableWinTracking.log"
+            print "If you feel something didn't work properly," \
+                  " please press the 'Report an issue' button and follow the directions"
 
     def cluttercontrol(self):
         if self.hostbox.IsChecked():
@@ -242,7 +250,8 @@ class MainFrame(wx.Frame):
             self.fixbutton.Enable()
             self.console.Show()
             print "Done. It's recommended that you reboot as soon as possible for the full effect."
-            print "If any errors were found, please make a GitHub ticket with the contents of DisableWinTracking.log"
+            print "If you feel something didn't work properly," \
+                  " please press the 'Report an issue' button and follow the directions"
 
     def fix(self, event):
         self.okbutton.Disable()
@@ -257,7 +266,8 @@ class MainFrame(wx.Frame):
             self.fixbutton.Enable()
             self.console.Show()
             print "Done. It's recommended that you reboot as soon as possible for the fix to work."
-            print "If any errors were found, please make a GitHub ticket with the contents of DisableWinTracking.log"
+            print "If you feel something didn't work properly," \
+                  " please press the 'Report an issue' button and follow the directions"
 
 
 def osis64bit():
@@ -266,6 +276,7 @@ def osis64bit():
         return True
     else:
         return False
+
 
 def domainblock(extra, undo):
 
@@ -390,12 +401,12 @@ def modifytelemetryregs(telemetryval):
 def modifyserviceregs(startval):
     # Service regkey paths
     servicesdict = {'dmwappushsvc': [_winreg.HKEY_LOCAL_MACHINE,
-                                             r'SYSTEM\\CurrentControlSet\\Services\\dmwappushsvc',
-                                             'Start', _winreg.REG_DWORD, startval],
+                                     r'SYSTEM\\CurrentControlSet\\Services\\dmwappushsvc',
+                                     'Start', _winreg.REG_DWORD, startval],
 
                     'DiagTrack': [_winreg.HKEY_LOCAL_MACHINE,
-                                          r'SYSTEM\\CurrentControlSet\\Services\\DiagTrack',
-                                          'Start', _winreg.REG_DWORD, startval]}
+                                  r'SYSTEM\\CurrentControlSet\\Services\\DiagTrack',
+                                  'Start', _winreg.REG_DWORD, startval]}
 
     modifyregistry(regdict=servicesdict, name="Services")
 
