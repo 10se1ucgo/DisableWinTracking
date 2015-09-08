@@ -132,6 +132,8 @@ class MainFrame(wx.Frame):
         self.groovebox = wx.CheckBox(appbox, label="Groove Music", pos=(115, 15))
         self.mapbox = wx.CheckBox(appbox, label="Maps", pos=(115, 30))
         self.moneybox = wx.CheckBox(appbox, label="Money", pos=(115, 45))
+        self.movietvbox = wx.CheckBox(appbox, label="Movies & TV", pos=(115, 60))
+        self.newsbox = wx.CheckBox(appbox, label="News", pos=(115, 75))
 
         # Service radio box
         self.serviceradbox = wx.RadioBox(panel, label="Service Method", pos=(135, 5), choices=["Disable", "Delete"])
