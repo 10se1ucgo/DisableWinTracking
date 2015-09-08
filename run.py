@@ -47,8 +47,6 @@ class ConsoleFrame(wx.Frame):
         self.okbutton = wx.Button(panel, wx.ID_OK, label="OK", pos=(398, 140))
         self.okbutton.Bind(wx.EVT_BUTTON, self.onok)
 
-        self.Center()  # Center window
-
     def onok(self, event):
         sys.exit()
 
@@ -58,7 +56,7 @@ class ConsoleFrame(wx.Frame):
 
 class MainFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, parent=None, title='Disable Windows 10 Tracking', size=[375, 190],
+        wx.Frame.__init__(self, parent=None, title='Disable Windows 10 Tracking', size=[375, 290],
                           style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         panel = wx.Panel(self)  # Frame panel
@@ -122,6 +120,18 @@ class MainFrame(wx.Frame):
         # OneDrive uninstall checkbox
         self.onedrivedbox = wx.CheckBox(panel, label="Uninstall OneDrive", pos=(10, 115))
         self.onedrivedbox.SetToolTip(wx.ToolTip("Uninstalls OneDrive from your computer and removes it from Explorer."))
+
+        # App static box
+        appbox = wx.StaticBox(panel, label="Built-in Apps", pos=(10, 130), size=(300, 97))
+
+        self.builderbox = wx.CheckBox(appbox, label="3D Builder", pos=(10, 15))
+        self.camerabox = wx.CheckBox(appbox, label="Camera", pos=(10, 30))
+        self.officebox = wx.CheckBox(appbox, label="Get Office App", pos=(10, 45))
+        self.skypebox = wx.CheckBox(appbox, label="Get Skype App", pos=(10, 60))
+        self.startbox = wx.CheckBox(appbox, label="Get Started App", pos=(10, 75))
+        self.groovebox = wx.CheckBox(appbox, label="Groove Music", pos=(115, 15))
+        self.mapbox = wx.CheckBox(appbox, label="Maps", pos=(115, 30))
+        self.moneybox = wx.CheckBox(appbox, label="Money", pos=(115, 45))
 
         # Service radio box
         self.serviceradbox = wx.RadioBox(panel, label="Service Method", pos=(135, 5), choices=["Disable", "Delete"])
@@ -210,6 +220,7 @@ class MainFrame(wx.Frame):
             self.revertbutton.Enable()
             self.fixbutton.Enable()
             self.console.Show()  # Show console output window after the code is run
+            self.console.Center()  # Center console window
             print "Done. It's recommended that you reboot as soon as possible for the full effect."
             print "If you feel something didn't work properly," \
                   " please press the 'Report an issue' button and follow the directions"
@@ -248,7 +259,8 @@ class MainFrame(wx.Frame):
             self.okbutton.Enable()
             self.revertbutton.Enable()
             self.fixbutton.Enable()
-            self.console.Show()
+            self.console.Show()  # Show console output window after the code is run
+            self.console.Center()  # Center console window
             print "Done. It's recommended that you reboot as soon as possible for the full effect."
             print "If you feel something didn't work properly," \
                   " please press the 'Report an issue' button and follow the directions"
@@ -264,7 +276,8 @@ class MainFrame(wx.Frame):
             self.okbutton.Enable()
             self.revertbutton.Enable()
             self.fixbutton.Enable()
-            self.console.Show()
+            self.console.Show()  # Show console output window after the code is run
+            self.console.Center()  # Center console window
             print "Done. It's recommended that you reboot as soon as possible for the fix to work."
             print "If you feel something didn't work properly," \
                   " please press the 'Report an issue' button and follow the directions"
