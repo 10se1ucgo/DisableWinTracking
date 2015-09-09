@@ -56,7 +56,7 @@ class ConsoleFrame(wx.Frame):
 
 class MainFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, parent=None, title='Disable Windows 10 Tracking', size=[375, 290],
+        wx.Frame.__init__(self, parent=None, title='Disable Windows 10 Tracking', size=[375, 345],
                           style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
 
         panel = wx.Panel(self)  # Frame panel
@@ -84,56 +84,77 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.about, aboutitem)
 
         # Service checkbox
-        self.servicebox = wx.CheckBox(panel, label="Services", pos=(10, 10))
+        self.servicebox = wx.CheckBox(panel, label="&Services", pos=(10, 10))
         self.servicebox.SetToolTip(wx.ToolTip("Disables or Deletes tracking services. Choose option in Service Method"))
         self.Bind(wx.EVT_CHECKBOX, self.serviceradioboxcheck, self.servicebox)
 
         # DiagTrack checkbox
-        self.diagtrackbox = wx.CheckBox(panel, label="Clear DiagTrack log", pos=(10, 25))
+        self.diagtrackbox = wx.CheckBox(panel, label="Clear &DiagTrack log", pos=(10, 25))
         self.diagtrackbox.SetToolTip(wx.ToolTip("Clears Diagnostic Tracking log and prevents modification to it. "
                                                 "This cannot be undone without doing it manually."))
 
         # Telemetry checkbox
-        self.telemetrybox = wx.CheckBox(panel, label="Telemetry", pos=(10, 40))
+        self.telemetrybox = wx.CheckBox(panel, label="&Telemetry", pos=(10, 40))
         self.telemetrybox.SetToolTip(
             wx.ToolTip("Sets \'AllowTelemetry\' to 0. On non-Enterprise OS editions, requires HOSTS file modification"))
         self.Bind(wx.EVT_CHECKBOX, self.telemetryhostcheck, self.telemetrybox)
 
         # HOSTS file checkbox
-        self.hostbox = wx.CheckBox(panel, label="Block tracking domains", pos=(10, 55))
+        self.hostbox = wx.CheckBox(panel, label="&Block tracking domains", pos=(10, 55))
         self.hostbox.SetToolTip(wx.ToolTip("Add known tracking domains to HOSTS file. Required to disable Telemetry"))
 
         # Extra HOSTS checkbox
-        self.extrahostbox = wx.CheckBox(panel, label="Block even more tracking domains", pos=(10, 70))
+        self.extrahostbox = wx.CheckBox(panel, label="Block &even more tracking domains", pos=(10, 70))
         self.extrahostbox.SetToolTip(wx.ToolTip("For the paranoid. Adds extra domains to the HOSTS file. WARNING: Some "
                                                 "things like Dr. Watson and Error Reporting may be turned off by this"))
 
         # IP block checkbox
-        self.ipbox = wx.CheckBox(panel, label="Block tracking IP addresses", pos=(10, 85))
+        self.ipbox = wx.CheckBox(panel, label="Block tracking &IP addresses", pos=(10, 85))
         self.ipbox.SetToolTip(wx.ToolTip("Blocks known tracking IP addresses with Windows Firewall."))
 
         # Windows Defender/Wifisense
-        self.defendwifibox = wx.CheckBox(panel, label="Stop Defender/Wifisense Data Collection", pos=(10, 100))
+        self.defendwifibox = wx.CheckBox(panel, label="Stop Defender&/Wifisense Data Collection", pos=(10, 100))
         self.defendwifibox.SetToolTip(wx.ToolTip("Modifies registry to stop Windows Defender and WifiSense from "
                                                  "Data Collecting."))
 
         # OneDrive uninstall checkbox
-        self.onedrivedbox = wx.CheckBox(panel, label="Uninstall OneDrive", pos=(10, 115))
+        self.onedrivedbox = wx.CheckBox(panel, label="Uninstall &OneDrive", pos=(10, 115))
         self.onedrivedbox.SetToolTip(wx.ToolTip("Uninstalls OneDrive from your computer and removes it from Explorer."))
 
-        # App static box
-        appbox = wx.StaticBox(panel, label="Built-in Apps", pos=(10, 130), size=(300, 97))
 
-        self.builderbox = wx.CheckBox(appbox, label="3D Builder", pos=(10, 15))
-        self.camerabox = wx.CheckBox(appbox, label="Camera", pos=(10, 30))
-        self.officebox = wx.CheckBox(appbox, label="Get Office App", pos=(10, 45))
-        self.skypebox = wx.CheckBox(appbox, label="Get Skype App", pos=(10, 60))
-        self.startbox = wx.CheckBox(appbox, label="Get Started App", pos=(10, 75))
-        self.groovebox = wx.CheckBox(appbox, label="Groove Music", pos=(115, 15))
-        self.mapbox = wx.CheckBox(appbox, label="Maps", pos=(115, 30))
-        self.moneybox = wx.CheckBox(appbox, label="Money", pos=(115, 45))
-        self.movietvbox = wx.CheckBox(appbox, label="Movies & TV", pos=(115, 60))
-        self.newsbox = wx.CheckBox(appbox, label="News", pos=(115, 75))
+        # App static box
+        self.appbox = wx.StaticBox(panel, label="Built-in Apps", pos=(10, 130), size=(351, 160))
+
+        self.builderbox = wx.CheckBox(self.appbox, label="&3D Builder", pos=(10, 15))
+        self.calmailbox = wx.CheckBox(self.appbox, label="C&alender && Mail", pos=(10, 30))
+        self.camerabox = wx.CheckBox(self.appbox, label="&Camera", pos=(10, 45))
+        self.officebox = wx.CheckBox(self.appbox, label="Get &Office App", pos=(10, 60))
+        self.skypebox = wx.CheckBox(self.appbox, label="Get S&kype App", pos=(10, 75))
+        self.startbox = wx.CheckBox(self.appbox, label="Get S&tarted App", pos=(10, 90))
+        self.groovebox = wx.CheckBox(self.appbox, label="&Groove Music", pos=(10, 105))
+        self.mapbox = wx.CheckBox(self.appbox, label="&Maps", pos=(120, 15))
+        self.mscbox = wx.CheckBox(self.appbox, label="Microso&ft Solitaire Collection", pos=(120, 105))
+        self.moneybox = wx.CheckBox(self.appbox, label="Mone&y", pos=(120, 30))
+        self.movietvbox = wx.CheckBox(self.appbox, label="Movies && T&V", pos=(120, 45)) # For some reason & is an underscore
+        self.newsbox = wx.CheckBox(self.appbox, label="&News", pos=(120, 60))
+        self.onenotebox = wx.CheckBox(self.appbox, label="OneNote Ap&p", pos=(120, 75))
+        self.peoplebox = wx.CheckBox(self.appbox, label="P&eople", pos=(120, 90))
+        self.phonebox = wx.CheckBox(self.appbox, label="Phone Compan&ion", pos=(225, 15))
+        self.photosbox = wx.CheckBox(self.appbox, label="P&hotos", pos=(225, 30))
+        self.sportsbox = wx.CheckBox(self.appbox, label="&Sports", pos=(225, 45))
+        self.voicebox = wx.CheckBox(self.appbox, label="Voice &Recorder", pos=(225, 60))
+        self.weatherbox = wx.CheckBox(self.appbox, label="&Weather", pos=(225, 75))
+        self.xbonebox = wx.CheckBox(self.appbox, label="&Xbox", pos=(225, 90))
+
+        self.selectapps = wx.CheckBox(self.appbox, label="Select all apps", pos=(246, 0), style=wx.ALIGN_RIGHT)
+        self.Bind(wx.EVT_CHECKBOX, self.selectallapps, self.selectapps)
+
+        self.removeappbut = wx.Button(self.appbox, wx.ID_ANY, label="Uninstall selected apps", pos=(10, 125))
+        self.removeappbut.SetToolTip(wx.ToolTip("Uninstalls all of the selected apps"))
+        self.Bind(wx.EVT_BUTTON, self.uninstapps, self.removeappbut)
+
+        self.reinstbut = wx.Button(self.appbox, wx.ID_ANY, label="Reinstall original apps", pos=(205, 125))
+        self.reinstbut.SetToolTip(wx.ToolTip("Reinstalls ALL of the default apps"))
 
         # Service radio box
         self.serviceradbox = wx.RadioBox(panel, label="Service Method", pos=(135, 5), choices=["Disable", "Delete"])
@@ -152,7 +173,7 @@ class MainFrame(wx.Frame):
         # Fix Button
         self.fixbutton = wx.Button(panel, wx.ID_ANY, label="Fix Skype/Mail", pos=(266, 75))
         self.fixbutton.SetToolTip(wx.ToolTip("Press this if you're having issues with Skype or the Mail app"))
-        self.Bind(wx.EVT_BUTTON, self.fix, self.fixbutton)
+        self.Bind(wx.EVT_BUTTON, self.skypemailfix, self.fixbutton)
 
         self.console = ConsoleFrame()  # Call ConsoleFrame to start redirecting stdout to a TextCtrl
 
@@ -165,6 +186,10 @@ class MainFrame(wx.Frame):
 
     def telemetryhostcheck(self, event):
         self.hostbox.SetValue(self.telemetrybox.IsChecked())
+
+    def selectallapps(self, event):
+        for checkbox in list(self.appbox.GetChildren())[:-3]:
+            checkbox.SetValue(self.selectapps.IsChecked())
 
     def about(self, event):
         licensetext = "Copyright 2015 10se1ucgo\r\n\r\nLicensed under the Apache License, Version 2.0" \
@@ -187,47 +212,48 @@ class MainFrame(wx.Frame):
         wx.AboutBox(aboutpg)
 
     def goprivate(self, event):
-        # Disable buttons
-        self.okbutton.Disable()
-        self.revertbutton.Disable()
-        self.fixbutton.Enable()
         self.cluttercontrol()  # If we don't do this, the hosts file and firewall will become a mess after some time.
         logging.info("DisableWinTracking Version: {0}".format(vernumber))
-        try:
-            if self.servicebox.IsChecked():
-                modifyserviceregs(startval=0x0000004)
-                if self.serviceradbox.Selection == 0:
-                    disableservice(service='dmwappushsvc')
-                    disableservice(service='Diagnostics Tracking Service')
-                elif self.serviceradbox.Selection == 1:
-                    deleteservice(service='dmwappushsvc')
-                    deleteservice(service='Diagnostics Tracking Service')
-            if self.diagtrackbox.IsChecked():
-                cleardiagtracklog()
-            if self.telemetrybox.IsChecked():
-                modifytelemetryregs(telemetryval=0)
-            if self.hostbox.IsChecked():
-                domainblock(extra=False, undo=False)
-            if self.extrahostbox.IsChecked():
-                domainblock(extra=True, undo=False)
-            if self.ipbox.IsChecked():
-                blockips(undo=False)
-            if self.defendwifibox.IsChecked():
-                stopdefendwifi(defendersenseval=0)
-            if self.onedrivedbox.IsChecked():
-                modifyonedrive(function="uninstall", filesyncval=1)
-        finally:
-            # Re-enable buttons
-            self.okbutton.Enable()
-            self.revertbutton.Enable()
-            self.fixbutton.Enable()
-            self.console.Show()  # Show console output window after the code is run
-            self.console.Center()  # Center console window
-            print "Done. It's recommended that you reboot as soon as possible for the full effect."
-            print "If you feel something didn't work properly," \
-                  " please press the 'Report an issue' button and follow the directions"
+        logging.info("Mode: Get Privacy!")
+        if self.servicebox.IsChecked():
+            modifyserviceregs(startval=0x0000004)
+            if self.serviceradbox.Selection == 0:
+                logging.info("Service disable option ticked")
+                disableservice(service='dmwappushsvc')
+                disableservice(service='Diagnostics Tracking Service')
+            elif self.serviceradbox.Selection == 1:
+                logging.info("Service delete option ticked")
+                deleteservice(service='dmwappushsvc')
+                deleteservice(service='Diagnostics Tracking Service')
+        if self.diagtrackbox.IsChecked():
+            logging.info("DiagTrack box ticked")
+            cleardiagtracklog()
+        if self.telemetrybox.IsChecked():
+            logging.info("Telemetry box ticked")
+            modifytelemetryregs(telemetryval=0)
+        if self.hostbox.IsChecked():
+            logging.info("Host box ticked")
+            domainblock(extra=False, undo=False)
+        if self.extrahostbox.IsChecked():
+            logging.info("Extra host box ticked")
+            domainblock(extra=True, undo=False)
+        if self.ipbox.IsChecked():
+            logging.info("IP block box ticked")
+            blockips(undo=False)
+        if self.defendwifibox.IsChecked():
+            logging.info("Defender/Wifisense box ticked")
+            stopdefendwifi(defendersenseval=0)
+        if self.onedrivedbox.IsChecked():
+            logging.info("OneDrive box ticked")
+            modifyonedrive(function="uninstall", filesyncval=1)
+        self.console.Show()  # Show console output window after the code is run
+        self.console.Center()  # Center console window
+        print "Done. It's recommended that you reboot as soon as possible for the full effect."
+        print "If you feel something didn't work properly," \
+              " please press the 'Report an issue' button and follow the directions"
 
     def cluttercontrol(self):
+        logging.info("Performing clutter control")
         if self.hostbox.IsChecked():
             domainblock(extra=False, undo=True)
         if self.extrahostbox.IsChecked():
@@ -237,52 +263,102 @@ class MainFrame(wx.Frame):
         self.console.consolebox.Clear()
 
     def revert(self, event):
-        # Disable buttons
-        self.okbutton.Disable()
-        self.revertbutton.Disable()
-        self.fixbutton.Disable()
         logging.info("DisableWinTracking Version: {0}".format(vernumber))
-        try:
-            if self.servicebox.IsChecked():
-                modifyserviceregs(startval=0x0000003)
-            if self.telemetrybox.IsChecked():
-                modifytelemetryregs(telemetryval="1")
-            if self.hostbox.IsChecked():
-                domainblock(extra=False, undo=True)
-            if self.extrahostbox.IsChecked():
-                domainblock(extra=True, undo=True)
-            if self.ipbox.IsChecked():
-                blockips(undo=True)
-            if self.defendwifibox.IsChecked():
-                stopdefendwifi(defendersenseval=1)
-            if self.onedrivedbox.IsChecked():
-                modifyonedrive(function="install", filesyncval=0)
-        finally:
-            self.okbutton.Enable()
-            self.revertbutton.Enable()
-            self.fixbutton.Enable()
-            self.console.Show()  # Show console output window after the code is run
-            self.console.Center()  # Center console window
-            print "Done. It's recommended that you reboot as soon as possible for the full effect."
-            print "If you feel something didn't work properly," \
-                  " please press the 'Report an issue' button and follow the directions"
+        logging.info("Mode: Revert")
+        if self.servicebox.IsChecked():
+            logging.info("Service box ticked")
+            modifyserviceregs(startval=0x0000003)
+        if self.telemetrybox.IsChecked():
+            logging.info("Telemetry box ticked")
+            modifytelemetryregs(telemetryval="1")
+        if self.hostbox.IsChecked():
+            logging.info("Host box ticked")
+            domainblock(extra=False, undo=True)
+        if self.extrahostbox.IsChecked():
+            logging.info("Extra host box ticked")
+            domainblock(extra=True, undo=True)
+        if self.ipbox.IsChecked():
+            logging.info("IP block box ticked")
+            blockips(undo=True)
+        if self.defendwifibox.IsChecked():
+            logging.info("Defender/Wifisense box ticked")
+            stopdefendwifi(defendersenseval=1)
+        if self.onedrivedbox.IsChecked():
+            logging.info("OneDrive box ticked")
+            modifyonedrive(function="install", filesyncval=0)
+        self.console.Show()  # Show console output window after the code is run
+        self.console.Center()  # Center console window
+        print "Done. It's recommended that you reboot as soon as possible for the full effect."
+        print "If you feel something didn't work properly," \
+              " please press the 'Report an issue' button and follow the directions"
 
-    def fix(self, event):
-        self.okbutton.Disable()
-        self.revertbutton.Disable()
-        self.fixbutton.Disable()
+    def skypemailfix(self, event):
         logging.info("DisableWinTracking Version: {0}".format(vernumber))
-        try:
-            skypemailfix()
-        finally:
-            self.okbutton.Enable()
-            self.revertbutton.Enable()
-            self.fixbutton.Enable()
-            self.console.Show()  # Show console output window after the code is run
-            self.console.Center()  # Center console window
-            print "Done. It's recommended that you reboot as soon as possible for the fix to work."
-            print "If you feel something didn't work properly," \
-                  " please press the 'Report an issue' button and follow the directions"
+        logging.info("Mode: Skype/Mail Fix")
+
+        fixlist = ['ui.skype.com', 'pricelist.skype.com', 'apps.skype.com',
+                   's.gateway.messenger.live.com', 'm.hotmail.com']
+
+        modifyhostfile(undo=True, domainlist=fixlist, name="Skype/Mail Fix")
+
+        self.console.Show()  # Show console output window after the code is run
+        self.console.Center()  # Center console window
+        print "Done. It's recommended that you reboot as soon as possible for the fix to work."
+        print "If you feel something didn't work properly," \
+              " please press the 'Report an issue' button and follow the directions"
+
+    def uninstapps(self, event):
+        applist = []
+        logging.info("DisableWinTracking Version: {0}".format(vernumber))
+
+        for checkbox in list(self.appbox.GetChildren())[:-3]:
+            checkbox.SetValue(1)
+
+
+        if self.builderbox.IsChecked():
+            applist.append('3dbuilder')
+        if self.calmailbox.IsChecked():
+            applist.append('windowscommunicationsapps')
+        if self.camerabox.IsChecked():
+            applist.append('windowscamera')
+        if self.officebox.IsChecked():
+            applist.append('officehub')
+        if self.skypebox.IsChecked():
+            applist.append('skypeapp')
+        if self.startbox.IsChecked():
+            applist.append('getstarted')
+        if self.groovebox.IsChecked():
+            applist.append('zunemusic')
+        if self.mapbox.IsChecked():
+            applist.append('windowsmaps')
+        if self.mscbox.IsChecked():
+            applist.append('solitairecollection')
+        if self.moneybox.IsChecked():
+            applist.append('bingfinance')
+        if self.movietvbox.IsChecked():
+            applist.append('zunevideo')
+        if self.newsbox.IsChecked():
+            applist.append('bingnews')
+        if self.onenotebox.IsChecked():
+            applist.append('onenote')
+        if self.peoplebox.IsChecked():
+            applist.append('people')
+        if self.phonebox.IsChecked():
+            applist.append('windowsphone')
+        if self.photosbox.IsChecked():
+            applist.append('photos')
+        if self.sportsbox.IsChecked():
+            applist.append('bingsports')
+        if self.voicebox.IsChecked():
+            applist.append('soundrecorder')
+        if self.weatherbox.IsChecked():
+            applist.append('bingweather')
+        if self.xbonebox.IsChecked():
+            applist.append('xboxapp')
+
+        print applist
+        self.console.Show()  # Show console output window after the code is run
+        self.console.Center()  # Center console window
 
 
 def osis64bit():
@@ -379,8 +455,7 @@ def cleardiagtracklog():
         subprocess.call("echo y|cacls {0} /d SYSTEM".format(logfile), shell=True)  # Prevent modification to file
         print "DiagTrack Log: Succesfully cleared and locked."
     except (WindowsError, IOError):
-        logging.exception("DiagTrack Log: Unable to clear/lock. THIS IS ONLY AN ISSUE IF THIS IS YOUR FIRST TIME "
-                          "RUNNING THIS PROGRAM! Please DO NOT submit issues on GitHub otherwise.")
+        logging.exception("DiagTrack Log: Unable to clear/lock.")
         print "DiagTrack Log: Unable to clear/lock"
 
 
@@ -407,8 +482,8 @@ def disableservice(service):
 def modifytelemetryregs(telemetryval):
     # Telemetry regkey paths
     telemetrydict = {'AllowTelemetry': [_winreg.HKEY_LOCAL_MACHINE,
-                                             r'SOFTWARE\Policies\Microsoft\Windows\DataCollection',
-                                             "AllowTelemetry", _winreg.REG_DWORD, telemetryval]}
+                                        r'SOFTWARE\Policies\Microsoft\Windows\DataCollection',
+                                        "AllowTelemetry", _winreg.REG_DWORD, telemetryval]}
 
     modifyregistry(regdict=telemetrydict, name="Telemetry")
 
@@ -472,29 +547,17 @@ def modifyonedrive(function, filesyncval):
     # We specifically need to CREATE the FileSync NGSC key, List Pin already exists
     modifyregistry(regdict=ngscdict, name="OneDrive")
 
-    onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "SysWOW64/OneDriveSetup.exe")
-    if os.path.isfile(onedrivesetup):
-        try:
-            subprocess.call("{0} /{1}".format(onedrivesetup, function), shell=True)
-            print "OneDrive: Succesfully {0}ed.".format(function)
-        except (WindowsError, IOError):
-            logging.exception("OneDrive: Unable to {0}.".format(function))
-            print "OneDrive: Unable to {0}.".format(function)
+    if osis64bit():
+        onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "SysWOW64/OneDriveSetup.exe")
     else:
         onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "System32/OneDriveSetup.exe")
-        try:
-            subprocess.call("{0} /{1}".format(onedrivesetup, function), shell=True)
-            print "OneDrive: Succesfully {0}ed.".format(function)
-        except (WindowsError, IOError):
-            logging.exception("OneDrive: Unable to {0}.".format(function))
-            print "OneDrive: Unable to {0}.".format(function)
 
-
-def skypemailfix():
-    fixlist = ['ui.skype.com', 'pricelist.skype.com', 'apps.skype.com',
-               's.gateway.messenger.live.com', 'm.hotmail.com']
-
-    modifyhostfile(undo=True, domainlist=fixlist, name="Skype/Mail Fix")
+    try:
+        subprocess.call("{0} /{1}".format(onedrivesetup, function), shell=True)
+        print "OneDrive: Succesfully {0}ed.".format(function)
+    except (WindowsError, IOError):
+        logging.exception("OneDrive: Unable to {0}.".format(function))
+        print "OneDrive: Unable to {0}.".format(function)
 
 
 def modifyregistry(regdict, name):
@@ -534,7 +597,7 @@ def modifyhostfile(undo, domainlist, name):
 
     try:
         subprocess.call("takeown /f {0} && icacls {0} /grant administrators:F".format(hostspath), shell=True)
-    except:
+    except (WindowsError, IOError):
         pass
 
     if not undo:
