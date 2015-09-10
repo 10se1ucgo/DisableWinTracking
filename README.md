@@ -51,7 +51,7 @@ Append known tracking domains to the `HOSTS` file located in `C:\Windows\System3
 
 Blocks known tracking IPs with the Windows Firewall. The rules are named TrackingIPX, replacing X with the IP numbers.
 
-#### Registry Entries
+#### Windows Defender / WifiSense
 
 Set disabled value to keys in registry for things such as:
 - Windows Defender
