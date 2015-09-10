@@ -15,7 +15,7 @@ vernumber = "v2.4.3"  # Version number
 
 # Configure the Logging module
 logging.basicConfig(filename='DisableWinTracking.log', level=logging.DEBUG,
-                    format='\n%(asctime)s %(levelname)s: %(message)s', datefmt='%H:%M:%S')
+                    format='\n%(asctime)s %(levelname)s: %(message)s', datefmt='%H:%M:%S', filemode='w')
 
 
 class RedirectText(object):
@@ -150,11 +150,12 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_CHECKBOX, self.selectallapps, self.selectapps)
 
         self.removeappbut = wx.Button(self.appbox, wx.ID_ANY, label="Uninstall selected apps", pos=(10, 125))
-        self.removeappbut.SetToolTip(wx.ToolTip("Uninstalls all of the selected apps"))
+        self.removeappbut.SetToolTip(wx.ToolTip("Uninstalls all of the selected apps. May take a lot of time."))
         self.Bind(wx.EVT_BUTTON, self.uninstapps, self.removeappbut)
 
-        self.reinstbut = wx.Button(self.appbox, wx.ID_ANY, label="Reinstall original apps", pos=(205, 125))
-        self.reinstbut.SetToolTip(wx.ToolTip("Reinstalls ALL of the default apps"))
+        self.reinstappbut = wx.Button(self.appbox, wx.ID_ANY, label="Reinstall original apps", pos=(205, 125))
+        self.reinstappbut.SetToolTip(wx.ToolTip("Reinstalls ALL of the default apps. Takes a lot of time."))
+        self.Bind(wx.EVT_BUTTON, self.reinstapps, self.reinstappbut)
 
         # Service radio box
         self.serviceradbox = wx.RadioBox(panel, label="Service Method", pos=(135, 5), choices=["Disable", "Delete"])
@@ -212,9 +213,9 @@ class MainFrame(wx.Frame):
         wx.AboutBox(aboutpg)
 
     def goprivate(self, event):
-        self.cluttercontrol()  # If we don't do this, the hosts file and firewall will become a mess after some time.
         logging.info("DisableWinTracking Version: {0}".format(vernumber))
         logging.info("Mode: Get Privacy!")
+        self.cluttercontrol()  # If we don't do this, the hosts file and firewall will become a mess after some time.
         if self.servicebox.IsChecked():
             modifyserviceregs(startval=0x0000004)
             if self.serviceradbox.Selection == 0:
@@ -308,57 +309,57 @@ class MainFrame(wx.Frame):
               " please press the 'Report an issue' button and follow the directions"
 
     def uninstapps(self, event):
-        applist = []
+        uninstalllist = []
         logging.info("DisableWinTracking Version: {0}".format(vernumber))
 
-        for checkbox in list(self.appbox.GetChildren())[:-3]:
-            checkbox.SetValue(1)
-
-
         if self.builderbox.IsChecked():
-            applist.append('3dbuilder')
+            uninstalllist.append('3dbuilder')
         if self.calmailbox.IsChecked():
-            applist.append('windowscommunicationsapps')
+            uninstalllist.append('windowscommunicationsapps')
         if self.camerabox.IsChecked():
-            applist.append('windowscamera')
+            uninstalllist.append('windowscamera')
         if self.officebox.IsChecked():
-            applist.append('officehub')
+            uninstalllist.append('officehub')
         if self.skypebox.IsChecked():
-            applist.append('skypeapp')
+            uninstalllist.append('skypeapp')
         if self.startbox.IsChecked():
-            applist.append('getstarted')
+            uninstalllist.append('getstarted')
         if self.groovebox.IsChecked():
-            applist.append('zunemusic')
+            uninstalllist.append('zunemusic')
         if self.mapbox.IsChecked():
-            applist.append('windowsmaps')
+            uninstalllist.append('windowsmaps')
         if self.mscbox.IsChecked():
-            applist.append('solitairecollection')
+            uninstalllist.append('solitairecollection')
         if self.moneybox.IsChecked():
-            applist.append('bingfinance')
+            uninstalllist.append('bingfinance')
         if self.movietvbox.IsChecked():
-            applist.append('zunevideo')
+            uninstalllist.append('zunevideo')
         if self.newsbox.IsChecked():
-            applist.append('bingnews')
+            uninstalllist.append('bingnews')
         if self.onenotebox.IsChecked():
-            applist.append('onenote')
+            uninstalllist.append('onenote')
         if self.peoplebox.IsChecked():
-            applist.append('people')
+            uninstalllist.append('people')
         if self.phonebox.IsChecked():
-            applist.append('windowsphone')
+            uninstalllist.append('windowsphone')
         if self.photosbox.IsChecked():
-            applist.append('photos')
+            uninstalllist.append('photos')
         if self.sportsbox.IsChecked():
-            applist.append('bingsports')
+            uninstalllist.append('bingsports')
         if self.voicebox.IsChecked():
-            applist.append('soundrecorder')
+            uninstalllist.append('soundrecorder')
         if self.weatherbox.IsChecked():
-            applist.append('bingweather')
+            uninstalllist.append('bingweather')
         if self.xbonebox.IsChecked():
-            applist.append('xboxapp')
+            uninstalllist.append('xboxapp')
 
-        print applist
-        self.console.Show()  # Show console output window after the code is run
-        self.console.Center()  # Center console window
+        if uninstalllist:
+            apppackage(reinstall=False, applist=uninstalllist)
+            self.console.Show()  # Show console output window after the code is run
+            self.console.Center()  # Center console window
+
+    def reinstapps(self, event):
+        apppackage(reinstall=True, applist=['thisshouldntevenbepassed'])
 
 
 def osis64bit():
@@ -463,20 +464,22 @@ def deleteservice(service):
     try:
         win32serviceutil.RemoveService(service)  # Delete service
         print "Services: {0} successfully deleted.".format(service)
-    except pywintypes.error:
-        logging.exception("Services: {0} unable to be deleted. THIS IS ONLY AN ISSUE IF THIS IS YOUR FIRST TIME "
-                          "RUNNING THIS PROGRAM! Please DO NOT submit issues on GitHub otherwise.".format(service))
-        print "Services: {0} unable to be deleted.".format(service)
+    except pywintypes.error as e:
+        errors = ('does not exist', 'not been started')
+        if not any(error in e[2] for error in errors):
+            logging.exception("Services: {0} unable to be deleted.".format(service))
+            print "Services: {0} unable to be deleted.".format(service)
 
 
 def disableservice(service):
     try:
         win32serviceutil.StopService(service)  # Disable service
         print "Services: {0} successfully stopped.".format(service)
-    except pywintypes.error:
-        logging.exception("Services: {0} unable to be stopped. THIS IS ONLY AN ISSUE IF THIS IS YOUR FIRST TIME "
-                          "RUNNING THIS PROGRAM! Please DO NOT submit issues on GitHub otherwise.".format(service))
-        print "Services: {0} unable to be stopped.".format(service)
+    except pywintypes.error as e:
+        errors = ('does not exist', 'not been started')
+        if not any(error in e[2] for error in errors):
+            logging.exception("Services: {0} unable to be stopped.".format(service))
+            print "Services: {0} unable to be stopped.".format(service)
 
 
 def modifytelemetryregs(telemetryval):
@@ -543,8 +546,7 @@ def modifyonedrive(function, filesyncval):
                 'ListPin': [_winreg.HKEY_CLASSES_ROOT,
                             r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
                             'System.IsPinnedToNameSpaceTree', _winreg.REG_DWORD, pinval]}
-    
-    # We specifically need to CREATE the FileSync NGSC key, List Pin already exists
+
     modifyregistry(regdict=ngscdict, name="OneDrive")
 
     if osis64bit():
@@ -622,6 +624,29 @@ def modifyhostfile(undo, domainlist, name):
         except (WindowsError, IOError):
             logging.exception("{0}: Could not remove domains.".format(name))
             print "{0}: Could not remove domains.".format(name)
+
+
+def apppackage(reinstall, applist):
+    if not reinstall:
+        for appname in applist:
+            try:
+                subprocess.call("powershell \"Get-AppxPackage *{0}* | Remove-AppxPackage\"".format(appname), shell=True)
+            except:
+                pass
+
+    if reinstall:
+        # We encode in Base64 because the command is complex and I'm too lazy to escape everything.
+        # It's uncoded format command: "Get-AppxPackage -AllUsers| Foreach {Add-AppxPackage -DisableDevelopmentMode
+        # -Register "$($_.InstallLocation)\AppXManifest.xml"}"
+        encodedcommand = "RwBlAHQALQBBAHAAcAB4AFAAYQBjAGsAYQBnAGUAIAAtAEEAbABsAFUAcwBlAHIAcwB8ACAARgBvAHIAZQBhAGMA" \
+                         "aAAgAHsAQQBkAGQALQBBAHAAcAB4AFAAYQBjAGsAYQBnAGUAIAAtAEQAaQBzAGEAYgBsAGUARABlAHYAZQBsAG8AcA" \
+                         "BtAGUAbgB0AE0AbwBkAGUAIAAtAFIAZQBnAGkAcwB0AGUAcgAgACIAJAAoACQAXwAuAEkAbgBzAHQAYQBsAGwATABvA" \
+                         "GMAYQB0AGkAbwBuACkAXABBAHAAcABYAE0AYQBuAGkAZgBlAHMAdAAuAHgAbQBsACIAfQA="
+        try:
+            subprocess.call("powershell -EncodedCommand {0}".format(encodedcommand), shell=True)
+        except:
+            pass
+
 
 if __name__ == '__main__':
     wxwindow = wx.App(False)
