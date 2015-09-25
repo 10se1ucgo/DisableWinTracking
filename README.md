@@ -1,6 +1,7 @@
 # DisableWinTracking
 
-![GIF of GUI](http://i.imgur.com/UsBSYAp.gif)  
+![Main frame image](http://i.imgur.com/hGh7YVt.png)
+![Console image](http://i.imgur.com/34Nt8iz.png)
 
 A tool that I created to use some of the known methods of disabling tracking in Windows 10.
 
