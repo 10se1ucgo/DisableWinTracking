@@ -5,11 +5,11 @@ import subprocess
 import sys
 import _winreg
 import platform
-
 import win32serviceutil
 import wx
 import wx.lib.wordwrap
 import pywintypes
+from wx.lib.itemspicker import ItemsPicker, IP_SORT_CHOICES, IP_SORT_SELECTED, IP_REMOVE_FROM_CHOICES
 
 vernumber = "v2.4.3"  # Version number
 
@@ -26,16 +26,23 @@ class RedirectText(object):
         self.out.WriteText(string)
 
 
-class ConsoleFrame(wx.Frame):
+class ConsoleFrame(wx.Dialog):
     def __init__(self):
-        wx.Frame.__init__(self, parent=wx.GetApp().TopWindow, title="Console Output", size=[500, 200],
-                          style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
+        wx.Dialog.__init__(self, parent=wx.GetApp().TopWindow, title="Console Output", size=[500, 200],
+                           style=wx.DEFAULT_FRAME_STYLE ^ wx.MAXIMIZE_BOX)
 
         panel = wx.Panel(self)  # Frame panel
+
+        consoleSizer = wx.BoxSizer(wx.VERTICAL)
+        buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        consoleSizer.Add(buttonSizer, 0, wx.ALL | wx.ALIGN_BOTTOM)
 
         # Redirect console output to TextCtrl box
         self.consolebox = wx.TextCtrl(panel, wx.ID_ANY, size=(475, 125), style=wx.TE_MULTILINE | wx.TE_READONLY,
                                       pos=(10, 10))
+
+        consoleSizer.Add(self.consolebox, 0, wx.ALL | wx.EXPAND, 5)
 
         self.redirect = RedirectText(self.consolebox)
         sys.stdout = self.redirect
@@ -46,6 +53,12 @@ class ConsoleFrame(wx.Frame):
         # Final OK button
         self.okbutton = wx.Button(panel, wx.ID_OK, label="OK", pos=(398, 140))
         self.okbutton.Bind(wx.EVT_BUTTON, self.onok)
+
+        buttonSizer.Add(self.okbutton, 0, wx.ALL | wx.LEFT)
+        buttonSizer.Add(self.issuebutton, 0, wx.ALL | wx.RIGHT)
+
+        panel.SetSizer(consoleSizer)
+        consoleSizer.Fit(self)
 
     def onok(self, event):
         sys.exit()
@@ -62,7 +75,7 @@ class MainFrame(wx.Frame):
         panel = wx.Panel(self)  # Frame panel
 
         # Test for elevation
-        if ctypes.windll.shell32.IsUserAnAdmin() != 1:
+        if ctypes.windll.shell32.IsUserAnAdmin() != 0:
             warn = wx.MessageDialog(parent=None,
                                     message="Program requires elevation, please run it as an administrator",
                                     caption="ERROR", style=wx.OK | wx.ICON_WARNING)
@@ -74,14 +87,16 @@ class MainFrame(wx.Frame):
         self.SetIcon(wx.Icon(shell32file + ";315", wx.BITMAP_TYPE_ICO))
 
         # Info bar w/ about menu
-        infomenu = wx.Menu()
-        aboutitem = infomenu.Append(wx.ID_ABOUT, "About", "About the application")
+        menu = wx.Menu()
+        aboutitem = menu.Append(wx.ID_ABOUT, "About", "About the application")
+        optionsitem = menu.Append(wx.ID_ANY, "Options", "Settings for the application")
 
         menubar = wx.MenuBar()
-        menubar.Append(infomenu, "&Info")
+        menubar.Append(menu, "&Menu")
 
         self.SetMenuBar(menubar)
-        self.Bind(wx.EVT_MENU, self.about, aboutitem)
+        self.Bind(wx.EVT_MENU, self.aboutbox, aboutitem)
+        self.Bind(wx.EVT_MENU, self.settingsbox, optionsitem)
 
         # Service checkbox
         self.servicebox = wx.CheckBox(panel, label="&Services", pos=(10, 10))
@@ -135,7 +150,7 @@ class MainFrame(wx.Frame):
         self.mapbox = wx.CheckBox(self.appbox, label="&Maps", pos=(120, 15))
         self.mscbox = wx.CheckBox(self.appbox, label="Microso&ft Solitaire Collection", pos=(120, 105))
         self.moneybox = wx.CheckBox(self.appbox, label="Mone&y", pos=(120, 30))
-        self.movietvbox = wx.CheckBox(self.appbox, label="Movies && T&V", pos=(120, 45)) # For some reason & is an underscore
+        self.movietvbox = wx.CheckBox(self.appbox, label="Movies && T&V", pos=(120, 45))
         self.newsbox = wx.CheckBox(self.appbox, label="&News", pos=(120, 60))
         self.onenotebox = wx.CheckBox(self.appbox, label="OneNote Ap&p", pos=(120, 75))
         self.peoplebox = wx.CheckBox(self.appbox, label="P&eople", pos=(120, 90))
@@ -158,23 +173,19 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.reinstapps, self.reinstappbut)
 
         # Service radio box
-        self.serviceradbox = wx.RadioBox(panel, label="Service Method", pos=(135, 5), choices=["Disable", "Delete"])
+        self.serviceradbox = wx.RadioBox(panel, label="Service Method", pos=(135, 5), choices=("Disable", "Delete"))
         self.serviceradbox.Disable()
 
         # OK button
-        self.okbutton = wx.Button(panel, wx.ID_OK, label="Get privacy!", pos=(275, 25))
-        self.okbutton.SetToolTip(wx.ToolTip("Give me my privacy, damn it!"))
-        self.Bind(wx.EVT_BUTTON, self.goprivate, self.okbutton)
+        self.gobutton = wx.Button(panel, wx.ID_OK, label="Go!", pos=(275, 25))
+        self.Bind(wx.EVT_BUTTON, self.go, self.gobutton)
 
-        # Revert button
-        self.revertbutton = wx.Button(panel, wx.ID_ANY, label="Revert", pos=(275, 50))
-        self.revertbutton.SetToolTip(wx.ToolTip("I wanna go back! :("))
-        self.Bind(wx.EVT_BUTTON, self.revert, self.revertbutton)
+        self.goradbox = wx.RadioBox(panel, label="Mode", pos=(284, 50),
+                                    choices=("Privacy", "Revert"), style=wx.RA_SPECIFY_ROWS)
 
-        # Fix Button
-        self.fixbutton = wx.Button(panel, wx.ID_ANY, label="Fix Skype/Mail", pos=(266, 75))
-        self.fixbutton.SetToolTip(wx.ToolTip("Press this if you're having issues with Skype or the Mail app"))
-        self.Bind(wx.EVT_BUTTON, self.skypemailfix, self.fixbutton)
+        self.goradbox.SetItemToolTip(0, "Using the selected settings, applies privacy.")
+        self.goradbox.SetItemToolTip(1, "Reverts everything selected to it's original form (Except the DiagTrack Log "
+                                        "and services if you chose the 'Delete' option)")
 
         self.console = ConsoleFrame()  # Call ConsoleFrame to start redirecting stdout to a TextCtrl
 
@@ -192,7 +203,7 @@ class MainFrame(wx.Frame):
         for checkbox in list(self.appbox.GetChildren())[:-3]:
             checkbox.SetValue(self.selectapps.IsChecked())
 
-    def about(self, event):
+    def aboutbox(self, event):
         licensetext = "Copyright 2015 10se1ucgo\r\n\r\nLicensed under the Apache License, Version 2.0" \
                       " (the \"License\");\r\nyou may not use this file except in compliance with the License" \
                       ".\r\nYou may obtain a copy of the License at\r\n\r\n" \
@@ -212,101 +223,124 @@ class MainFrame(wx.Frame):
         aboutpg.Developers = ["10se1ucgo and Ruined1 on GitHub"]
         wx.AboutBox(aboutpg)
 
-    def goprivate(self, event):
+    def settingsbox(self, event):
+        settingsdialog = wx.Dialog(wx.GetApp().TopWindow, wx.ID_ANY, "Settings")
+
+        boxsizer = wx.BoxSizer(wx.VERTICAL)
+
+        normallist = ('a-0001.a-msedge.net', 'a-0002.a-msedge.net', 'a-0003.a-msedge.net', 'a-0004.a-msedge.net',
+                      'a-0005.a-msedge.net', 'a-0006.a-msedge.net', 'a-0007.a-msedge.net', 'a-0008.a-msedge.net',
+                      'a-0009.a-msedge.net', 'a-msedge.net', 'a.ads1.msn.com', 'a.ads2.msads.net',
+                      'a.ads2.msn.com', 'a.rad.msn.com', 'ac3.msn.com', 'ad.doubleclick.net', 'adnexus.net',
+                      'adnxs.com', 'ads.msn.com', 'ads1.msads.net', 'ads1.msn.com', 'aidps.atdmt.com',
+                      'aka-cdn-ns.adtech.de', 'az361816.vo.msecnd.net', 'az512334.vo.msecnd.net', 'b.ads1.msn.com',
+                      'b.ads2.msads.net', 'b.rad.msn.com', 'bs.serving-sys.com', 'c.atdmt.com', 'c.msn.com',
+                      'cdn.atdmt.com', 'cds26.ams9.msecn.net', 'choice.microsoft.com',
+                      'choice.microsoft.com.nsatc.net', 'compatexchange.cloudapp.net', 'corp.sts.microsoft.com',
+                      'corpext.msitadfs.glbdns2.microsoft.com', 'cs1.wpc.v0cdn.net', 'db3aqu.atdmt.com',
+                      'df.telemetry.microsoft.com', 'diagnostics.support.microsoft.com', 'ec.atdmt.com',
+                      'feedback.microsoft-hohm.com', 'feedback.search.microsoft.com', 'feedback.windows.com',
+                      'flex.msn.com', 'g.msn.com', 'h1.msn.com', 'i1.services.social.microsoft.com',
+                      'i1.services.social.microsoft.com.nsatc.net', 'lb1.www.ms.akadns.net', 'live.rads.msn.com',
+                      'm.adnxs.com', 'msedge.net', 'msftncsi.com', 'msnbot-65-55-108-23.search.msn.com',
+                      'msntest.serving-sys.com', 'oca.telemetry.microsoft.com',
+                      'oca.telemetry.microsoft.com.nsatc.net', 'pre.footprintpredict.com', 'preview.msn.com',
+                      'rad.live.com', 'rad.msn.com', 'redir.metaservices.microsoft.com',
+                      'schemas.microsoft.akadns.net ', 'secure.adnxs.com', 'secure.flashtalking.com',
+                      'settings-sandbox.data.microsoft.com', 'settings-win.data.microsoft.com',
+                      'sls.update.microsoft.com.akadns.net', 'sqm.df.telemetry.microsoft.com',
+                      'sqm.telemetry.microsoft.com', 'sqm.telemetry.microsoft.com.nsatc.net', 'static.2mdn.net',
+                      'statsfe1.ws.microsoft.com', 'statsfe2.ws.microsoft.com',
+                      'telecommand.telemetry.microsoft.com', 'telecommand.telemetry.microsoft.com.nsatc.net',
+                      'telemetry.appex.bing.net', 'telemetry.microsoft.com', 'telemetry.urs.microsoft.com',
+                      'vortex-bn2.metron.live.com.nsatc.net', 'vortex-cy2.metron.live.com.nsatc.net',
+                      'vortex-sandbox.data.microsoft.com', 'vortex-win.data.microsoft.com',
+                      'vortex.data.microsoft.com', 'watson.live.com', 'www.msftncsi.com', 'ssw.live.com')
+
+        extralist = ('fe2.update.microsoft.com.akadns.net', 'reports.wes.df.telemetry.microsoft.com',
+                     's0.2mdn.net', 'services.wes.df.telemetry.microsoft.com',
+                     'statsfe2.update.microsoft.com.akadns.net', 'survey.watson.microsoft.com', 'view.atdmt.com',
+                     'watson.microsoft.com', 'watson.ppe.telemetry.microsoft.com',
+                     'watson.telemetry.microsoft.com', 'watson.telemetry.microsoft.com.nsatc.net',
+                     'wes.df.telemetry.microsoft.com', 'ui.skype.com', 'pricelist.skype.com', 'apps.skype.com',
+                     'm.hotmail.com', 's.gateway.messenger.live.com')
+
+        self.normalpicker = ItemsPicker(settingsdialog, id=wx.ID_ANY, choices=[], selectedLabel="Domains to be blocked",
+                                        ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
+        self.normalpicker.SetSelections(normallist)
+
+        self.extrapicker = ItemsPicker(settingsdialog, id=wx.ID_ANY, choices=[],
+                                       selectedLabel="Extra domains to be blocked",
+                                       ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
+        self.extrapicker.SetSelections(extralist)
+
+        boxsizer.Add(self.normalpicker, 0, wx.ALL | wx.TOP, 10)
+        boxsizer.Add(self.extrapicker, 0, wx.ALL | wx.BOTTOM | wx.EXPAND, 10)
+        settingsdialog.SetSizerAndFit(boxsizer)
+
+        if event is not None:
+            settingsdialog.ShowModal()
+
+    def go(self, event):
+        self.settingsbox(None)  # Call the settings box to get the settings values
+        if self.goradbox.GetSelection() == 1:
+            mode = "Revert"
+            startval = 3
+            telemetryval = 1
+            undo = True
+            defendersenseval = 1
+            filesyncval = 0
+            installerfunc = "install"
+        else:
+            mode = "Privacy"
+            startval = 4
+            telemetryval = 0
+            undo = False
+            defendersenseval = 0
+            filesyncval = 1
+            installerfunc = "uninstall"
+            self.cluttercontrol()
+            if self.diagtrackbox.IsChecked():
+                logging.info("DiagTrack box ticked")
+                cleardiagtracklog()
+            if self.servicebox.IsChecked():
+                if self.serviceradbox.Selection == 0:
+                    logging.info("Service disable option ticked")
+                    disableservice(service='dmwappushsvc')
+                    disableservice(service='Diagnostics Tracking Service')
+                elif self.serviceradbox.Selection == 1:
+                    logging.info("Service delete option ticked")
+                    deleteservice(service='dmwappushsvc')
+                    deleteservice(service='Diagnostics Tracking Service')
+
         logging.info("DisableWinTracking Version: {0}".format(vernumber))
-        logging.info("Mode: Get Privacy!")
-        self.cluttercontrol()  # If we don't do this, the hosts file and firewall will become a mess after some time.
+        logging.info("Mode: {0}".format(mode))
         if self.servicebox.IsChecked():
-            modifyserviceregs(startval=0x0000004)
-            if self.serviceradbox.Selection == 0:
-                logging.info("Service disable option ticked")
-                disableservice(service='dmwappushsvc')
-                disableservice(service='Diagnostics Tracking Service')
-            elif self.serviceradbox.Selection == 1:
-                logging.info("Service delete option ticked")
-                deleteservice(service='dmwappushsvc')
-                deleteservice(service='Diagnostics Tracking Service')
-        if self.diagtrackbox.IsChecked():
-            logging.info("DiagTrack box ticked")
-            cleardiagtracklog()
+            modifyserviceregs(startval=startval)
         if self.telemetrybox.IsChecked():
             logging.info("Telemetry box ticked")
-            modifytelemetryregs(telemetryval=0)
+            modifytelemetryregs(telemetryval=telemetryval)
         if self.hostbox.IsChecked():
+            self.settingsbox(None)
             logging.info("Host box ticked")
-            domainblock(extra=False, undo=False)
+            modifyhostfile(undo=undo, domainlist=self.normalpicker.GetSelections(), name="Domain block")
         if self.extrahostbox.IsChecked():
             logging.info("Extra host box ticked")
-            domainblock(extra=True, undo=False)
+            modifyhostfile(undo=undo, domainlist=self.normalpicker.GetSelections(), name="Extra domain block")
         if self.ipbox.IsChecked():
             logging.info("IP block box ticked")
-            blockips(undo=False)
+            blockips(undo=undo)
         if self.defendwifibox.IsChecked():
             logging.info("Defender/Wifisense box ticked")
-            stopdefendwifi(defendersenseval=0)
+            stopdefendwifi(defendersenseval=defendersenseval)
         if self.onedrivedbox.IsChecked():
             logging.info("OneDrive box ticked")
-            modifyonedrive(function="uninstall", filesyncval=1)
+            modifyonedrive(installerfunc=installerfunc, filesyncval=filesyncval)
         self.console.Show()  # Show console output window after the code is run
         self.console.Center()  # Center console window
         print "Done. It's recommended that you reboot as soon as possible for the full effect."
-        print "If you feel something didn't work properly," \
-              " please press the 'Report an issue' button and follow the directions"
-
-    def cluttercontrol(self):
-        logging.info("Performing clutter control")
-        if self.hostbox.IsChecked():
-            domainblock(extra=False, undo=True)
-        if self.extrahostbox.IsChecked():
-            domainblock(extra=True, undo=True)
-        if self.ipbox.IsChecked():
-            blockips(undo=True)
-        self.console.consolebox.Clear()
-
-    def revert(self, event):
-        logging.info("DisableWinTracking Version: {0}".format(vernumber))
-        logging.info("Mode: Revert")
-        if self.servicebox.IsChecked():
-            logging.info("Service box ticked")
-            modifyserviceregs(startval=0x0000003)
-        if self.telemetrybox.IsChecked():
-            logging.info("Telemetry box ticked")
-            modifytelemetryregs(telemetryval="1")
-        if self.hostbox.IsChecked():
-            logging.info("Host box ticked")
-            domainblock(extra=False, undo=True)
-        if self.extrahostbox.IsChecked():
-            logging.info("Extra host box ticked")
-            domainblock(extra=True, undo=True)
-        if self.ipbox.IsChecked():
-            logging.info("IP block box ticked")
-            blockips(undo=True)
-        if self.defendwifibox.IsChecked():
-            logging.info("Defender/Wifisense box ticked")
-            stopdefendwifi(defendersenseval=1)
-        if self.onedrivedbox.IsChecked():
-            logging.info("OneDrive box ticked")
-            modifyonedrive(function="install", filesyncval=0)
-        self.console.Show()  # Show console output window after the code is run
-        self.console.Center()  # Center console window
-        print "Done. It's recommended that you reboot as soon as possible for the full effect."
-        print "If you feel something didn't work properly," \
-              " please press the 'Report an issue' button and follow the directions"
-
-    def skypemailfix(self, event):
-        logging.info("DisableWinTracking Version: {0}".format(vernumber))
-        logging.info("Mode: Skype/Mail Fix")
-
-        fixlist = ['ui.skype.com', 'pricelist.skype.com', 'apps.skype.com',
-                   's.gateway.messenger.live.com', 'm.hotmail.com']
-
-        modifyhostfile(undo=True, domainlist=fixlist, name="Skype/Mail Fix")
-
-        self.console.Show()  # Show console output window after the code is run
-        self.console.Center()  # Center console window
-        print "Done. It's recommended that you reboot as soon as possible for the fix to work."
-        print "If you feel something didn't work properly," \
-              " please press the 'Report an issue' button and follow the directions"
+        print "If you feel something didn't work properly, please press the 'Report an issue' " \
+              "button and follow the directions"
 
     def uninstapps(self, event):
         uninstalllist = []
@@ -361,6 +395,16 @@ class MainFrame(wx.Frame):
     def reinstapps(self, event):
         apppackage(reinstall=True, applist=['thisshouldntevenbepassed'])
 
+    def cluttercontrol(self):
+        logging.info("Performing clutter control")
+        if self.hostbox.IsChecked():
+            modifyhostfile(undo=True, domainlist=self.normalpicker.GetSelections(), name="Clutter control")
+        if self.extrahostbox.IsChecked():
+            modifyhostfile(undo=True, domainlist=self.extrapicker.GetSelections(), name="Extra domain clutter control")
+        if self.ipbox.IsChecked():
+            blockips(undo=True)
+        self.console.consolebox.Clear()
+
 
 def osis64bit():
     # Detect if OS is 64bit
@@ -368,56 +412,6 @@ def osis64bit():
         return True
     else:
         return False
-
-
-def domainblock(extra, undo):
-
-    # List of tracking domains.
-    normallist = ['a-0001.a-msedge.net', 'a-0002.a-msedge.net', 'a-0003.a-msedge.net',
-                  'a-0004.a-msedge.net', 'a-0005.a-msedge.net', 'a-0006.a-msedge.net', 'a-0007.a-msedge.net',
-                  'a-0008.a-msedge.net', 'a-0009.a-msedge.net', 'a-msedge.net', 'a.ads1.msn.com', 'a.ads2.msads.net',
-                  'a.ads2.msn.com', 'a.rad.msn.com', 'ac3.msn.com', 'ad.doubleclick.net', 'adnexus.net', 'adnxs.com',
-                  'ads.msn.com', 'ads1.msads.net', 'ads1.msn.com', 'aidps.atdmt.com', 'aka-cdn-ns.adtech.de',
-                  'az361816.vo.msecnd.net', 'az512334.vo.msecnd.net', 'b.ads1.msn.com',
-                  'b.ads2.msads.net', 'b.rad.msn.com', 'bs.serving-sys.com', 'c.atdmt.com', 'c.msn.com',
-                  'cdn.atdmt.com', 'cds26.ams9.msecn.net', 'choice.microsoft.com', 'choice.microsoft.com.nsatc.net',
-                  'compatexchange.cloudapp.net', 'corp.sts.microsoft.com', 'corpext.msitadfs.glbdns2.microsoft.com',
-                  'cs1.wpc.v0cdn.net', 'db3aqu.atdmt.com', 'df.telemetry.microsoft.com',
-                  'diagnostics.support.microsoft.com', 'ec.atdmt.com', 'feedback.microsoft-hohm.com',
-                  'feedback.search.microsoft.com', 'feedback.windows.com', 'flex.msn.com', 'g.msn.com', 'h1.msn.com',
-                  'i1.services.social.microsoft.com', 'i1.services.social.microsoft.com.nsatc.net',
-                  'lb1.www.ms.akadns.net', 'live.rads.msn.com', 'm.adnxs.com', 'msedge.net',
-                  'msftncsi.com', 'msnbot-65-55-108-23.search.msn.com', 'msntest.serving-sys.com',
-                  'oca.telemetry.microsoft.com', 'oca.telemetry.microsoft.com.nsatc.net', 'pre.footprintpredict.com',
-                  'preview.msn.com', 'rad.live.com', 'rad.msn.com', 'redir.metaservices.microsoft.com',
-                  'schemas.microsoft.akadns.net ', 'secure.adnxs.com', 'secure.flashtalking.com',
-                  'settings-sandbox.data.microsoft.com', 'settings-win.data.microsoft.com',
-                  'sls.update.microsoft.com.akadns.net', 'sqm.df.telemetry.microsoft.com',
-                  'sqm.telemetry.microsoft.com', 'sqm.telemetry.microsoft.com.nsatc.net', 'static.2mdn.net',
-                  'statsfe1.ws.microsoft.com', 'statsfe2.ws.microsoft.com', 'telecommand.telemetry.microsoft.com',
-                  'telecommand.telemetry.microsoft.com.nsatc.net', 'telemetry.appex.bing.net',
-                  'telemetry.microsoft.com', 'telemetry.urs.microsoft.com',
-                  'vortex-bn2.metron.live.com.nsatc.net', 'vortex-cy2.metron.live.com.nsatc.net',
-                  'vortex-sandbox.data.microsoft.com', 'vortex-win.data.microsoft.com', 'vortex.data.microsoft.com',
-                  'watson.live.com', 'www.msftncsi.com', 'ssw.live.com']
-
-    extralist = ['fe2.update.microsoft.com.akadns.net', 'reports.wes.df.telemetry.microsoft.com', 's0.2mdn.net',
-                 'services.wes.df.telemetry.microsoft.com', 'statsfe2.update.microsoft.com.akadns.net',
-                 'survey.watson.microsoft.com', 'view.atdmt.com', 'watson.microsoft.com',
-                 'watson.ppe.telemetry.microsoft.com', 'watson.telemetry.microsoft.com',
-                 'watson.telemetry.microsoft.com.nsatc.net', 'wes.df.telemetry.microsoft.com', 'ui.skype.com',
-                 'pricelist.skype.com', 'apps.skype.com', 'm.hotmail.com', 's.gateway.messenger.live.com']
-
-    if not undo:
-        if not extra:
-            modifyhostfile(undo=False, domainlist=normallist, name="Domain block")
-        else:
-            modifyhostfile(undo=False, domainlist=extralist, name="Extra domain block")
-    else:
-        if not extra:
-            modifyhostfile(undo=True, domainlist=normallist, name="Domain block")
-        else:
-            modifyhostfile(undo=True, domainlist=extralist, name="Extra domain block")
 
 
 def blockips(undo):
@@ -530,8 +524,7 @@ def stopdefendwifi(defendersenseval):
     modifyregistry(wdwfsdict, name="WifiSense/Defender")
 
 
-def modifyonedrive(function, filesyncval):
-
+def modifyonedrive(installerfunc, filesyncval):
     # The two key values are opposites, so we have to flip them.
     if filesyncval == 0:
         pinval = 1
@@ -555,11 +548,11 @@ def modifyonedrive(function, filesyncval):
         onedrivesetup = os.path.join(os.environ['SYSTEMROOT'], "System32/OneDriveSetup.exe")
 
     try:
-        subprocess.call("{0} /{1}".format(onedrivesetup, function), shell=True)
-        print "OneDrive: Succesfully {0}ed.".format(function)
+        subprocess.call("{0} /{1}".format(onedrivesetup, installerfunc), shell=True)
+        print "OneDrive: Succesfully {0}ed.".format(installerfunc)
     except (WindowsError, IOError):
-        logging.exception("OneDrive: Unable to {0}.".format(function))
-        print "OneDrive: Unable to {0}.".format(function)
+        logging.exception("OneDrive: Unable to {0}.".format(installerfunc))
+        print "OneDrive: Unable to {0}.".format(installerfunc)
 
 
 def modifyregistry(regdict, name):
@@ -589,7 +582,7 @@ def modifyhostfile(undo, domainlist, name):
     # FORMAT: domainlist = ['www.example.com', 'www.etc.com']
     # undo: Specifies whether or not to remove the lines from the host file or append them
     # name: Name displayed in error/completion message.
-    
+
     nullip = "0.0.0.0 "  # IP to route domains to
 
     # Domains with 0.0.0.0 added to the beginning of each.
@@ -631,7 +624,8 @@ def apppackage(reinstall, applist):
         for appname in applist:
             try:
                 subprocess.call("powershell \"Get-AppxPackage *{0}* | Remove-AppxPackage\"".format(appname), shell=True)
-            except:
+            except (WindowsError, IOError):
+                print "App management: Could not uninstall {0}".format(appname)
                 pass
 
     if reinstall:
@@ -644,7 +638,7 @@ def apppackage(reinstall, applist):
                          "GMAYQB0AGkAbwBuACkAXABBAHAAcABYAE0AYQBuAGkAZgBlAHMAdAAuAHgAbQBsACIAfQA="
         try:
             subprocess.call("powershell -EncodedCommand {0}".format(encodedcommand), shell=True)
-        except:
+        except (WindowsError, IOError):
             pass
 
 
