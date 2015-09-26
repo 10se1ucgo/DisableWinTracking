@@ -1,7 +1,7 @@
 # DisableWinTracking
 
-![Main frame image](http://i.imgur.com/hGh7YVt.png)
-![Console image](http://i.imgur.com/34Nt8iz.png)
+![Main frame image](http://i.imgur.com/4iDf3Gb.png) ![Console image](http://i.imgur.com/34Nt8iz.png)
+![About box image](http://i.imgur.com/7af8efM.png) ![Settings box image](http://i.imgur.com/7pTSCg1.png)
 
 A tool that I created to use some of the known methods of disabling tracking in Windows 10.
 
