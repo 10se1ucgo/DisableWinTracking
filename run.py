@@ -11,7 +11,7 @@ import wx.lib.wordwrap
 import pywintypes
 from wx.lib.itemspicker import ItemsPicker, IP_SORT_CHOICES, IP_SORT_SELECTED, IP_REMOVE_FROM_CHOICES
 
-vernumber = "v2.5"  # Version number
+vernumber = "v2.5.1"  # Version number
 
 # Configure the Logging module
 logging.basicConfig(filename='DisableWinTracking.log', level=logging.DEBUG,
