@@ -11,7 +11,7 @@ import wx.lib.wordwrap
 import pywintypes
 from wx.lib.itemspicker import ItemsPicker, IP_SORT_CHOICES, IP_SORT_SELECTED, IP_REMOVE_FROM_CHOICES
 
-vernumber = "v2.4.3"  # Version number
+vernumber = "v2.5"  # Version number
 
 # Configure the Logging module
 logging.basicConfig(filename='DisableWinTracking.log', level=logging.DEBUG,
@@ -75,7 +75,7 @@ class MainFrame(wx.Frame):
         panel = wx.Panel(self)  # Frame panel
 
         # Test for elevation
-        if ctypes.windll.shell32.IsUserAnAdmin() != 0:
+        if ctypes.windll.shell32.IsUserAnAdmin() != 1:
             warn = wx.MessageDialog(parent=None,
                                     message="Program requires elevation, please run it as an administrator",
                                     caption="ERROR", style=wx.OK | wx.ICON_WARNING)
