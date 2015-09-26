@@ -29,20 +29,12 @@ class RedirectText(object):
 class ConsoleFrame(wx.Dialog):
     def __init__(self):
         wx.Dialog.__init__(self, parent=wx.GetApp().TopWindow, title="Console Output", size=[500, 200],
-                           style=wx.DEFAULT_FRAME_STYLE ^ wx.MAXIMIZE_BOX)
+                           style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 
         panel = wx.Panel(self)  # Frame panel
 
-        consoleSizer = wx.BoxSizer(wx.VERTICAL)
-        buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        consoleSizer.Add(buttonSizer, 0, wx.ALL | wx.ALIGN_BOTTOM)
-
         # Redirect console output to TextCtrl box
-        self.consolebox = wx.TextCtrl(panel, wx.ID_ANY, size=(475, 125), style=wx.TE_MULTILINE | wx.TE_READONLY,
-                                      pos=(10, 10))
-
-        consoleSizer.Add(self.consolebox, 0, wx.ALL | wx.EXPAND, 5)
+        self.consolebox = wx.TextCtrl(panel, wx.ID_ANY, style=wx.TE_MULTILINE | wx.TE_READONLY)
 
         self.redirect = RedirectText(self.consolebox)
         sys.stdout = self.redirect
@@ -54,11 +46,16 @@ class ConsoleFrame(wx.Dialog):
         self.okbutton = wx.Button(panel, wx.ID_OK, label="OK", pos=(398, 140))
         self.okbutton.Bind(wx.EVT_BUTTON, self.onok)
 
-        buttonSizer.Add(self.okbutton, 0, wx.ALL | wx.LEFT)
-        buttonSizer.Add(self.issuebutton, 0, wx.ALL | wx.RIGHT)
+        consolesizer = wx.BoxSizer(wx.VERTICAL)
+        buttonsizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        panel.SetSizer(consoleSizer)
-        consoleSizer.Fit(self)
+        consolesizer.Add(buttonsizer)
+        consolesizer.Add(self.consolebox, 1, wx.ALL | wx.EXPAND, 1)
+
+        buttonsizer.Add(self.okbutton)
+        buttonsizer.Add(self.issuebutton)
+
+        panel.SetSizerAndFit(consolesizer)
 
     def onok(self, event):
         sys.exit()
@@ -135,7 +132,6 @@ class MainFrame(wx.Frame):
         # OneDrive uninstall checkbox
         self.onedrivedbox = wx.CheckBox(panel, label="Uninstall &OneDrive", pos=(10, 115))
         self.onedrivedbox.SetToolTip(wx.ToolTip("Uninstalls OneDrive from your computer and removes it from Explorer."))
-
 
         # App static box
         self.appbox = wx.StaticBox(panel, label="Built-in Apps", pos=(10, 130), size=(351, 160))
@@ -326,7 +322,7 @@ class MainFrame(wx.Frame):
             modifyhostfile(undo=undo, domainlist=self.normalpicker.GetSelections(), name="Domain block")
         if self.extrahostbox.IsChecked():
             logging.info("Extra host box ticked")
-            modifyhostfile(undo=undo, domainlist=self.normalpicker.GetSelections(), name="Extra domain block")
+            modifyhostfile(undo=undo, domainlist=self.extrapicker.GetSelections(), name="Extra domain block")
         if self.ipbox.IsChecked():
             logging.info("IP block box ticked")
             blockips(undo=undo)
@@ -589,11 +585,6 @@ def modifyhostfile(undo, domainlist, name):
     nulledlist = [nullip + x for x in domainlist]
 
     hostspath = os.path.join(os.environ['SYSTEMROOT'], 'System32\\drivers\\etc\\hosts')
-
-    try:
-        subprocess.call("takeown /f {0} && icacls {0} /grant administrators:F".format(hostspath), shell=True)
-    except (WindowsError, IOError):
-        pass
 
     if not undo:
         try:
