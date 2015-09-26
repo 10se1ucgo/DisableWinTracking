@@ -626,7 +626,6 @@ def apppackage(reinstall, applist):
                 subprocess.call("powershell \"Get-AppxPackage *{0}* | Remove-AppxPackage\"".format(appname), shell=True)
             except (WindowsError, IOError):
                 print "App management: Could not uninstall {0}".format(appname)
-                pass
 
     if reinstall:
         # We encode in Base64 because the command is complex and I'm too lazy to escape everything.
@@ -639,7 +638,7 @@ def apppackage(reinstall, applist):
         try:
             subprocess.call("powershell -EncodedCommand {0}".format(encodedcommand), shell=True)
         except (WindowsError, IOError):
-            pass
+            print "App management: Could not re-install all apps"
 
 
 if __name__ == '__main__':
