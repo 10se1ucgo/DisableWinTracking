@@ -161,7 +161,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_CHECKBOX, self.selectallapps, self.selectapps)
 
         self.removeappbut = wx.Button(self.appbox, wx.ID_ANY, label="Uninstall selected apps", pos=(10, 125))
-        self.removeappbut.SetToolTip(wx.ToolTip("Uninstalls all of the selected apps. May take a lot of time."))
+        self.removeappbut.SetToolTip(wx.ToolTip("Uninstalls all of the selected apps. Can take a lot of time."))
         self.Bind(wx.EVT_BUTTON, self.uninstapps, self.removeappbut)
 
         self.reinstappbut = wx.Button(self.appbox, wx.ID_ANY, label="Reinstall original apps", pos=(205, 125))
@@ -171,9 +171,11 @@ class MainFrame(wx.Frame):
         # Service radio box
         self.serviceradbox = wx.RadioBox(panel, label="Service Method", pos=(135, 5), choices=("Disable", "Delete"))
         self.serviceradbox.Disable()
+        self.serviceradbox.SetItemToolTip(0, "Simply disables the services. This can be undone.")
+        self.serviceradbox.SetItemToolTip(1, "Deletes the services completely. This can't be undone.")
 
-        # OK button
-        self.gobutton = wx.Button(panel, wx.ID_OK, label="Go!", pos=(275, 25))
+        # Go button
+        self.gobutton = wx.Button(panel, wx.ID_ANY, label="Go!", pos=(275, 25))
         self.Bind(wx.EVT_BUTTON, self.go, self.gobutton)
 
         self.goradbox = wx.RadioBox(panel, label="Mode", pos=(284, 50),
@@ -190,16 +192,21 @@ class MainFrame(wx.Frame):
         self.Show()
 
     def serviceradioboxcheck(self, event):
+        # Enables serviceradbox if the service box is ticked
         self.serviceradbox.Enable(self.servicebox.IsChecked())
 
     def telemetryhostcheck(self, event):
+        # Automatically checks the domain block when the telemetry box is checked.
         self.hostbox.SetValue(self.telemetrybox.IsChecked())
 
     def selectallapps(self, event):
+        # Iters through all children of the app static box and checks them except for the last 3.
+        # (buttons and the select all checkbox)
         for checkbox in list(self.appbox.GetChildren())[:-3]:
             checkbox.SetValue(self.selectapps.IsChecked())
 
     def aboutbox(self, event):
+        # About dialog
         licensetext = "Copyright 2015 10se1ucgo\r\n\r\nLicensed under the Apache License, Version 2.0" \
                       " (the \"License\");\r\nyou may not use this file except in compliance with the License" \
                       ".\r\nYou may obtain a copy of the License at\r\n\r\n" \
@@ -220,6 +227,7 @@ class MainFrame(wx.Frame):
         wx.AboutBox(aboutpg)
 
     def settingsbox(self, event):
+        # Settings dialog
         settingsdialog = wx.Dialog(wx.GetApp().TopWindow, wx.ID_ANY, "Settings")
 
         boxsizer = wx.BoxSizer(wx.VERTICAL)
@@ -279,7 +287,7 @@ class MainFrame(wx.Frame):
 
     def go(self, event):
         self.settingsbox(None)  # Call the settings box to get the settings values
-        if self.goradbox.GetSelection() == 1:
+        if self.goradbox.GetSelection() == 1:  # if mode is revert
             mode = "Revert"
             startval = 3
             telemetryval = 1
