@@ -391,7 +391,7 @@ class MainFrame(wx.Frame):
         if self.xbonebox.IsChecked():
             uninstalllist.append('xboxapp')
 
-        if uninstalllist:
+        if uninstalllist:  # Check  if at least one app is selected
             apppackage(reinstall=False, applist=uninstalllist)
             self.console.Show()  # Show console output window after the code is run
             self.console.Center()  # Center console window
@@ -427,7 +427,7 @@ def blockips(undo):
             for ip in iplist:
                 subprocess.call("netsh advfirewall firewall add rule name=""TrackingIP{0}"" dir=out"
                                 " protocol=any remoteip=""{0}"" profile=any action=block".format(ip), shell=True)
-            print "IP Blocking: Succesfully blocked."
+                print "IP Blocking: {0} succesfully blocked.".format(ip)
         except (WindowsError, IOError):
             logging.exception("IP Blocking: One or more were unable to be blocked.")
             print "IP Blocking: One or more were unable to be blocked."
@@ -436,7 +436,7 @@ def blockips(undo):
         try:
             for ip in iplist:
                 subprocess.call("netsh advfirewall firewall delete rule name=""TrackingIP{0}""".format(ip), shell=True)
-            print "IP Blocking: Succesfully unblocked."
+                print "IP Blocking: {0} succesfully unblocked.".format(ip)
         except (WindowsError, IOError):
             logging.exception("IP Blocking: One or more were unable to be unblocked.")
             print "IP Blocking: One or more were unable to be unblocked."
