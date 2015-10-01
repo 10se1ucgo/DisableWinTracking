@@ -72,7 +72,7 @@ class MainFrame(wx.Frame):
         panel = wx.Panel(self)  # Frame panel
 
         # Test for elevation
-        if ctypes.windll.shell32.IsUserAnAdmin() != 1:
+        if ctypes.windll.shell32.IsUserAnAdmin() != 0:
             warn = wx.MessageDialog(parent=None,
                                     message="Program requires elevation, please run it as an administrator",
                                     caption="ERROR", style=wx.OK | wx.ICON_WARNING)
@@ -278,11 +278,25 @@ class MainFrame(wx.Frame):
                                        ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
         self.extrapicker.SetSelections(extralist)
 
+        iplist = ('2.22.61.43', '2.22.61.66', '65.39.117.230', '65.55.108.23', '23.218.212.69',
+                  '134.170.30.202', '137.116.81.24', '157.56.106.189', '204.79.197.200', '65.52.108.33')
+
+        self.ippicker = ItemsPicker(settingsdialog, id=wx.ID_ANY, choices=[],
+                                    selectedLabel="IP addresses to be blocked",
+                                    ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
+
+        self.ippicker.SetToolTip(wx.ToolTip("Hello"))
+
+        self.ippicker.SetSelections(iplist)
+
         boxsizer.Add(self.normalpicker, 0, wx.ALL | wx.TOP, 10)
-        boxsizer.Add(self.extrapicker, 0, wx.ALL | wx.BOTTOM | wx.EXPAND, 10)
+        boxsizer.Add(self.extrapicker, 0, wx.ALL | wx.CENTER | wx.EXPAND, 10)
+        boxsizer.Add(self.ippicker, 0, wx.ALL | wx.BOTTOM | wx.EXPAND, 10)
+
         settingsdialog.SetSizerAndFit(boxsizer)
 
         if event is not None:
+            settingsdialog.Center()
             settingsdialog.ShowModal()
 
     def go(self, event):
@@ -620,11 +634,11 @@ def modifyhostfile(undo, domainlist, name):
 
 def apppackage(reinstall, applist):
     if not reinstall:
-        for appname in applist:
+        for app in applist:
             try:
-                subprocess.call("powershell \"Get-AppxPackage *{0}* | Remove-AppxPackage\"".format(appname), shell=True)
+                subprocess.Popen("powershell \"Get-AppxPackage *{0}* | Remove-AppxPackage\"".format(app), shell=True)
             except (WindowsError, IOError):
-                print "App management: Could not uninstall {0}".format(appname)
+                print "App management: Could not uninstall {0}".format(app)
 
     if reinstall:
         # We encode in Base64 because the command is complex and I'm too lazy to escape everything.
