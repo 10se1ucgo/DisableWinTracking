@@ -347,7 +347,7 @@ class MainFrame(wx.Frame):
             modifyhostfile(undo=undo, domainlist=self.extrapicker.GetSelections(), name="Extra domain block")
         if self.ipbox.IsChecked():
             logging.info("IP block box ticked")
-            blockips(undo=undo)
+            blockips(iplist=self.ippicker.GetSelections(), undo=undo)
         if self.defendwifibox.IsChecked():
             logging.info("Defender/Wifisense box ticked")
             stopdefendwifi(defendersenseval=defendersenseval)
@@ -432,10 +432,7 @@ def osis64bit():
         return False
 
 
-def blockips(undo):
-    iplist = ['2.22.61.43', '2.22.61.66', '65.39.117.230', '65.55.108.23', '23.218.212.69',
-              '134.170.30.202', '137.116.81.24', '157.56.106.189', '204.79.197.200', '65.52.108.33']
-
+def blockips(iplist, undo):
     if not undo:
         try:
             for ip in iplist:
