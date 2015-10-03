@@ -438,7 +438,7 @@ def blockips(iplist, undo):
             for ip in iplist:
                 subprocess.call("netsh advfirewall firewall add rule name=""TrackingIP{0}"" dir=out"
                                 " protocol=any remoteip=""{0}"" profile=any action=block".format(ip), shell=True)
-                print "IP Blocking: {0} succesfully blocked.".format(ip)
+                print "IP Blocking: {0} successfully blocked.".format(ip)
         except (WindowsError, IOError):
             logging.exception("IP Blocking: One or more were unable to be blocked.")
             print "IP Blocking: One or more were unable to be blocked."
@@ -447,7 +447,7 @@ def blockips(iplist, undo):
         try:
             for ip in iplist:
                 subprocess.call("netsh advfirewall firewall delete rule name=""TrackingIP{0}""".format(ip), shell=True)
-                print "IP Blocking: {0} succesfully unblocked.".format(ip)
+                print "IP Blocking: {0} successfully unblocked.".format(ip)
         except (WindowsError, IOError):
             logging.exception("IP Blocking: One or more were unable to be unblocked.")
             print "IP Blocking: One or more were unable to be unblocked."
@@ -463,7 +463,7 @@ def cleardiagtracklog():
         subprocess.call("takeown /f {0} && icacls {0} /grant administrators:F".format(logfile), shell=True)
         open(logfile, 'w').close()  # Clear the AutoLogger file
         subprocess.call("echo y|cacls {0} /d SYSTEM".format(logfile), shell=True)  # Prevent modification to file
-        print "DiagTrack Log: Succesfully cleared and locked."
+        print "DiagTrack Log: successfully cleared and locked."
     except (WindowsError, IOError):
         logging.exception("DiagTrack Log: Unable to clear/lock.")
         print "DiagTrack Log: Unable to clear/lock"
@@ -564,7 +564,7 @@ def modifyonedrive(installerfunc, filesyncval):
 
     try:
         subprocess.call("{0} /{1}".format(onedrivesetup, installerfunc), shell=True)
-        print "OneDrive: Succesfully {0}ed.".format(installerfunc)
+        print "OneDrive: successfully {0}ed.".format(installerfunc)
     except (WindowsError, IOError):
         logging.exception("OneDrive: Unable to {0}.".format(installerfunc))
         print "OneDrive: Unable to {0}.".format(installerfunc)
@@ -609,7 +609,7 @@ def modifyhostfile(undo, domainlist, name):
         try:
             with open(hostspath, 'ab') as f:
                 f.write('\r\n' + '\r\n'.join(nulledlist))
-            print "{0}: Domains succesfully appended.".format(name)
+            print "{0}: Domains successfully appended.".format(name)
         except (WindowsError, IOError):
             logging.exception("{0}: Could not append domains".format(name))
             print "{0}: Could not append domains".format(name)
