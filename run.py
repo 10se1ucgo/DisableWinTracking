@@ -474,8 +474,8 @@ def deleteservice(service):
         win32serviceutil.RemoveService(service)  # Delete service
         print "Services: {0} successfully deleted.".format(service)
     except pywintypes.error as e:
-        errors = ('does not exist', 'not been started')
-        if not any(error in e[2] for error in errors):
+        errors = (1060, 1062)
+        if not any(error == e[0] for error in errors):
             logging.exception("Services: {0} unable to be deleted.".format(service))
             print "Services: {0} unable to be deleted.".format(service)
 
@@ -485,8 +485,8 @@ def disableservice(service):
         win32serviceutil.StopService(service)  # Disable service
         print "Services: {0} successfully stopped.".format(service)
     except pywintypes.error as e:
-        errors = ('does not exist', 'not been started')
-        if not any(error in e[2] for error in errors):
+        errors = (1060, 1062)  # 1060: Does not exist. 1062: Not started.
+        if not any(error == e[0] for error in errors):
             logging.exception("Services: {0} unable to be stopped.".format(service))
             print "Services: {0} unable to be stopped.".format(service)
 
@@ -633,9 +633,12 @@ def apppackage(reinstall, applist):
     if not reinstall:
         for app in applist:
             try:
-                subprocess.Popen("powershell \"Get-AppxPackage *{0}* | Remove-AppxPackage\"".format(app), shell=True)
+                p = subprocess.Popen("powershell \"Get-AppxPackage *{0}*|Remove-AppxPackage\"".format(app), shell=True)
+                print "App management: Handled {0} successfully"
             except (WindowsError, IOError):
                 print "App management: Could not uninstall {0}".format(app)
+
+        p.communicate()  # Workaround for console window opening prematurely
 
     if reinstall:
         # We encode in Base64 because the command is complex and I'm too lazy to escape everything.
