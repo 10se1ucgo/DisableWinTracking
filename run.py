@@ -124,10 +124,11 @@ class MainFrame(wx.Frame):
         self.ipbox = wx.CheckBox(panel, label="Block tracking &IP addresses", pos=(10, 85))
         self.ipbox.SetToolTip(wx.ToolTip("Blocks known tracking IP addresses with Windows Firewall."))
 
-        # Windows Defender/Wifisense
-        self.defendwifibox = wx.CheckBox(panel, label="Stop Defender&/Wifisense Data Collection", pos=(10, 100))
-        self.defendwifibox.SetToolTip(wx.ToolTip("Modifies registry to stop Windows Defender and WifiSense from "
-                                                 "Data Collecting."))
+        # Windows Privacy Regs (Policy Manager)
+        self.ppbox = wx.CheckBox(panel, label="Turn off Policy Manager privacy violations", pos=(10, 100))
+        self.ppbox.SetToolTip(wx.ToolTip("Modifies registry to Disable privacy violations created by "
+                                                 "entries for the Policy Manager, including Windows "
+                                                 "Defender, WifiSense, and Delivery Optimization."))
 
         # OneDrive uninstall checkbox
         self.onedrivedbox = wx.CheckBox(panel, label="Uninstall &OneDrive", pos=(10, 115))
@@ -348,9 +349,9 @@ class MainFrame(wx.Frame):
         if self.ipbox.IsChecked():
             logging.info("IP block box ticked")
             blockips(iplist=self.ippicker.GetSelections(), undo=undo)
-        if self.defendwifibox.IsChecked():
+        if self.ppbox.IsChecked():
             logging.info("Defender/Wifisense box ticked")
-            stopdefendwifi(defendersenseval=defendersenseval)
+            privacypoliciesregs(defendersenseval=defendersenseval)
         if self.onedrivedbox.IsChecked():
             logging.info("OneDrive box ticked")
             modifyonedrive(installerfunc=installerfunc, filesyncval=filesyncval)
@@ -513,28 +514,61 @@ def modifyserviceregs(startval):
     modifyregistry(regdict=servicesdict, name="Services")
 
 
-def stopdefendwifi(defendersenseval):
-    # Windows Defender and WifiSense keys
-    wdwfsdict = {'Windows Defender Delivery Optimization Download':
+def privacypoliciesregs(val):
+    # Registry keys in policy manager including Windows Defender, WifiSense, Delivery Optimization
+    wdwfsdict = {'Delivery Optimization Download Mode' :
                  [_winreg.HKEY_LOCAL_MACHINE,
-                  r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config',
-                  'DODownloadMode', _winreg.REG_DWORD, defendersenseval],
-
-                 'WifiSense Credential Share': [_winreg.HKEY_LOCAL_MACHINE,
-                                                r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
-                                                'WiFiSenseCredShared', _winreg.REG_DWORD, defendersenseval],
-
-                 'WifiSense Open-ness': [_winreg.HKEY_LOCAL_MACHINE,
-                                         r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
-                                         'WiFiSenseOpen', _winreg.REG_DWORD, defendersenseval],
-
-                 'Windows Defender Spynet': [_winreg.HKEY_LOCAL_MACHINE,
-                                             r'SOFTWARE\Microsoft\Windows Defender\Spynet',
-                                             'SpyNetReporting', _winreg.REG_DWORD, defendersenseval],
-
-                 'Windows Defender Sample Submission': [_winreg.HKEY_LOCAL_MACHINE,
-                                                        r'SOFTWARE\Microsoft\Windows Defender\Spynet',
-                                                        'SubmitSamplesConsent', _winreg.REG_DWORD, defendersenseval]}
+                  r'SOFTWARE\Microsoft\PolicyManager\default\DeliveryOptimization\DODownloadMode',
+                  'value', _winreg.REG_DWORD, defendersenseval],
+                  
+                 'WifiSense Hotspot Auto Connect' :
+                 [_winreg.HKEY_LOCAL_MACHINE,
+                  r'SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWiFiSenseHotspots',
+                  'value', _winreg.REG_DWORD, defendersenseval],
+                  
+                 'WifiSense Hotspot Reporting' :
+                 [_winreg.HKEY_LOCAL_MACHINE,
+                  r'SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowWiFiHotSpotReporting',
+                  'value', _winreg.REG_DWORD, defendersenseval],
+                  
+                 'Windows Telemtry Data Gathering' :
+                 [_winreg.HKEY_LOCAL_MACHINE,
+                  r'SOFTWARE\Microsoft\PolicyManager\default\System\AllowTelemetry',
+                  'value', _winreg.REG_DWORD, defendersenseval],
+                  
+                 'Windows Defender Automatic Sample Submission' :
+                 [_winreg.HKEY_LOCAL_MACHINE,
+                  r'SOFTWARE\Microsoft\PolicyManager\default\Defender\SubmitSamplesConsent',
+                  'value', _winreg.REG_DWORD, defendersenseval],
+                  
+                 'Windows Defender Spynet (Cloud Protection)' :
+                 [_winreg.HKEY_LOCAL_MACHINE,
+                  r'SOFTWARE\Microsoft\PolicyManager\default\Defender\AllowCloudProtection',
+                  'value', _winreg.REG_DWORD, defendersenseval]}
+    
+    #Commented until we fix these or find alternatives like above
+    #Not sure if above will have desired effect, so I didn't want to get rid of these
+    
+    #wdwfsdict = {'Windows Defender Delivery Optimization Download':
+    #             [_winreg.HKEY_LOCAL_MACHINE,
+    #              r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config',
+    #              'DODownloadMode', _winreg.REG_DWORD, defendersenseval],
+    #
+    #             'WifiSense Credential Share': [_winreg.HKEY_LOCAL_MACHINE,
+    #                                            r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
+    #                                            'WiFiSenseCredShared', _winreg.REG_DWORD, defendersenseval],
+    #
+    #             'WifiSense Open-ness': [_winreg.HKEY_LOCAL_MACHINE,
+    #                                     r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
+    #                                     'WiFiSenseOpen', _winreg.REG_DWORD, defendersenseval],
+    #
+    #             'Windows Defender Spynet': [_winreg.HKEY_LOCAL_MACHINE,
+    #                                         r'SOFTWARE\Microsoft\Windows Defender\Spynet',
+    #                                         'SpyNetReporting', _winreg.REG_DWORD, defendersenseval],
+    #
+    #             'Windows Defender Sample Submission': [_winreg.HKEY_LOCAL_MACHINE,
+    #                                                    r'SOFTWARE\Microsoft\Windows Defender\Spynet',
+    #                                                    'SubmitSamplesConsent', _winreg.REG_DWORD, defendersenseval]}
 
     modifyregistry(wdwfsdict, name="WifiSense/Defender")
 
