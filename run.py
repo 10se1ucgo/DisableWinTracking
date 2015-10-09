@@ -1,4 +1,4 @@
-import ctypes
+﻿import ctypes
 import logging
 import os
 import subprocess
@@ -307,7 +307,7 @@ class MainFrame(wx.Frame):
             startval = 3
             telemetryval = 1
             undo = True
-            defendersenseval = 1
+            val = 1
             filesyncval = 0
             installerfunc = "install"
         else:
@@ -315,7 +315,7 @@ class MainFrame(wx.Frame):
             startval = 4
             telemetryval = 0
             undo = False
-            defendersenseval = 0
+            val = 0
             filesyncval = 1
             installerfunc = "uninstall"
             self.cluttercontrol()
@@ -350,8 +350,8 @@ class MainFrame(wx.Frame):
             logging.info("IP block box ticked")
             blockips(iplist=self.ippicker.GetSelections(), undo=undo)
         if self.ppbox.IsChecked():
-            logging.info("Defender/Wifisense box ticked")
-            privacypoliciesregs(defendersenseval=defendersenseval)
+            logging.info("Policy Manager box ticked")
+            privacypoliciesregs(val=val)
         if self.onedrivedbox.IsChecked():
             logging.info("OneDrive box ticked")
             modifyonedrive(installerfunc=installerfunc, filesyncval=filesyncval)
@@ -519,32 +519,32 @@ def privacypoliciesregs(val):
     wdwfsdict = {'Delivery Optimization Download Mode' :
                  [_winreg.HKEY_LOCAL_MACHINE,
                   r'SOFTWARE\Microsoft\PolicyManager\default\DeliveryOptimization\DODownloadMode',
-                  'value', _winreg.REG_DWORD, defendersenseval],
+                  'value', _winreg.REG_DWORD, val],
                   
                  'WifiSense Hotspot Auto Connect' :
                  [_winreg.HKEY_LOCAL_MACHINE,
                   r'SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWiFiSenseHotspots',
-                  'value', _winreg.REG_DWORD, defendersenseval],
+                  'value', _winreg.REG_DWORD, val],
                   
                  'WifiSense Hotspot Reporting' :
                  [_winreg.HKEY_LOCAL_MACHINE,
                   r'SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowWiFiHotSpotReporting',
-                  'value', _winreg.REG_DWORD, defendersenseval],
+                  'value', _winreg.REG_DWORD, val],
                   
                  'Windows Telemtry Data Gathering' :
                  [_winreg.HKEY_LOCAL_MACHINE,
                   r'SOFTWARE\Microsoft\PolicyManager\default\System\AllowTelemetry',
-                  'value', _winreg.REG_DWORD, defendersenseval],
+                  'value', _winreg.REG_DWORD, val],
                   
                  'Windows Defender Automatic Sample Submission' :
                  [_winreg.HKEY_LOCAL_MACHINE,
                   r'SOFTWARE\Microsoft\PolicyManager\default\Defender\SubmitSamplesConsent',
-                  'value', _winreg.REG_DWORD, defendersenseval],
+                  'value', _winreg.REG_DWORD, val],
                   
                  'Windows Defender Spynet (Cloud Protection)' :
                  [_winreg.HKEY_LOCAL_MACHINE,
                   r'SOFTWARE\Microsoft\PolicyManager\default\Defender\AllowCloudProtection',
-                  'value', _winreg.REG_DWORD, defendersenseval]}
+                  'value', _winreg.REG_DWORD, val]}
     
     #Commented until we fix these or find alternatives like above
     #Not sure if above will have desired effect, so I didn't want to get rid of these
@@ -570,7 +570,7 @@ def privacypoliciesregs(val):
     #                                                    r'SOFTWARE\Microsoft\Windows Defender\Spynet',
     #                                                    'SubmitSamplesConsent', _winreg.REG_DWORD, defendersenseval]}
 
-    modifyregistry(wdwfsdict, name="WifiSense/Defender")
+    modifyregistry(wdwfsdict, name="Policy Manager Registry Entries")
 
 
 def modifyonedrive(installerfunc, filesyncval):

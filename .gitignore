@@ -9,5 +9,13 @@ build/
 dist/
 *.spec
 
+#Sublime Stuff
+*.sublime-project
+*.sublime-workspace
+
 # Log
 DisableWinTracking.log
+
+# Ruined1 Stuff
+setup.py
+tester.py
