@@ -117,8 +117,9 @@ class MainFrame(wx.Frame):
 
         # Extra HOSTS checkbox
         self.extrahostbox = wx.CheckBox(panel, label="Block &even more tracking domains", pos=(10, 70))
-        self.extrahostbox.SetToolTip(wx.ToolTip("For the paranoid. Adds extra domains to the HOSTS file. WARNING: Some "
-                                                "things like Dr. Watson and Error Reporting may be turned off by this"))
+        self.extrahostbox.SetToolTip(wx.ToolTip("For the paranoid. Adds extra domains to the HOSTS file. WARNING: Skype"
+                                                " Dr. Watson, hotmail, and Error Reporting will be turned off by this!"))
+        self.Bind(wx.EVT_CHECKBOX, self.extrahosthostcheck, self.extrahostbox)
 
         # IP block checkbox
         self.ipbox = wx.CheckBox(panel, label="Block tracking &IP addresses", pos=(10, 85))
@@ -199,6 +200,24 @@ class MainFrame(wx.Frame):
     def telemetryhostcheck(self, event):
         # Automatically checks the domain block when the telemetry box is checked.
         self.hostbox.SetValue(self.telemetrybox.IsChecked())
+        
+    def extrahosthostcheck(self, event):
+        # Confirm the user realizes they're about to break skype, hotmail, etc
+        dlg = wx.MessageDialog(parent=None, message='Checking this box will disable '
+                               'the use of SKYPE, HOTMAIL, WATSON, ERROR REPORTING, '
+                               'and possibly other things. Are you SURE you want '
+                               'this box checked?', 
+                               caption='ATTENTION: Please be aware!',
+                               style=wx.YES_NO|wx.YES_DEFAULT|wx.ICON_EXCLAMATION)
+
+        if self.extrahostbox.GetValue() == True:
+            if dlg.ShowModal() == wx.ID_NO:
+                self.extrahostbox.SetValue(False)
+            else:
+                pass
+
+            dlg.Destroy()
+        
 
     def selectallapps(self, event):
         # Iters through all children of the app static box and checks them except for the last 3.
@@ -260,11 +279,13 @@ class MainFrame(wx.Frame):
                       'telemetry.appex.bing.net', 'telemetry.microsoft.com', 'telemetry.urs.microsoft.com',
                       'vortex-bn2.metron.live.com.nsatc.net', 'vortex-cy2.metron.live.com.nsatc.net',
                       'vortex-sandbox.data.microsoft.com', 'vortex-win.data.microsoft.com',
-                      'vortex.data.microsoft.com', 'watson.live.com', 'www.msftncsi.com', 'ssw.live.com')
+                      'vortex.data.microsoft.com', 'watson.live.com', 'www.msftncsi.com', 'ssw.live.com',
+                      'reports.wes.df.telemetry.microsoft.com', 'services.wes.df.telemetry.microsoft.com',
+                      )
 
-        extralist = ('fe2.update.microsoft.com.akadns.net', 'reports.wes.df.telemetry.microsoft.com',
-                     's0.2mdn.net', 'services.wes.df.telemetry.microsoft.com',
-                     'statsfe2.update.microsoft.com.akadns.net', 'survey.watson.microsoft.com', 'view.atdmt.com',
+        extralist = ('fe2.update.microsoft.com.akadns.net',
+                     's0.2mdn.net', 'statsfe2.update.microsoft.com.akadns.net',
+                     'survey.watson.microsoft.com', 'view.atdmt.com',
                      'watson.microsoft.com', 'watson.ppe.telemetry.microsoft.com',
                      'watson.telemetry.microsoft.com', 'watson.telemetry.microsoft.com.nsatc.net',
                      'wes.df.telemetry.microsoft.com', 'ui.skype.com', 'pricelist.skype.com', 'apps.skype.com',
