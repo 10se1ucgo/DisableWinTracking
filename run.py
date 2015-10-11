@@ -209,10 +209,14 @@ class MainFrame(wx.Frame):
                                'this box checked?', 
                                caption='ATTENTION: Please be aware!',
                                style=wx.YES_NO|wx.YES_DEFAULT|wx.ICON_EXCLAMATION)
-        if dlg.ShowModal() == wx.NO:
-            self.extrahostbox.SetValue(False)
-        else:
-            return
+
+        if self.extrahostbox.GetValue() == True:
+            if dlg.ShowModal() == wx.ID_NO:
+                self.extrahostbox.SetValue(False)
+            else:
+                pass
+
+            dlg.Destroy()
         
 
     def selectallapps(self, event):
