@@ -4,7 +4,6 @@ import os
 import subprocess
 import sys
 import _winreg
-import platform
 import win32serviceutil
 import wx
 import wx.lib.wordwrap
@@ -448,7 +447,7 @@ class MainFrame(wx.Frame):
 
 def osis64bit():
     # Detect if OS is 64bit
-    if platform.machine().endswith('64'):
+    if os.environ['PROCESSOR_ARCHITEW6432'].endswith('64'):
         return True
     else:
         return False
