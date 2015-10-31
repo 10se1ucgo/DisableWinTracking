@@ -13,8 +13,11 @@ from wx.lib.itemspicker import ItemsPicker, IP_SORT_CHOICES, IP_SORT_SELECTED, I
 vernumber = "v2.5.3"  # Version number
 
 # Configure the Logging module
-logging.basicConfig(filename='DisableWinTracking.log', level=logging.DEBUG,
-                    format='\n%(asctime)s %(levelname)s: %(message)s', datefmt='%H:%M:%S', filemode='w')
+try:
+    logging.basicConfig(filename='DisableWinTracking.log', level=logging.DEBUG,
+                        format='\n%(asctime)s %(levelname)s: %(message)s', datefmt='%H:%M:%S', filemode='w')
+except (WindowsError, IOError):
+    print "Could not create log file."
 
 
 class RedirectText(object):
