@@ -1,8 +1,12 @@
-﻿import ctypes
+﻿#!python2
+
+import ctypes
 import logging
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 import _winreg
 import win32serviceutil
 import wx
@@ -74,8 +78,8 @@ class MainFrame(wx.Frame):
         panel = wx.Panel(self)  # Frame panel
 
         # Test for elevation
-        if ctypes.windll.shell32.IsUserAnAdmin() != 1:
-            warn = wx.MessageDialog(parent=None,
+        if ctypes.windll.shell32.IsUserAnAdmin() != 0:
+            warn = wx.MessageDialog(parent=self,
                                     message="Program requires elevation, please run it as an administrator",
                                     caption="ERROR", style=wx.OK | wx.ICON_WARNING)
             warn.ShowModal()
@@ -119,8 +123,8 @@ class MainFrame(wx.Frame):
 
         # Extra HOSTS checkbox
         self.extrahostbox = wx.CheckBox(panel, label="Block &even more tracking domains", pos=(10, 70))
-        self.extrahostbox.SetToolTip(wx.ToolTip("For the paranoid. Adds extra domains to the HOSTS file. WARNING: Skype"
-                                                " Dr. Watson, hotmail, and Error Reporting will be turned off by this!"))
+        self.extrahostbox.SetToolTip(wx.ToolTip("For the paranoid. Adds extra domains to the HOSTS file. \
+                                                May disable Skype, Dr. Watson, Hotmail and/or Error Reporting"))
         self.Bind(wx.EVT_CHECKBOX, self.extrahosthostcheck, self.extrahostbox)
 
         # IP block checkbox
@@ -128,10 +132,8 @@ class MainFrame(wx.Frame):
         self.ipbox.SetToolTip(wx.ToolTip("Blocks known tracking IP addresses with Windows Firewall."))
 
         # Windows Privacy Regs (Policy Manager)
-        self.ppbox = wx.CheckBox(panel, label="Turn off Policy Manager privacy violations", pos=(10, 100))
-        self.ppbox.SetToolTip(wx.ToolTip("Modifies registry to Disable privacy violations created by "
-                                                 "entries for the Policy Manager, including Windows "
-                                                 "Defender, WifiSense, and Delivery Optimization."))
+        self.wdwsbox = wx.CheckBox(panel, label="Windows Defender/WifiSense data collection", pos=(10, 100))
+        self.wdwsbox.SetToolTip(wx.ToolTip("Modifies registry to prevent Defender/WifiSense data collection"))
 
         # OneDrive uninstall checkbox
         self.onedrivedbox = wx.CheckBox(panel, label="Uninstall &OneDrive", pos=(10, 115))
@@ -186,10 +188,7 @@ class MainFrame(wx.Frame):
                                     choices=("Privacy", "Revert"), style=wx.RA_SPECIFY_ROWS)
 
         self.goradbox.SetItemToolTip(0, "Using the selected settings, applies privacy.")
-        self.goradbox.SetItemToolTip(1, "Reverts everything selected to it's original form (Except the DiagTrack Log "
-                                        "and services if you chose the 'Delete' option)")
-
-        self.console = ConsoleFrame()  # Call ConsoleFrame to start redirecting stdout to a TextCtrl
+        self.goradbox.SetItemToolTip(1, "Reverts everything selected to it's original form")
 
         # Center and show the window
         self.Centre()
@@ -202,24 +201,19 @@ class MainFrame(wx.Frame):
     def telemetryhostcheck(self, event):
         # Automatically checks the domain block when the telemetry box is checked.
         self.hostbox.SetValue(self.telemetrybox.IsChecked())
-        
+
     def extrahosthostcheck(self, event):
-        # Confirm the user realizes they're about to break skype, hotmail, etc
-        dlg = wx.MessageDialog(parent=None, message='Checking this box will disable '
-                               'the use of SKYPE, HOTMAIL, WATSON, ERROR REPORTING, '
-                               'and possibly other things. Are you SURE you want '
-                               'this box checked?', 
-                               caption='ATTENTION: Please be aware!',
-                               style=wx.YES_NO|wx.YES_DEFAULT|wx.ICON_EXCLAMATION)
+        # Warn users about the potential side effects of the extra hosts mod.
+        hostwarn = wx.MessageDialog(parent=self,
+                                    message="This option could potentially prevent you from using one or more of the "
+                                    "following services:\n\nSkype, Hotmail, Dr. Watson, Error Reporting.\n\n Continue?",
+                                    caption="Attention!", style=wx.YES_NO | wx.ICON_EXCLAMATION)
 
-        if self.extrahostbox.GetValue() == True:
-            if dlg.ShowModal() == wx.ID_NO:
-                self.extrahostbox.SetValue(False)
-            else:
-                pass
+        if self.extrahostbox.GetValue() == 1:
+            if hostwarn.ShowModal() == wx.ID_NO:
+                self.extrahostbox.SetValue(0)
 
-            dlg.Destroy()
-        
+        hostwarn.Destroy()
 
     def selectallapps(self, event):
         # Iters through all children of the app static box and checks them except for the last 3.
@@ -229,14 +223,15 @@ class MainFrame(wx.Frame):
 
     def aboutbox(self, event):
         # About dialog
-        licensetext = "Copyright 2015 10se1ucgo\r\n\r\nLicensed under the Apache License, Version 2.0" \
-                      " (the \"License\");\r\nyou may not use this file except in compliance with the License" \
-                      ".\r\nYou may obtain a copy of the License at\r\n\r\n" \
-                      "    http://www.apache.org/licenses/LICENSE-2.0\r\n\r\nUnless required by applicable law or" \
-                      " agreed to in writing, software\r\ndistributed under the License is distributed on an" \
-                      " \"AS IS\" BASIS,\r\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied." \
-                      "\r\nSee the License for the specific language governing permissions and\r\nlimitations under" \
-                      " the License."
+
+        licensetext = "Copyright 2015 10se1ucgo\r\n\r\nLicensed under the Apache License, Version 2.0 " \
+                      "(the \"License\");\r\nyou may not use this file except in compliance with the License." \
+                      "\r\nYou may obtain a copy of the License at\r\n\r\n " \
+                      "  http://www.apache.org/licenses/LICENSE-2.0\r\n\r\nUnless required by applicable law or " \
+                      "agreed to in writing, software\r\ndistributed under the License is distributed on an " \
+                      "\"AS IS\" BASIS,\r\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied." \
+                      "\r\nSee the License for the specific language governing permissions and\r\nlimitations under " \
+                      "the License."
 
         aboutpg = wx.AboutDialogInfo()
         aboutpg.Name = "Disable Windows 10 Tracking"
@@ -282,16 +277,13 @@ class MainFrame(wx.Frame):
                       'vortex-bn2.metron.live.com.nsatc.net', 'vortex-cy2.metron.live.com.nsatc.net',
                       'vortex-sandbox.data.microsoft.com', 'vortex-win.data.microsoft.com',
                       'vortex.data.microsoft.com', 'watson.live.com', 'www.msftncsi.com', 'ssw.live.com',
-                      'reports.wes.df.telemetry.microsoft.com', 'services.wes.df.telemetry.microsoft.com',
-                      )
+                      'reports.wes.df.telemetry.microsoft.com', 'services.wes.df.telemetry.microsoft.com')
 
-        extralist = ('fe2.update.microsoft.com.akadns.net',
-                     's0.2mdn.net', 'statsfe2.update.microsoft.com.akadns.net',
-                     'survey.watson.microsoft.com', 'view.atdmt.com',
-                     'watson.microsoft.com', 'watson.ppe.telemetry.microsoft.com',
-                     'watson.telemetry.microsoft.com', 'watson.telemetry.microsoft.com.nsatc.net',
-                     'wes.df.telemetry.microsoft.com', 'ui.skype.com', 'pricelist.skype.com', 'apps.skype.com',
-                     'm.hotmail.com', 's.gateway.messenger.live.com')
+        extralist = ('fe2.update.microsoft.com.akadns.net', 's0.2mdn.net', 'statsfe2.update.microsoft.com.akadns.net',
+                     'survey.watson.microsoft.com', 'view.atdmt.com', 'watson.microsoft.com',
+                     'watson.ppe.telemetry.microsoft.com', 'watson.telemetry.microsoft.com',
+                     'watson.telemetry.microsoft.com.nsatc.net', 'wes.df.telemetry.microsoft.com', 'ui.skype.com',
+                     'pricelist.skype.com', 'apps.skype.com', 'm.hotmail.com', 's.gateway.messenger.live.com')
 
         self.normalpicker = ItemsPicker(settingsdialog, id=wx.ID_ANY, choices=[], selectedLabel="Domains to be blocked",
                                         ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
@@ -372,17 +364,17 @@ class MainFrame(wx.Frame):
         if self.ipbox.IsChecked():
             logging.info("IP block box ticked")
             blockips(iplist=self.ippicker.GetSelections(), undo=undo)
-        if self.ppbox.IsChecked():
+        if self.wdwsbox.IsChecked():
             logging.info("Policy Manager box ticked")
-            privacypoliciesregs(val=val)
+            stopdefendwifi(val=val)
         if self.onedrivedbox.IsChecked():
             logging.info("OneDrive box ticked")
             modifyonedrive(installerfunc=installerfunc, filesyncval=filesyncval)
         self.console.Show()  # Show console output window after the code is run
         self.console.Center()  # Center console window
         print "Done. It's recommended that you reboot as soon as possible for the full effect."
-        print "If you feel something didn't work properly, please press the 'Report an issue' " \
-              "button and follow the directions"
+        print "If you feel something didn't work properly, please press the 'Report an issue' \
+               button and follow the directions"
 
     def uninstapps(self, event):
         uninstalllist = []
@@ -537,63 +529,30 @@ def modifyserviceregs(startval):
     modifyregistry(regdict=servicesdict, name="Services")
 
 
-def privacypoliciesregs(val):
-    # Registry keys in policy manager including Windows Defender, WifiSense, Delivery Optimization
-    wdwfsdict = {'Delivery Optimization Download Mode' :
+def stopdefendwifi(defendersenseval):
+    # Windows Defender and WifiSense keys
+    wdwfsdict = {'Windows Defender Delivery Optimization Download':
                  [_winreg.HKEY_LOCAL_MACHINE,
-                  r'SOFTWARE\Microsoft\PolicyManager\default\DeliveryOptimization\DODownloadMode',
-                  'value', _winreg.REG_DWORD, val],
-                  
-                 'WifiSense Hotspot Auto Connect' :
-                 [_winreg.HKEY_LOCAL_MACHINE,
-                  r'SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWiFiSenseHotspots',
-                  'value', _winreg.REG_DWORD, val],
-                  
-                 'WifiSense Hotspot Reporting' :
-                 [_winreg.HKEY_LOCAL_MACHINE,
-                  r'SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowWiFiHotSpotReporting',
-                  'value', _winreg.REG_DWORD, val],
-                  
-                 'Windows Telemtry Data Gathering' :
-                 [_winreg.HKEY_LOCAL_MACHINE,
-                  r'SOFTWARE\Microsoft\PolicyManager\default\System\AllowTelemetry',
-                  'value', _winreg.REG_DWORD, val],
-                  
-                 'Windows Defender Automatic Sample Submission' :
-                 [_winreg.HKEY_LOCAL_MACHINE,
-                  r'SOFTWARE\Microsoft\PolicyManager\default\Defender\SubmitSamplesConsent',
-                  'value', _winreg.REG_DWORD, val],
-                  
-                 'Windows Defender Spynet (Cloud Protection)' :
-                 [_winreg.HKEY_LOCAL_MACHINE,
-                  r'SOFTWARE\Microsoft\PolicyManager\default\Defender\AllowCloudProtection',
-                  'value', _winreg.REG_DWORD, val]}
-    
-    #Commented until we fix these or find alternatives like above
-    #Not sure if above will have desired effect, so I didn't want to get rid of these
-    
-    #wdwfsdict = {'Windows Defender Delivery Optimization Download':
-    #             [_winreg.HKEY_LOCAL_MACHINE,
-    #              r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config',
-    #              'DODownloadMode', _winreg.REG_DWORD, defendersenseval],
-    #
-    #             'WifiSense Credential Share': [_winreg.HKEY_LOCAL_MACHINE,
-    #                                            r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
-    #                                            'WiFiSenseCredShared', _winreg.REG_DWORD, defendersenseval],
-    #
-    #             'WifiSense Open-ness': [_winreg.HKEY_LOCAL_MACHINE,
-    #                                     r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
-    #                                     'WiFiSenseOpen', _winreg.REG_DWORD, defendersenseval],
-    #
-    #             'Windows Defender Spynet': [_winreg.HKEY_LOCAL_MACHINE,
-    #                                         r'SOFTWARE\Microsoft\Windows Defender\Spynet',
-    #                                         'SpyNetReporting', _winreg.REG_DWORD, defendersenseval],
-    #
-    #             'Windows Defender Sample Submission': [_winreg.HKEY_LOCAL_MACHINE,
-    #                                                    r'SOFTWARE\Microsoft\Windows Defender\Spynet',
-    #                                                    'SubmitSamplesConsent', _winreg.REG_DWORD, defendersenseval]}
+                  r'SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config',
+                  'DODownloadMode', _winreg.REG_DWORD, defendersenseval],
 
-    modifyregistry(wdwfsdict, name="Policy Manager Registry Entries")
+                 'WifiSense Credential Share': [_winreg.HKEY_LOCAL_MACHINE,
+                                                r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
+                                                'WiFiSenseCredShared', _winreg.REG_DWORD, defendersenseval],
+
+                 'WifiSense Open-ness': [_winreg.HKEY_LOCAL_MACHINE,
+                                         r'SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features',
+                                         'WiFiSenseOpen', _winreg.REG_DWORD, defendersenseval],
+
+                 'Windows Defender Spynet': [_winreg.HKEY_LOCAL_MACHINE,
+                                             r'SOFTWARE\Microsoft\Windows Defender\Spynet',
+                                             'SpyNetReporting', _winreg.REG_DWORD, defendersenseval],
+
+                 'Windows Defender Sample Submission': [_winreg.HKEY_LOCAL_MACHINE,
+                                                        r'SOFTWARE\Microsoft\Windows Defender\Spynet',
+                                                        'SubmitSamplesConsent', _winreg.REG_DWORD, defendersenseval]}
+
+    modifyregistry(wdwfsdict, name="WifiSense/Defender")
 
 
 def modifyonedrive(installerfunc, filesyncval):
@@ -629,7 +588,7 @@ def modifyonedrive(installerfunc, filesyncval):
 
 def modifyregistry(regdict, name):
     # Modifies registry keys from a dictionary
-    # FORMAT: regdict = {"Title": [_winreg.HKEY, r'regkeypath', 'regkey', _winreg.REG_[DWORD/SZ/etc.], keyvalue
+    # FORMAT: regdict = {"Name": [_winreg.HKEY, r'regkeypath', 'regkey', _winreg.REG_(DWORD/SZ/etc.), keyvalue]}
     # keyvalue = String, only if REG_SZ.
 
     if osis64bit():
@@ -661,6 +620,7 @@ def modifyhostfile(undo, domainlist, name):
     nulledlist = [nullip + x for x in domainlist]
 
     hostspath = os.path.join(os.environ['SYSTEMROOT'], 'System32\\drivers\\etc\\hosts')
+    subprocess.call("takeown /f {0} && icacls {0} /grant administrators:F".format(hostspath), shell=True)
 
     if not undo:
         try:
@@ -673,13 +633,12 @@ def modifyhostfile(undo, domainlist, name):
 
     elif undo:
         try:
-            with open(hostspath, 'r') as hostfile, open(hostspath + "temp", 'w') as tempfile:
+            with open(hostspath, 'r') as hostfile, tempfile.NamedTemporaryFile(delete=False) as temphosts:
                 for line in hostfile:
                     if not any(domain in line for domain in domainlist):
-                        tempfile.write(line)
-
-            os.remove(hostspath)
-            os.rename(hostspath + "temp", hostspath)
+                        temphosts.write(line)
+                temphosts.close()
+                shutil.move(temphosts.name, hostspath)
             print "{0}: Domains successfully removed.".format(name)
         except (WindowsError, IOError):
             logging.exception("{0}: Could not remove domains.".format(name))
@@ -701,10 +660,8 @@ def apppackage(reinstall, applist):
         # We encode in Base64 because the command is complex and I'm too lazy to escape everything.
         # It's uncoded format command: "Get-AppxPackage -AllUsers| Foreach {Add-AppxPackage -DisableDevelopmentMode
         # -Register "$($_.InstallLocation)\AppXManifest.xml"}"
-        encodedcommand = "RwBlAHQALQBBAHAAcAB4AFAAYQBjAGsAYQBnAGUAIAAtAEEAbABsAFUAcwBlAHIAcwB8ACAARgBvAHIAZQBhAGMA" \
-                         "aAAgAHsAQQBkAGQALQBBAHAAcAB4AFAAYQBjAGsAYQBnAGUAIAAtAEQAaQBzAGEAYgBsAGUARABlAHYAZQBsAG8AcA" \
-                         "BtAGUAbgB0AE0AbwBkAGUAIAAtAFIAZQBnAGkAcwB0AGUAcgAgACIAJAAoACQAXwAuAEkAbgBzAHQAYQBsAGwATABvA" \
-                         "GMAYQB0AGkAbwBuACkAXABBAHAAcABYAE0AYQBuAGkAZgBlAHMAdAAuAHgAbQBsACIAfQA="
+        encodedcommand = 'Get-AppxPackage -AllUsers | Foreach {Add-AppxPackage -DisableDevelopmentMode # -Register \
+                         "$($_.InstallLocation)\AppXManifest.xml"}'
         try:
             subprocess.call("powershell -EncodedCommand {0}".format(encodedcommand), shell=True)
         except (WindowsError, IOError):
