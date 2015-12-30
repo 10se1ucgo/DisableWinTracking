@@ -277,7 +277,11 @@ class MainFrame(wx.Frame):
                       'vortex-bn2.metron.live.com.nsatc.net', 'vortex-cy2.metron.live.com.nsatc.net',
                       'vortex-sandbox.data.microsoft.com', 'vortex-win.data.microsoft.com',
                       'vortex.data.microsoft.com', 'watson.live.com', 'www.msftncsi.com', 'ssw.live.com',
-                      'reports.wes.df.telemetry.microsoft.com', 'services.wes.df.telemetry.microsoft.com')
+                      'reports.wes.df.telemetry.microsoft.com', 'services.wes.df.telemetry.microsoft.com',
+                      'web.vortex.data.microsoft.com', 'vortex-win.data.metron.live.com.nsatc.net', 
+                      'v10.vortex-win.data.microsoft.com', 'vortex-cy2.metron.live.com.nsatc.net',
+                      'vortex.data.glbdns2.microsoft.com', 'vortex-win.data.microsoft.com', 
+                      'vortex.data.microsoft.com')
 
         extralist = ('fe2.update.microsoft.com.akadns.net', 's0.2mdn.net', 'statsfe2.update.microsoft.com.akadns.net',
                      'survey.watson.microsoft.com', 'view.atdmt.com', 'watson.microsoft.com',
@@ -295,7 +299,8 @@ class MainFrame(wx.Frame):
         self.extrapicker.SetSelections(extralist)
 
         iplist = ('2.22.61.43', '2.22.61.66', '65.39.117.230', '65.55.108.23', '23.218.212.69',
-                  '134.170.30.202', '137.116.81.24', '157.56.106.189', '204.79.197.200', '65.52.108.33')
+                  '134.170.30.202', '137.116.81.24', '157.56.106.189', '204.79.197.200', '65.52.108.33',
+                  '64.4.54.254')
 
         self.ippicker = ItemsPicker(settingsdialog, id=wx.ID_ANY, choices=[],
                                     selectedLabel="IP addresses to be blocked",
