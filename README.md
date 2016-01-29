@@ -1,3 +1,5 @@
+No longer being developed, see issue #147.
+
 # DisableWinTracking
 
 ![Main frame image](http://i.imgur.com/4iDf3Gb.png)
