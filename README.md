@@ -1,4 +1,4 @@
-No longer being developed, see issue #147.
+No longer being developed, [see issue #147](https://github.com/10se1ucgo/DisableWinTracking/issues/147).
 
 # DisableWinTracking
 
