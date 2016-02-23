@@ -49,7 +49,7 @@ Action:
 
 #### HOSTS
 
-Append known tracking domains to the `HOSTS` file located in `C:\Windows\System32\drivers\etc`
+Append known tracking domains to the `HOSTS` file located in `C:\Windows\System32\drivers\etc`  
 To add these domains to the `HOSTS` file using another tool, it is available in raw form at https://gist.github.com/10se1ucgo/fcb774d781a66ea9d31f
 
 #### IP Blocking
