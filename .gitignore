@@ -14,8 +14,8 @@ dist/
 *.sublime-workspace
 
 # Log
-DisableWinTracking.log
+dwt.log
 
-# Ruined1 Stuff
-setup.py
-tester.py
+# Other
+getapps.py
+getreleases.py

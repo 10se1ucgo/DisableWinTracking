@@ -1,18 +1,10 @@
-Currently being re-written, [see issue #153](https://github.com/10se1ucgo/DisableWinTracking/issues/153)
-
-~~No longer being developed, [see issue #147](https://github.com/10se1ucgo/DisableWinTracking/issues/147).~~
-
-~~This may no longer thoroughly disable all tracking, as some services have been added or have had their names changed. [See Issue #124.](https://github.com/10se1ucgo/DisableWinTracking/issues/124)~~
-
 # DisableWinTracking
-
-![Main frame image](http://i.imgur.com/4iDf3Gb.png)
 
 A tool that I created to use some of the known methods of disabling tracking in Windows 10.
 
-## DOWNLOAD!!
+## DOWNLOAD
 
-[DOWNLOAD EXE HERE!!](https://github.com/10se1ucgo/DisableWinTracking/releases/)
+[DOWNLOAD EXE HERE](https://github.com/10se1ucgo/DisableWinTracking/releases/)
 
 ## How to Use
 
@@ -20,12 +12,12 @@ You can either:
 
 A. [Run the binary uploaded to the Release tab as an Administrator and select which options you'd like](https://github.com/10se1ucgo/DisableWinTracking/releases/)
 
-B. Install Python and the dependencies listed below and run the script from an elevated (`admin`) command prompt and select which options you'd like  
+B. Install Python and the dependencies listed below and run the script from an elevated command prompt and select which options you'd like  
 
 ## Dependencies
 This is only to run the script from source, [download the exe here](https://github.com/10se1ucgo/DisableWinTracking/releases/)
-* [Python 2.7](https://www.python.org/download/releases/2.7/) (or 3 with 2to3.py or something)
-* [wxPython](http://wxpython.org/download.php)
+* Tested on Python 3
+* [wxPython](http://wxpython.org/download.php) -- GUI (Tested with wxPython=Phoenix)
 * [PyWin32](http://sourceforge.net/projects/pywin32/files/pywin32/)
 * Windows 10 (Duh)
 
@@ -51,22 +43,22 @@ Action:
 
 #### HOSTS
 
-Append known tracking domains to the `HOSTS` file located in `C:\Windows\System32\drivers\etc`  
-To add these domains to the `HOSTS` file using another tool, it is available in raw form at https://gist.github.com/10se1ucgo/fcb774d781a66ea9d31f
+Append known tracking domains to the `HOSTS` file located in `C:\Windows\System32\drivers\etc`
 
 #### IP Blocking
 
 Blocks known tracking IPs with the Windows Firewall. The rules are named TrackingIPX, replacing X with the IP numbers.
 
-#### Windows Defender / WifiSense
+#### Windows Defender
 
-Set disabled value to keys in registry for things such as:
-- Windows Defender
-    - Automatic Sample Submission
-    - Delivery Optimization Download Mode
-- WifiSense
-    - Credential Share
-    - Open-ness
+Disables the following:
+- Automatic Sample Submission
+- Delivery Optimization Download Mode
+ 
+#### WifiSense
+Disables the following:
+- Credential Share
+- Open-ness
 
 #### OneDrive
 
@@ -83,16 +75,19 @@ Selecting the "Delete" choice will completely delete the tracking services.
 
 ## License
 
-Copyright 2015 10se1ucgo
+```
+Copyright (C) 10se1ucgo 2016
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    http://www.apache.org/licenses/LICENSE-2.0
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+```
