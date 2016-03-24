@@ -42,11 +42,11 @@ def ip_block(ip_list, undo):
             cmd += ' dir=out protocol=any remoteip="{ip}" profile=any action=block'.format(ip=ip)
 
         try:
-            subprocess.check_output(shlex.split(cmd), stderr=subprocess.STDOUT)
+            subprocess_handler(shlex.split(cmd))
             logger.info("IP Blocker: The IP {ip} was successfully blocked.".format(ip=ip))
         except subprocess.CalledProcessError as e:
             logger.exception("IP Blocker: Failed to block IP {ip}".format(ip=ip))
-            logger.critical("IP Blocker: Error output:\n" + e.output.decode('ascii', 'replace'))
+            logger.critical("IP Blocker: Error output:\n" + e.stdout.decode('ascii', 'replace'))
 
 
 def clear_diagtrack():
@@ -56,7 +56,7 @@ def clear_diagtrack():
     lock_cmd = "echo y|cacls {file} /d SYSTEM".format(file=file)
 
     try:
-        subprocess.check_output(shlex.split(own_cmd), stderr=subprocess.STDOUT)
+        subprocess_handler(shlex.split(own_cmd))
     except subprocess.CalledProcessError as e:
         logger.exception("DiagTrack: Failed to clear DiagTrack log -- could not take ownership of file")
         logger.critical("DiagTrack: Error output:\n" + e.output.decode('ascii', 'replace'))
@@ -64,7 +64,7 @@ def clear_diagtrack():
 
     try:
         open(file, 'w').close()
-        subprocess.call(shlex.split(lock_cmd), stderr=subprocess.STDOUT)
+        subprocess_handler(shlex.split(lock_cmd))
         logger.info("DiagTrack: Successfully cleared and locked DiagTrack log.")
     except subprocess.CalledProcessError as e:
         logger.exception("DiagTrack: Failed to clear DiagTrack log -- could not clear or lock")
@@ -77,7 +77,7 @@ def delete_service(service):
         logging.info("Services: Succesfully removed service '{service}'".format(service=service))
     except pywintypes.error as e:
         errors = (winerror.ERROR_SERVICE_DOES_NOT_EXIST, winerror.ERROR_SERVICE_NOT_ACTIVE)
-        if not any(error == e[0] for error in errors):
+        if not any(error == e.winerror for error in errors):
             logging.exception("Services: Failed to remove service '{service}'".format(service=service))
 
 
@@ -87,7 +87,7 @@ def disable_service(service):
         logging.info("Services: Succesfully stopped service '{service}'".format(service=service))
     except pywintypes.error as e:
         errors = (winerror.ERROR_SERVICE_DOES_NOT_EXIST, winerror.ERROR_SERVICE_NOT_ACTIVE)
-        if not any(error == e[0] for error in errors):
+        if not any(error == e.winerror for error in errors):
             logging.exception("Services: Failed to stop service '{service}'".format(service=service))
 
 
@@ -156,9 +156,9 @@ def onedrive(undo):
 
     system = "SysWOW64" if is_64bit() else "System32"
     onedrive_setup = os.path.join(os.environ['SYSTEMROOT'], "{system}/OneDriveSetup.exe".format(system=system))
-    cmd = {"{bin} /{action}".format(bin=onedrive_setup, action=action)}
+    cmd = "{bin} /{action}".format(bin=onedrive_setup, action=action)
     try:
-        subprocess.call(shlex.split(cmd))
+        subprocess.call(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
         logger.info("OneDrive: successfully {action}ed".format(action=action))
     except (WindowsError, IOError):
         logger.info("OneDrive: unable to {action}".format(action=action))
@@ -209,7 +209,8 @@ def app_manager(apps, undo):
     for app in apps:
         cmd = 'powershell "Get-AppxPackage *{app}*|Remove-AppxPackage"'.format(app=app)
         try:
-            process = subprocess.Popen(shlex.split(cmd), stderr=subprocess.STDOUT)
+            process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                       stdin=subprocess.PIPE)
             running.append(process)
         except OSError:
             logging.exception("App remover: Failed to remove app '{app}'".format(app=app))
@@ -217,6 +218,12 @@ def app_manager(apps, undo):
     for process in running:
         process.wait()
 
+
+def subprocess_handler(cmd):
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+    output = p.communicate()
+    if p.returncode:
+        raise subprocess.CalledProcessError(returncode=p.returncode, cmd=cmd, output=output[0], stderr=output[1])
 
 # Old reinstall code:
 # if reinstall:
