@@ -14,12 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with DisableWinTracking.  If not, see <http://www.gnu.org/licenses/>.
-import os
 import logging
 import sys
 import io
 import platform
 import traceback
+import webbrowser
 from ctypes import windll
 
 import wx
@@ -68,7 +68,7 @@ class ConsoleDialog(wx.Dialog):
         self.SetSizer(top_sizer)
 
     def submit_issue(self, event):
-        os.startfile("https://github.com/10se1ucgo/DisableWinTracking/issues/new")
+        webbrowser.open_new_tab("https://github.com/10se1ucgo/DisableWinTracking/issues/new")
 
 
 class MainFrame(wx.Frame):
@@ -236,7 +236,6 @@ class MainPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, handler=self.go, source=go_button)
 
         self.SetSizer(top_sizer)
-        print(self.GetSize())
 
     def select_all_apps(self, event):
         # Iters through all children of the wxStaticBox of the wxStaticBoxSizer and checks/un checks all wxCheckBoxes.
@@ -422,5 +421,6 @@ if __name__ == '__main__':
     console = ConsoleDialog(sys.stdout)
     setup_logging()
     sys.excepthook = exception_hook
+    dwt_about.update_check(None)
     frame.Show()
     wx_app.MainLoop()

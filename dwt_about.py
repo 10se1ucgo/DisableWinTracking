@@ -16,6 +16,11 @@
 # along with DisableWinTracking.  If not, see <http://www.gnu.org/licenses/>.
 
 # dwt.py will become cluttered enough :^)
+import json
+import urllib.request
+import webbrowser
+from distutils.version import StrictVersion
+
 import wx
 import wx.adv
 import wx.lib.scrolledpanel as sp
@@ -158,3 +163,21 @@ class Licenses(wx.Dialog):
         self.scrolled_panel.SetSizerAndFit(self.scroll_sizer)
         self.scrolled_panel.SetupScrolling()
         self.Show()
+
+
+def update_check(parent):
+    response = urllib.request.urlopen('https://api.github.com/repos/10se1ucgo/DisableWinTracking/releases/latest')
+    release = json.loads(response.read().decode())
+    if release['prerelease']:
+        return
+    new = release['tag_name']
+
+    try:
+        if StrictVersion(__version__) < StrictVersion(new.lstrip('v')):
+            info = wx.MessageDialog(parent, message="DWT {v} is now available!\nGo to download page?".format(v=new),
+                                    caption="DWT Update", style=wx.OK | wx.CANCEL | wx.ICON_INFORMATION)
+            if info.ShowModal() == wx.ID_OK:
+                webbrowser.open_new_tab(release['html_url'])
+            info.Destroy()
+    except ValueError:
+        pass

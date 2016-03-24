@@ -21,10 +21,11 @@ import pywintypes
 import shutil
 import subprocess
 import tempfile
-import win32serviceutil
-import winerror
 import winreg
 import shlex
+
+import win32serviceutil
+import winerror
 
 logger = logging.getLogger('dwt.util')
 
