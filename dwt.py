@@ -90,7 +90,7 @@ class MainFrame(wx.Frame):
         menu_bar.Append(help_menu, "&Help")
         self.SetMenuBar(menu_bar)
 
-        if bool(windll.advpack.IsNTAdmin(0, None)):
+        if not bool(windll.advpack.IsNTAdmin(0, None)):
             warn = wx.MessageDialog(parent=self,
                                     message="Program requires elevation, please run it as an administrator.",
                                     caption="ERROR!", style=wx.OK | wx.ICON_WARNING)
