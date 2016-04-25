@@ -30,9 +30,41 @@ import winerror
 logger = logging.getLogger('dwt.util')
 
 
+class CalledProcessError(Exception):
+    """This exception is raised by subprocess_handler() returns a non-zero exit status.
+    It is a direct copy + paste backport from Python 3, as the Python 2 version does not
+    include the "stderr" property.
+
+    Original docstring:
+        This exception is raised when a process run by check_call() or
+        check_output() returns a non-zero exit status.
+        The exit status will be stored in the returncode attribute;
+        check_output() will also store the output in the output attribute.
+    """
+    def __init__(self, returncode, cmd, output=None, stderr=None):
+        self.returncode = returncode
+        self.cmd = cmd
+        self.output = output
+        self.stderr = stderr
+
+    def __str__(self):
+        return "Command '%s' returned non-zero exit status %d" % (self.cmd, self.returncode)
+
+    @property
+    def stdout(self):
+        """Alias for output attribute, to match stderr"""
+        return self.output
+
+    @stdout.setter
+    def stdout(self, value):
+        # There's no obvious reason to set this, but allow it anyway so
+        # .stdout is a transparent alias for .output
+        self.output = value
+
+
 def is_64bit():
     # Detect if OS is 64bit
-    return True if "64" in platform.uname().machine else False
+    return True if "64" in platform.machine() else False
 
 
 def ip_block(ip_list, undo):
@@ -45,7 +77,7 @@ def ip_block(ip_list, undo):
         try:
             subprocess_handler(shlex.split(cmd))
             logger.info("IP Blocker: The IP {ip} was successfully blocked.".format(ip=ip))
-        except subprocess.CalledProcessError as e:
+        except CalledProcessError as e:
             logger.exception("IP Blocker: Failed to block IP {ip}".format(ip=ip))
             logger.critical("IP Blocker: Error output:\n" + e.stdout.decode('ascii', 'replace'))
 
@@ -58,7 +90,7 @@ def clear_diagtrack():
 
     try:
         subprocess_handler(shlex.split(own_cmd))
-    except subprocess.CalledProcessError as e:
+    except CalledProcessError as e:
         logger.exception("DiagTrack: Failed to clear DiagTrack log -- could not take ownership of file")
         logger.critical("DiagTrack: Error output:\n" + e.output.decode('ascii', 'replace'))
         return
@@ -67,7 +99,7 @@ def clear_diagtrack():
         open(file, 'w').close()
         subprocess_handler(shlex.split(lock_cmd))
         logger.info("DiagTrack: Successfully cleared and locked DiagTrack log.")
-    except subprocess.CalledProcessError as e:
+    except CalledProcessError as e:
         logger.exception("DiagTrack: Failed to clear DiagTrack log -- could not clear or lock")
         logger.critical("DiagTrack: Error output:\n" + e.output.decode('ascii', 'replace'))
 
@@ -75,21 +107,21 @@ def clear_diagtrack():
 def delete_service(service):
     try:
         win32serviceutil.RemoveService(service)
-        logging.info("Services: Succesfully removed service '{service}'".format(service=service))
+        logger.info("Services: Succesfully removed service '{service}'".format(service=service))
     except pywintypes.error as e:
         errors = (winerror.ERROR_SERVICE_DOES_NOT_EXIST, winerror.ERROR_SERVICE_NOT_ACTIVE)
         if not any(error == e.winerror for error in errors):
-            logging.exception("Services: Failed to remove service '{service}'".format(service=service))
+            logger.exception("Services: Failed to remove service '{service}'".format(service=service))
 
 
 def disable_service(service):
     try:
         win32serviceutil.StopService(service)
-        logging.info("Services: Succesfully stopped service '{service}'".format(service=service))
+        logger.info("Services: Succesfully stopped service '{service}'".format(service=service))
     except pywintypes.error as e:
         errors = (winerror.ERROR_SERVICE_DOES_NOT_EXIST, winerror.ERROR_SERVICE_NOT_ACTIVE)
         if not any(error == e.winerror for error in errors):
-            logging.exception("Services: Failed to stop service '{service}'".format(service=service))
+            logger.exception("Services: Failed to stop service '{service}'".format(service=service))
 
 
 def telemetry(undo):
@@ -173,9 +205,9 @@ def set_registry(keys):
             key = winreg.CreateKeyEx(values[0], values[1], 0, mask)
             winreg.SetValueEx(key, values[2], 0, values[3], values[4])
             winreg.CloseKey(key)
-            logging.info("Registry: Successfully modified {key} key.".format(key=key_name))
+            logger.info("Registry: Successfully modified {key} key.".format(key=key_name))
         except OSError:
-            logging.exception("Registry: Unable to mody {key} key.".format(key=key_name))
+            logger.exception("Registry: Unable to mody {key} key.".format(key=key_name))
 
 
 def host_file(entries, undo):
@@ -193,40 +225,44 @@ def host_file(entries, undo):
                 shutil.move(temp.name, hosts_path)
             return True
         except OSError:
-            logging.exception("Hosts: Failed to undo hosts file")
+            logger.exception("Hosts: Failed to undo hosts file")
     else:
         try:
             with open(hosts_path, 'a') as f:
                 f.write('\n' + '\n'.join(nulled_entires))
             return True
         except (WindowsError, IOError):
-            logging.exception("Hosts: Failed to modify hosts file")
+            logger.exception("Hosts: Failed to modify hosts file")
 
     return False
 
 
 def app_manager(apps, undo):
-    running = []
+    running = {}
     for app in apps:
         cmd = 'powershell "Get-AppxPackage *{app}*|Remove-AppxPackage"'.format(app=app)
         try:
             process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                        stdin=subprocess.PIPE)
-            running.append(process)
+            running[app] = process
         except OSError:
-            logging.exception("App remover: Failed to remove app '{app}'".format(app=app))
+            logger.exception("App remover: Failed to remove app '{app}'".format(app=app))
 
-    for process in running:
+    for app, process in running.items():
         process.wait()
+        if process.returncode:
+            logger.exception("App remover: Failed to remove app '{app}'".format(app=app))
+        else:
+            logger.info("Successfully removed app '{app}'".format(app=app))
 
 
 def subprocess_handler(cmd):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
     output = p.communicate()
     if p.returncode:
-        raise subprocess.CalledProcessError(returncode=p.returncode, cmd=cmd, output=output[0], stderr=output[1])
+        raise CalledProcessError(returncode=p.returncode, cmd=cmd, output=output[0], stderr=output[1])
 
-# Old reinstall code:
+# Old reinstall code, does not work:
 # if reinstall:
 #     # We encode in Base64 because the command is complex and I'm too lazy to escape everything.
 #     # It's uncoded format command: "Get-AppxPackage -AllUsers| Foreach {Add-AppxPackage -DisableDevelopmentMode

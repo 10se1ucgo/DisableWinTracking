@@ -102,6 +102,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, lambda x: dwt_about.about_dialog(self), about)
         self.Bind(wx.EVT_MENU, panel.settings, settings)
         self.Bind(wx.EVT_MENU, lambda x: dwt_about.Licenses(self), licenses)
+        self.Layout()
 
 
 class MainPanel(wx.Panel):
@@ -160,7 +161,7 @@ class MainPanel(wx.Panel):
         go_button = wx.Button(self, label="Go!")
 
         self.app_box = wx.StaticBoxSizer(wx.VERTICAL, self, "Built-in Apps")
-        stat_box = self.app_box.GetStaticBox
+        stat_box = self.app_box.GetStaticBox()
         top_app_sizer = wx.BoxSizer(wx.HORIZONTAL)
         button_app_sizer = wx.BoxSizer(wx.HORIZONTAL)
         left_app_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -168,30 +169,31 @@ class MainPanel(wx.Panel):
         right_app_sizer = wx.BoxSizer(wx.VERTICAL)
 
         # wx.CheckBox(app_box.GetStaticBox(), label="Name", name="search_name")
-        wx.CheckBox(stat_box(), label="3D Builder", name="3dbuilder")
-        wx.CheckBox(stat_box(), label="Calender and Mail", name="windowscommunicationsapps")
-        wx.CheckBox(stat_box(), label="Camera", name="windowscamera")
-        wx.CheckBox(stat_box(), label="Get Office App", name="officehub")
-        wx.CheckBox(stat_box(), label="Get Skype App", name="skypeapp")
-        wx.CheckBox(stat_box(), label="Get Started App", name="getstarted")
-        wx.CheckBox(stat_box(), label="Groove Music", name="zunemusic")
-        wx.CheckBox(stat_box(), label="Maps", name="windowsmaps")
-        wx.CheckBox(stat_box(), label="Solitaire Collection", name="solitairecollection")
-        wx.CheckBox(stat_box(), label="Money", name="bingfinance")
-        wx.CheckBox(stat_box(), label="Movies && TV", name="zunevideo")
-        wx.CheckBox(stat_box(), label="News", name="bingnews")
-        wx.CheckBox(stat_box(), label="OneNote App", name="onenote")
-        wx.CheckBox(stat_box(), label="People", name="people")
-        wx.CheckBox(stat_box(), label="Phone Companion", name="windowsphone")
-        wx.CheckBox(stat_box(), label="Photos", name="photos")
-        wx.CheckBox(stat_box(), label="Sports", name="bingsports")
-        wx.CheckBox(stat_box(), label="Voice Recorder", name="soundrecorder")
-        wx.CheckBox(stat_box(), label="Weather", name="bingweather")
-        wx.CheckBox(stat_box(), label="Xbox", name="xboxapp")
-        remove_app_button = wx.Button(stat_box(), label="Remove selected apps")
-        select_all_check = wx.CheckBox(stat_box(), label="Select all")
+        wx.CheckBox(stat_box, label="3D Builder", name="3dbuilder")
+        wx.CheckBox(stat_box, label="Calender and Mail", name="windowscommunicationsapps")
+        wx.CheckBox(stat_box, label="Camera", name="windowscamera")
+        wx.CheckBox(stat_box, label="Get Office App", name="officehub")
+        wx.CheckBox(stat_box, label="Get Skype App", name="skypeapp")
+        wx.CheckBox(stat_box, label="Get Started App", name="getstarted")
+        wx.CheckBox(stat_box, label="Groove Music", name="zunemusic")
+        wx.CheckBox(stat_box, label="Maps", name="windowsmaps")
+        wx.CheckBox(stat_box, label="Solitaire Collection", name="solitairecollection")
+        wx.CheckBox(stat_box, label="Sway App", name="sway")
+        wx.CheckBox(stat_box, label="Money", name="bingfinance")
+        wx.CheckBox(stat_box, label="Movies && TV", name="zunevideo")
+        wx.CheckBox(stat_box, label="News", name="bingnews")
+        wx.CheckBox(stat_box, label="OneNote App", name="onenote")
+        wx.CheckBox(stat_box, label="People", name="people")
+        wx.CheckBox(stat_box, label="Phone Companion", name="windowsphone")
+        wx.CheckBox(stat_box, label="Photos", name="photos")
+        wx.CheckBox(stat_box, label="Sports", name="bingsports")
+        wx.CheckBox(stat_box, label="Voice Recorder", name="soundrecorder")
+        wx.CheckBox(stat_box, label="Weather", name="bingweather")
+        wx.CheckBox(stat_box, label="Xbox", name="xboxapp")
+        remove_app_button = wx.Button(stat_box, label="Remove selected apps")
+        select_all_check = wx.CheckBox(stat_box, label="Select all")
 
-        sorted_list = sorted(stat_box().GetChildren(), key=lambda x: x.GetLabel())
+        sorted_list = sorted(stat_box.GetChildren(), key=lambda x: x.GetLabel())
         for index, item in enumerate([x for x in sorted_list if isinstance(x, wx.CheckBox) and x != select_all_check]):
             n = len(sorted_list) // 3
             if index <= n:
@@ -232,6 +234,7 @@ class MainPanel(wx.Panel):
         check_sizer.Add(self.onedrive_check, 0, wx.ALL, 1)
 
         self.Bind(wx.EVT_CHECKBOX, handler=self.select_all_apps, source=select_all_check)
+        self.Bind(wx.EVT_CHECKBOX, handler=self.hosts_warn, source=self.extra_host_check)
         self.Bind(wx.EVT_BUTTON, handler=self.remove_apps, source=remove_app_button)
         self.Bind(wx.EVT_BUTTON, handler=self.go, source=go_button)
 
@@ -242,6 +245,19 @@ class MainPanel(wx.Panel):
         for child in self.app_box.GetStaticBox().GetChildren():
             if isinstance(child, wx.CheckBox):
                 child.SetValue(event.IsChecked())
+
+    def hosts_warn(self, event):
+        # Warn users about the potential side effects of the extra hosts mod.
+        if event.IsChecked():
+            warn = wx.MessageDialog(parent=self,
+                                    message="This option could potentially disable one or more of the following "
+                                            "services:\n\nSkype, Hotmain, Dr. Watson and/or Error Reporting. Continue?",
+                                    caption="Attention!", style=wx.YES_NO | wx.ICON_EXCLAMATION)
+
+            if warn.ShowModal() == wx.ID_NO:
+                event.GetObject().SetValue(False)
+
+            warn.Destroy()
 
     def go(self, event):
         if not all((self.picked_ips, self.picked_extra, self.picked_normal)):

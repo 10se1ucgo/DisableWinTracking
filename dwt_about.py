@@ -16,8 +16,9 @@
 # along with DisableWinTracking.  If not, see <http://www.gnu.org/licenses/>.
 
 # dwt.py will become cluttered enough :^)
+import cgi
 import json
-import urllib.request
+import urllib2
 import webbrowser
 from distutils.version import StrictVersion
 
@@ -166,8 +167,9 @@ class Licenses(wx.Dialog):
 
 
 def update_check(parent):
-    response = urllib.request.urlopen('https://api.github.com/repos/10se1ucgo/DisableWinTracking/releases/latest')
-    release = json.loads(response.read().decode())
+    r = urllib2.urlopen('https://api.github.com/repos/10se1ucgo/DisableWinTracking/releases/latest')
+    value, parameters = cgi.parse_header(r.headers.get('Content-Type', ''))
+    release = json.loads(r.read().decode(parameters.get('charset', 'utf-8')))
     if release['prerelease']:
         return
     new = release['tag_name']
