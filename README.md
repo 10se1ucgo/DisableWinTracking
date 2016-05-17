@@ -6,6 +6,8 @@ A tool that I created to use some of the known methods of disabling tracking in 
 
 [DOWNLOAD EXE HERE](https://github.com/10se1ucgo/DisableWinTracking/releases/)
 
+**Note:** Windows Defender may report the EXE as a trojan (Win32/Pocyx.C!cl), and may therefore prevent you from extracting the EXE to anywhere on your computer. Set up an exclusion in **Settings > Update & Security > Windows Defender > Exclusions** by adding the folder you intend to extract the EXE to.
+
 ## How to Use
 
 You can either:
