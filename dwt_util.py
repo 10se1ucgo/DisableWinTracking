@@ -21,7 +21,7 @@ import pywintypes
 import shutil
 import subprocess
 import tempfile
-import winreg
+import _winreg as winreg
 import shlex
 
 import win32serviceutil
