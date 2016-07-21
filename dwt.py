@@ -251,7 +251,7 @@ class MainPanel(wx.Panel):
         if event.IsChecked():
             warn = wx.MessageDialog(parent=self,
                                     message="This option could potentially disable one or more of the following "
-                                            "services:\n\nSkype, Hotmain, Dr. Watson and/or Error Reporting. Continue?",
+                                            "services:\n\nSkype, Hotmail, Dr. Watson and/or Error Reporting. Continue?",
                                     caption="Attention!", style=wx.YES_NO | wx.ICON_EXCLAMATION)
 
             if warn.ShowModal() == wx.ID_NO:
