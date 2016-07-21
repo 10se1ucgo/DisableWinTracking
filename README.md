@@ -1,6 +1,8 @@
 # DisableWinTracking
 
-A tool that I created to use some of the known methods of disabling tracking in Windows 10.
+A tool that I created to use some of the known methods of disabling tracking in Windows 10.\
+
+![http://i.imgur.com/qfC2elN.png](screenshot)
 
 ## DOWNLOAD
 
@@ -18,7 +20,7 @@ B. Install Python and the dependencies listed below and run the script from an e
 
 ## Dependencies
 This is only to run the script from source, [download the exe here](https://github.com/10se1ucgo/DisableWinTracking/releases/)
-* Tested on Python 3
+* Tested on Python 2.7
 * [wxPython](http://wxpython.org/download.php) -- GUI (Tested with wxPython=Phoenix)
 * [PyWin32](http://sourceforge.net/projects/pywin32/files/pywin32/)
 * Windows 10 (Duh)
