@@ -2,7 +2,7 @@
 
 A tool that I created to use some of the known methods of disabling tracking in Windows 10.\
 
-![http://i.imgur.com/qfC2elN.png](screenshot)
+![screenshot](https://i.imgur.com/qfC2elN.png)
 
 ## DOWNLOAD
 
