@@ -360,7 +360,7 @@ class MainPanel(wx.Panel):
 
         extra_domain_picker = ItemsPicker(dialog, choices=[], selectedLabel="Extra domains to be blocked",
                                           ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
-        if self.picked_normal:
+        if self.picked_extra:
             extra_domain_picker.SetSelections(self.picked_extra)
             extra_domain_picker.SetItems([domain for domain in extra_domains if domain not in self.picked_extra])
         else:
