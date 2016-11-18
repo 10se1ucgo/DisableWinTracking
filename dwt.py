@@ -300,8 +300,8 @@ class MainPanel(wx.Panel):
         if self.onedrive_check.IsChecked():
             dwt_util.onedrive(undo=undo)
         logger.info("Done. It's recommended that you reboot as soon as possible for the full effect.")
-        logger.info(("If you feel something didn't work properly, please press the 'Report an issue"
-                      "button and follow the directions"))
+        logger.info(("If you feel something didn't work properly, please press the 'Report an issue'"
+                      " button and follow the directions"))
         console.Center()
         console.Show()
 
