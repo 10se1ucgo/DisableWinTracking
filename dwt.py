@@ -265,7 +265,7 @@ class MainPanel(wx.Panel):
                                     caption="Attention!", style=wx.YES_NO | wx.ICON_EXCLAMATION)
 
             if warn.ShowModal() == wx.ID_NO:
-                event.GetObject().SetValue(False)
+                event.GetEventObject().SetValue(False)
 
             warn.Destroy()
 
