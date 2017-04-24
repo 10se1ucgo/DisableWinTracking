@@ -171,7 +171,7 @@ class MainPanel(wx.Panel):
         # wx.CheckBox(app_box.GetStaticBox(), label="Name", name="search_name")
         wx.CheckBox(stat_box, label="3D Builder", name="3dbuilder")
         wx.CheckBox(stat_box, label="Alarms && Clocks", name="windowsalarms")
-        wx.CheckBox(stat_box, label="Calender and Mail", name="windowscommunicationsapps")
+        wx.CheckBox(stat_box, label="Calendar and Mail", name="windowscommunicationsapps")
         wx.CheckBox(stat_box, label="Camera", name="windowscamera")
         wx.CheckBox(stat_box, label="Drawboard PDF", name="drawboardpdf")
         wx.CheckBox(stat_box, label="Feedback Hub", name="windowsfeedbackhub")
