@@ -167,13 +167,16 @@ class Licenses(wx.Dialog):
 
 
 def update_check(parent):
-    r = urllib2.urlopen('https://api.github.com/repos/10se1ucgo/DisableWinTracking/releases/latest')
+    try:
+        r = urllib2.urlopen('https://api.github.com/repos/10se1ucgo/DisableWinTracking/releases/latest')
+    except URLError:
+        return
     value, parameters = cgi.parse_header(r.headers.get('Content-Type', ''))
     release = json.loads(r.read().decode(parameters.get('charset', 'utf-8')))
     if release['prerelease']:
         return
     new = release['tag_name']
-
+    
     try:
         if StrictVersion(__version__) < StrictVersion(new.lstrip('v')):
             info = wx.MessageDialog(parent, message="DWT {v} is now available!\nGo to download page?".format(v=new),
@@ -182,4 +185,4 @@ def update_check(parent):
                 webbrowser.open_new_tab(release['html_url'])
             info.Destroy()
     except ValueError:
-        pass
+        return
