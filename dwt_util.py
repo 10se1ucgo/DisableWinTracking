@@ -207,7 +207,7 @@ def set_registry(keys):
             winreg.CloseKey(key)
             logger.info("Registry: Successfully modified {key} key.".format(key=key_name))
         except OSError:
-            logger.exception("Registry: Unable to mody {key} key.".format(key=key_name))
+            logger.exception("Registry: Unable to modify {key} key.".format(key=key_name))
 
 
 def host_file(entries, undo):
