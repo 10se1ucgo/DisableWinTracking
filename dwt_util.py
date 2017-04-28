@@ -17,6 +17,7 @@
 import logging
 import os
 import platform
+from collections import OrderedDict
 import pywintypes
 import shutil
 import subprocess
@@ -83,26 +84,38 @@ def ip_block(ip_list, undo):
 
 
 def clear_diagtrack():
-    file = os.path.join(os.environ['SYSTEMDRIVE'], ('/ProgramData/Microsoft/Diagnosis/ETLLogs/AutoLogger/'
-                                                    'AutoLogger-Diagtrack-Listener.etl'))
-    own_cmd = "takeown /f {file} && icacls {file} /grant administrators:F".format(file=file)
-    lock_cmd = "echo y|cacls {file} /d SYSTEM".format(file=file)
+	file = os.path.join(os.environ['SYSTEMDRIVE'], ('\\ProgramData\\Microsoft\\Diagnosis\\ETLLogs\\AutoLogger\\AutoLogger-Diagtrack-Listener.etl'))
+	
+	'''
+	This is an ORDERED dictionary. It will always run in order, not subject to the devastation
+	of a standard dictionary, so no worries.
+	'''
+	cmds = OrderedDict()
+	cmds["takeown /f {0}".format(file)]="Take Ownership"
+	cmds["icacls {0} /grant administrators:F".format(file)]="Grant Admin Privilege"
+	cmds["icacls {0} /inheritance:r /deny SYSTEM:F /grant Administrators:F".format(file)]="Deny System Privilege"
+	
+	i = 0
+	
+	for x, y in cmds.iteritems():
+		i += 1
+		
+		if i == 3:
+			try:
+				open(file, 'w').close()
+				logger.info("DiagTrack: Cleared AutoLogger-Diagtrack-Listener.etl")
+			except:
+				logger.exception("DiagTrack: Couldn't open AutoLogger-Diagtrack-Listener.etl for writing")
 
-    try:
-        subprocess_handler(shlex.split(own_cmd))
-    except CalledProcessError as e:
-        logger.exception("DiagTrack: Failed to clear DiagTrack log -- could not take ownership of file")
-        logger.critical("DiagTrack: Error output:\n" + e.output.decode('ascii', 'replace'))
-        return
+		p = subprocess.Popen(x, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+		output = p.communicate()
+		logger.info("DiagTrack: {0} of AutoLogger-Diagtrack-Listener.etl was successful".format(y))
 
-    try:
-        open(file, 'w').close()
-        subprocess_handler(shlex.split(lock_cmd))
-        logger.info("DiagTrack: Successfully cleared and locked DiagTrack log.")
-    except CalledProcessError as e:
-        logger.exception("DiagTrack: Failed to clear DiagTrack log -- could not clear or lock")
-        logger.critical("DiagTrack: Error output:\n" + e.output.decode('ascii', 'replace'))
-
+		if p.returncode:
+			logger.exception(p.returncode.decode())
+			
+		if i == 3:
+			logger.info("DiagTrack: Successfully cleared and locked DiagTrack log.")
 
 def delete_service(service):
     try:
@@ -257,10 +270,11 @@ def app_manager(apps, undo):
 
 
 def subprocess_handler(cmd):
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-    output = p.communicate()
-    if p.returncode:
-        raise CalledProcessError(returncode=p.returncode, cmd=cmd, output=output[0], stderr=output[1])
+	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
+	output = p.communicate()
+	
+	if p.returncode:
+		return p.returncode
 
 # Old reinstall code, does not work:
 # if reinstall:
