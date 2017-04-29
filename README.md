@@ -19,6 +19,8 @@ A. [Run the binary uploaded to the Release tab as an Administrator and select wh
 
 B. Install Python and the dependencies listed below and run the script from an elevated command prompt and select which options you'd like  
 
+Either can be run with the -silent argument as of v3.1. You still need to run it as administrator. If you don't, it won't do anything and tell you to re-run it as Administrator in the log.
+
 ## Dependencies
 This is only to run the script from source, [download the exe here](https://github.com/10se1ucgo/DisableWinTracking/releases/)
 * Tested on Python 2.7
