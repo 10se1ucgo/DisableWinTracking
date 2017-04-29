@@ -72,36 +72,30 @@ class ConsoleDialog(wx.Dialog):
 
 class MainFrame(wx.Frame):
     def __init__(self):
-        super(MainFrame, self).__init__(parent=wx.GetApp().GetTopWindow(), title="Disable Windows 10 Tracking",
-                                        size=(415, 245))
-        self.SetMinSize(self.GetSize())
-        panel = MainPanel(self)
+		super(MainFrame, self).__init__(parent=wx.GetApp().GetTopWindow(), title="Disable Windows 10 Tracking",
+										size=(415, 245))
+		self.SetMinSize(self.GetSize())
+		panel = MainPanel(self)
 
-        file_menu = wx.Menu()
-        settings = file_menu.Append(wx.ID_SETUP, "&Settings", "DWT settings")
+		file_menu = wx.Menu()
+		settings = file_menu.Append(wx.ID_SETUP, "&Settings", "DWT settings")
 
-        help_menu = wx.Menu()
-        about = help_menu.Append(wx.ID_ABOUT, "&About", "About DWT")
-        licenses = help_menu.Append(wx.ID_ANY, "&Licenses", "Open-source licenses")
+		help_menu = wx.Menu()
+		about = help_menu.Append(wx.ID_ABOUT, "&About", "About DWT")
+		licenses = help_menu.Append(wx.ID_ANY, "&Licenses", "Open-source licenses")
 
-        menu_bar = wx.MenuBar()
-        menu_bar.Append(file_menu, "&File")
-        menu_bar.Append(help_menu, "&Help")
-        self.SetMenuBar(menu_bar)
+		menu_bar = wx.MenuBar()
+		menu_bar.Append(file_menu, "&File")
+		menu_bar.Append(help_menu, "&Help")
+		self.SetMenuBar(menu_bar)
 
-        if not bool(windll.advpack.IsNTAdmin(0, None)):
-            warn = wx.MessageDialog(parent=self,
-                                    message="Program requires elevation, please run it as an administrator.",
-                                    caption="ERROR!", style=wx.OK | wx.ICON_WARNING)
-            warn.ShowModal()
-            warn.Destroy()
-            sys.exit(1)
+		check_elevated()
 
-        self.SetIcon(wx.Icon(sys.executable, wx.BITMAP_TYPE_ICO))
-        self.Bind(wx.EVT_MENU, lambda x: dwt_about.about_dialog(self), about)
-        self.Bind(wx.EVT_MENU, panel.settings, settings)
-        self.Bind(wx.EVT_MENU, lambda x: dwt_about.Licenses(self), licenses)
-        self.Layout()
+		self.SetIcon(wx.Icon(sys.executable, wx.BITMAP_TYPE_ICO))
+		self.Bind(wx.EVT_MENU, lambda x: dwt_about.about_dialog(self), about)
+		self.Bind(wx.EVT_MENU, panel.settings, settings)
+		self.Bind(wx.EVT_MENU, lambda x: dwt_about.Licenses(self), licenses)
+		self.Layout()
 
 
 class MainPanel(wx.Panel):
@@ -450,9 +444,23 @@ def exception_hook(error, value, trace):
         error_dialog.Destroy()
         sys.exit(1)
 
+def check_elevated(silent=False):
+	if not bool(windll.advpack.IsNTAdmin(0, None)):
+		if not silent:
+			warn = wx.MessageDialog(parent=None,
+									message="Program requires elevation, please run it as an administrator.",
+									caption="ERROR!", style=wx.OK | wx.ICON_WARNING)
+			warn.ShowModal()
+			warn.Destroy()
+		else:
+			logger.info("You didn't run DWT as administrator. Don't bother posting an issue.")
+			logger.info("Please re-run as administrator.")
+		sys.exit(1)
+	
 def silent():
 
 	setup_logging()
+	check_elevated(True)
 
 	dwt_util.clear_diagtrack()
 	dwt_util.disable_service("dmwappushsvc")
