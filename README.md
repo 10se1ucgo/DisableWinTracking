@@ -19,9 +19,10 @@ A. [Run the binary uploaded to the Release tab as an Administrator and select wh
 
 B. Install Python and the dependencies listed below and run the script from an elevated command prompt and select which options you'd like  
 
-####Silent
+#### Silent
 
 Either can be run with the -silent argument as of v3.1. This will perform all available options of the version you're using.
+
 **You still need to run it as administrator. If you don't, it won't do anything and tell you to re-run it as Administrator in the log.**
 
 ## Dependencies
