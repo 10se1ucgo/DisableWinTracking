@@ -16,6 +16,9 @@ dist/
 # Log
 dwt.log
 
+# Resource Files
+dwt.res
+
 # Other
 getapps.py
 getreleases.py
