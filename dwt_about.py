@@ -169,7 +169,7 @@ class Licenses(wx.Dialog):
 def update_check(parent):
     try:
         r = urllib2.urlopen('https://api.github.com/repos/10se1ucgo/DisableWinTracking/releases/latest')
-    except URLError:
+    except urllib2.URLError:
         return
     value, parameters = cgi.parse_header(r.headers.get('Content-Type', ''))
     release = json.loads(r.read().decode(parameters.get('charset', 'utf-8')))
