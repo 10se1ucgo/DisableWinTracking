@@ -84,9 +84,9 @@ def ip_block(ip_list, undo):
 
         try:
             subprocess_handler(shlex.split(cmd))
-            logger.info("IP Blocker: The IP {ip} was successfully blocked.".format(ip=ip))
+            logger.info("IP Blocker: The IP {ip} was successfully {act}.".format(ip=ip, act='unblocked' if undo else 'blocked'))
         except CalledProcessError as e:
-            logger.exception("IP Blocker: Failed to block IP {ip}".format(ip=ip))
+            logger.exception("IP Blocker: Failed to {act} IP {ip}".format(act='unblock' if undo else 'block', ip=ip))
             logger.critical("IP Blocker: Error output:\n" + e.stdout.decode('ascii', 'replace'))
 
 
