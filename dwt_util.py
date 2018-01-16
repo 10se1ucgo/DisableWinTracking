@@ -86,9 +86,33 @@ def ip_block(ip_list, undo):
 def clear_diagtrack():
 	file = os.path.join(os.environ['SYSTEMDRIVE'], ('\\ProgramData\\Microsoft\\Diagnosis\\ETLLogs\\AutoLogger\\AutoLogger-Diagtrack-Listener.etl'))
 	
+	cmds = ['sc delete DiagTrack',
+		   'sc delete dmwappushservice',
+		   'echo "" > "{file}"'.format(file=file)]
+
+	i = 0
+	failed = False
+	for cmd in cmds:
+		i += 1
+		try:
+			subprocess_handler(shlex.split(cmd))
+			logger.info("DiagTrack: Completed Part {0}/{1}".format(i, len(cmds)))
+		except CalledProcessError as e:
+			failed = True
+			logger.exception("DiagTrack: Failed Part {0}/{1}".format(i, len(cmds)))
+			logger.critical("DiagTrack: Error output:\n" + e.stdout.decode('ascii', 'replace'))
+		
+	if failed:
+		logger.info("DiagTrack: Complete. Errors were recorded.")
+	else:
+		logger.info("DiagTrack: Completed successfully, without errors.")
+	
 	'''
 	This is an ORDERED dictionary. It will always run in order, not subject to the devastation
 	of a standard dictionary, so no worries.
+	'''
+	
+	#temporarily removing this code in favor of something that actually works
 	'''
 	cmds = OrderedDict()
 	cmds["takeown /f {0}".format(file)]="Take Ownership"
@@ -116,6 +140,7 @@ def clear_diagtrack():
 			
 		if i == 3:
 			logger.info("DiagTrack: Successfully cleared and locked DiagTrack log.")
+		'''
 
 def delete_service(service):
     try:

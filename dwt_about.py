@@ -26,7 +26,7 @@ import wx
 import wx.adv
 import wx.lib.scrolledpanel as sp
 
-__version__ = "3.1.1"
+__version__ = "3.1.3"
 
 
 def about_dialog(parent):
@@ -73,38 +73,38 @@ class Licenses(wx.Dialog):
         wxw = wx.StaticText(self.scrolled_panel, label=("DisableWinTracking uses wxWidgets and wxPython. Their license "
                                                         "is below\nMore info at https://www.wxwidgets.org/about/"))
         wxw_license = """
-                  wxWindows Library Licence, Version 3.1
+                  wxWindows Library License, Version 3.1
                   ======================================
     Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al
     Everyone is permitted to copy and distribute verbatim copies
-    of this licence document, but changing it is not allowed.
-                         WXWINDOWS LIBRARY LICENCE
+    of this license document, but changing it is not allowed.
+                         WXWINDOWS LIBRARY LICENSE
        TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
     This library is free software; you can redistribute it and/or modify it
-    under the terms of the GNU Library General Public Licence as published by
-    the Free Software Foundation; either version 2 of the Licence, or (at your
+    under the terms of the GNU Library General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or (at your
     option) any later version.
     This library is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
-    Licence for more details.
-    You should have received a copy of the GNU Library General Public Licence
+    License for more details.
+    You should have received a copy of the GNU Library General Public License
     along with this software, usually in a file named COPYING.LIB.  If not,
     write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth
     Floor, Boston, MA 02110-1301 USA.
     EXCEPTION NOTICE
     1. As a special exception, the copyright holders of this library give
     permission for additional uses of the text contained in this release of the
-    library as licenced under the wxWindows Library Licence, applying either
-    version 3.1 of the Licence, or (at your option) any later version of the
-    Licence as published by the copyright holders of version 3.1 of the Licence
+    library as licensed under the wxWindows Library License, applying either
+    version 3.1 of the License, or (at your option) any later version of the
+    License as published by the copyright holders of version 3.1 of the License
     document.
     2. The exception is that you may use, copy, link, modify and distribute
     under your own terms, binary object code versions of works based on the
     Library.
     3. If you copy code from files distributed under the terms of the GNU
-    General Public Licence or the GNU Library General Public Licence into a
-    copy of this library, as this licence permits, the exception does not apply
+    General Public License or the GNU Library General Public License into a
+    copy of this library, as this license permits, the exception does not apply
     to the code that you add in this way.  To avoid misleading anyone as to the
     status of such modified files, you must delete this exception notice from
     such code and/or adjust the licensing conditions notice accordingly.
@@ -117,7 +117,7 @@ class Licenses(wx.Dialog):
 
         pywin = wx.StaticText(self.scrolled_panel, label="DisableWinTracking uses PyWin32. Its license is below.")
         pywin_license = """
-    Unless stated in the specfic source file, this work is
+    Unless stated in the specific source file, this work is
     Copyright (c) 1996-2008, Greg Stein and Mark Hammond.
     All rights reserved.
 
@@ -169,7 +169,7 @@ class Licenses(wx.Dialog):
 def update_check(parent):
     try:
         r = urllib2.urlopen('https://api.github.com/repos/10se1ucgo/DisableWinTracking/releases/latest')
-    except URLError:
+    except urllib2.URLError:
         return
     value, parameters = cgi.parse_header(r.headers.get('Content-Type', ''))
     release = json.loads(r.read().decode(parameters.get('charset', 'utf-8')))
