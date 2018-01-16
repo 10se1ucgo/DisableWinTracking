@@ -20,6 +20,7 @@ import platform
 from collections import OrderedDict
 import pywintypes
 import shutil
+from string import split
 import subprocess
 import tempfile
 import _winreg as winreg
@@ -64,8 +65,14 @@ class CalledProcessError(Exception):
 
 
 def is_64bit():
-    # Detect if OS is 64bit
-    return True if "64" in platform.machine() else False
+    if os.name == 'nt':
+		output = subprocess.check_output(['wmic', 'os', 'get', 'OSArchitecture'])
+		os_arch = output.split()[1]
+		return True if os_arch == '64-bit' else False
+    else:
+		logger.critical("This was only meant to be run on Windows-based system. Specifically, Windows 10.")
+		os._exit(0)
+    return os_arch
 
 
 def ip_block(ip_list, undo):
@@ -94,13 +101,25 @@ def clear_diagtrack():
 	failed = False
 	for cmd in cmds:
 		i += 1
-		try:
-			subprocess_handler(shlex.split(cmd))
+		service = split(cmd, 'sc delete ')
+		
+		
+		output = subprocess_handler(cmd)
+		if output[0] in [0, 1060]:
+			if output[0] == 0:
+				if len(service) > 1:
+					logger.info("DiagTrack: Successfully deleted service '{0}'".format(service[1]))
+				else:
+					logger.info("DiagTrack: Successfully erased tracking log.")
+			if output[0] == 1060:
+				logger.info("DiagTrack: {0} service doesn't exist. This is OK, you likely removed it already.".format(service[1]))
+				
 			logger.info("DiagTrack: Completed Part {0}/{1}".format(i, len(cmds)))
-		except CalledProcessError as e:
+		else:
+			logger.info("{0}".format(output[0]))
 			failed = True
 			logger.exception("DiagTrack: Failed Part {0}/{1}".format(i, len(cmds)))
-			logger.critical("DiagTrack: Error output:\n" + e.stdout.decode('ascii', 'replace'))
+			logger.critical("DiagTrack: Error code: {0} - {1}".format(output[0],output[1]))
 		
 	if failed:
 		logger.info("DiagTrack: Complete. Errors were recorded.")
@@ -212,27 +231,42 @@ def wifisense(undo):
 
 
 def onedrive(undo):
-    file_sync_value = int(undo)
-    list_pin_value = int(not undo)
-    action = "install" if undo else "uninstall"
-    onedrive_keys = {'FileSync': [winreg.HKEY_LOCAL_MACHINE,
-                                  r'SOFTWARE\Policies\Microsoft\Windows\OneDrive',
-                                  'DisableFileSyncNGSC', winreg.REG_DWORD, file_sync_value],
+	file_sync_value = int(undo)
+	list_pin_value = int(not undo)
+	action = "install" if undo else "uninstall"
+	
+	if is_64bit():
+		onedrive_keys = {'FileSync': [winreg.HKEY_LOCAL_MACHINE,
+									  r'SOFTWARE\Policies\Microsoft\Windows\OneDrive',
+									  'DisableFileSyncNGSC', winreg.REG_DWORD, file_sync_value],
 
-                     'ListPin': [winreg.HKEY_CLASSES_ROOT,
-                                 r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
-                                 'System.IsPinnedToNameSpaceTree', winreg.REG_DWORD, list_pin_value]}
+						 'ListPin': [winreg.HKEY_CLASSES_ROOT,
+									 r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
+									 'System.IsPinnedToNameSpaceTree', winreg.REG_DWORD, list_pin_value],
 
-    set_registry(onedrive_keys)
+						 'ListPin64Bit': [winreg.HKEY_CLASSES_ROOT,
+									 r'Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
+									 'System.IsPinnedToNameSpaceTree', winreg.REG_DWORD, list_pin_value]}
+	else:	
+		onedrive_keys = {'FileSync': [winreg.HKEY_LOCAL_MACHINE,
+									  r'SOFTWARE\Policies\Microsoft\Windows\OneDrive',
+									  'DisableFileSyncNGSC', winreg.REG_DWORD, file_sync_value],
 
-    system = "SysWOW64" if is_64bit() else "System32"
-    onedrive_setup = os.path.join(os.environ['SYSTEMROOT'], "{system}/OneDriveSetup.exe".format(system=system))
-    cmd = "{bin} /{action}".format(bin=onedrive_setup, action=action)
-    try:
-        subprocess.call(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-        logger.info("OneDrive: successfully {action}ed".format(action=action))
-    except (WindowsError, IOError):
-        logger.info("OneDrive: unable to {action}".format(action=action))
+						 'ListPin': [winreg.HKEY_CLASSES_ROOT,
+									 r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
+									 'System.IsPinnedToNameSpaceTree', winreg.REG_DWORD, list_pin_value]}
+
+	set_registry(onedrive_keys)
+
+	system = "SysWOW64" if is_64bit() else "System32"
+	onedrive_setup = os.path.join(os.environ['SYSTEMROOT'], "{system}\\OneDriveSetup.exe".format(system=system))
+	cmd = "{bin} /{action}".format(bin=onedrive_setup, action=action)
+	
+	output = subprocess_handler(cmd)
+	if output[0] == -2147219823:
+		logger.info("OneDrive: successfully {action}ed".format(action=action))
+	else:
+		logger.info("OneDrive: unable to {action}. Exited with code: {code} - {message}".format(action=action, code=output[0], message=output[1]))
 
 
 def set_registry(keys):
@@ -298,8 +332,7 @@ def subprocess_handler(cmd):
 	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
 	output = p.communicate()
 	
-	if p.returncode:
-		return p.returncode
+	return [p.returncode, output]
 
 # Old reinstall code, does not work:
 # if reinstall:

@@ -99,7 +99,7 @@ class MainFrame(wx.Frame):
 
 
 class MainPanel(wx.Panel):
-    def __init__(self, parent):
+	def __init__(self, parent):
 		super(MainPanel, self).__init__(parent)
 
 		self.parent = parent
@@ -245,125 +245,139 @@ class MainPanel(wx.Panel):
 		check_sizer.Add(self.onedrive_check, 0, wx.ALL, 1)
 
 		#self.Bind(wx.EVT_CHECKBOX, handler=self.select_all_apps, source=select_all_check)
+		self.Bind(wx.EVT_CHECKBOX, handler=self.ip_warn, source=self.ip_check)
 		self.Bind(wx.EVT_CHECKBOX, handler=self.hosts_warn, source=self.extra_host_check)
 		#self.Bind(wx.EVT_BUTTON, handler=self.remove_apps, source=remove_app_button)
 		self.Bind(wx.EVT_BUTTON, handler=self.go, source=go_button)
 
 		self.SetSizer(top_sizer)
 
-    def select_all_apps(self, event):
-        # Iters through all children of the wxStaticBox of the wxStaticBoxSizer and checks/un checks all wxCheckBoxes.
-        for child in self.app_box.GetStaticBox().GetChildren():
-            if isinstance(child, wx.CheckBox):
-                child.SetValue(event.IsChecked())
+	def select_all_apps(self, event):
+		# Iters through all children of the wxStaticBox of the wxStaticBoxSizer and checks/un checks all wxCheckBoxes.
+		for child in self.app_box.GetStaticBox().GetChildren():
+			if isinstance(child, wx.CheckBox):
+				child.SetValue(event.IsChecked())
+			
+	def ip_warn(self, event):
+		# Warn users about the potential side effects of the IP blocking firewall rules
+		if event.IsChecked():
+			warn = wx.MessageDialog(parent=self,
+									message="This option could potentially disable Microsoft Licensing traffic and thus "
+											"certain games and apps may cease to work, such as, Forza, or Gears of War.",
+									caption="Attention!", style=wx.YES_NO | wx.ICON_EXCLAMATION)
 
-    def hosts_warn(self, event):
-        # Warn users about the potential side effects of the extra hosts mod.
-        if event.IsChecked():
-            warn = wx.MessageDialog(parent=self,
-                                    message="This option could potentially disable one or more of the following "
-                                            "services:\n\nSkype, Hotmail, Dr. Watson and/or Error Reporting. Continue?",
-                                    caption="Attention!", style=wx.YES_NO | wx.ICON_EXCLAMATION)
+			if warn.ShowModal() == wx.ID_NO:
+				event.GetEventObject().SetValue(False)
 
-            if warn.ShowModal() == wx.ID_NO:
-                event.GetEventObject().SetValue(False)
+			warn.Destroy()
 
-            warn.Destroy()
+	def hosts_warn(self, event):
+		# Warn users about the potential side effects of the extra hosts mod.
+		if event.IsChecked():
+			warn = wx.MessageDialog(parent=self,
+									message="This option could potentially disable one or more of the following "
+											"services:\n\nSkype, Hotmail, Dr. Watson and/or Error Reporting. Continue?",
+									caption="Attention!", style=wx.YES_NO | wx.ICON_EXCLAMATION)
 
-    def go(self, event):
-        if not all((self.picked_ips, self.picked_extra, self.picked_normal)):
-            self.settings(event=None)
+			if warn.ShowModal() == wx.ID_NO:
+				event.GetEventObject().SetValue(False)
 
-        undo = bool(self.mode_rad.GetSelection())
+			warn.Destroy()
 
-        if self.ip_check.IsChecked():
-            dwt_util.ip_block(self.picked_ips, undo=undo)
-        if self.diagtrack_check.IsChecked():
-            dwt_util.clear_diagtrack()
-        if self.service_check.IsChecked():
-            if self.service_rad.GetSize():
-                dwt_util.delete_service("dmwappushsvc")
-                dwt_util.delete_service("DiagTrack")
-            else:
-                dwt_util.disable_service("dmwappushsvc")
-                dwt_util.disable_service("DiagTrack")
-            dwt_util.services(undo=undo)
-        if self.telemetry_check.IsChecked():
-            dwt_util.telemetry(undo=undo)
-        if self.host_check.IsChecked():
-            dwt_util.host_file(self.picked_normal, undo=undo)
-        if self.extra_host_check.IsChecked():
-            dwt_util.host_file(self.picked_extra, undo=undo)
-        if self.defender_check.IsChecked():
-            dwt_util.defender(undo=undo)
-        if self.wifisense_check.IsChecked():
-            dwt_util.wifisense(undo=undo)
-        if self.onedrive_check.IsChecked():
-            dwt_util.onedrive(undo=undo)
-        logger.info("Done. It's recommended that you reboot as soon as possible for the full effect.")
-        logger.info(("If you feel something didn't work properly, please press the 'Report an issue'"
-                      " button and follow the directions"))
-        console.Center()
-        console.Show()
+	def go(self, event):
+		if not all((self.picked_ips, self.picked_extra, self.picked_normal)):
+			self.settings(event=None)
 
-    def remove_apps(self, event):
-        children = [child for child in self.app_box.GetStaticBox().GetChildren() if child.GetName() != "check"]
-        app_list = [child.GetName() for child in children if isinstance(child, wx.CheckBox) and child.IsChecked()]
-        dwt_util.app_manager(app_list, undo=False)
+		undo = bool(self.mode_rad.GetSelection())
 
-    def settings(self, event, silent=False):
+		if self.ip_check.IsChecked():
+			dwt_util.ip_block(self.picked_ips, undo=undo)
+		if self.diagtrack_check.IsChecked():
+			dwt_util.clear_diagtrack()
+		if self.service_check.IsChecked():
+			if self.service_rad.GetSize():
+				dwt_util.delete_service("dmwappushsvc")
+				dwt_util.delete_service("DiagTrack")
+			else:
+				dwt_util.disable_service("dmwappushsvc")
+				dwt_util.disable_service("DiagTrack")
+			dwt_util.services(undo=undo)
+		if self.telemetry_check.IsChecked():
+			dwt_util.telemetry(undo=undo)
+		if self.host_check.IsChecked():
+			dwt_util.host_file(self.picked_normal, undo=undo)
+		if self.extra_host_check.IsChecked():
+			dwt_util.host_file(self.picked_extra, undo=undo)
+		if self.defender_check.IsChecked():
+			dwt_util.defender(undo=undo)
+		if self.wifisense_check.IsChecked():
+			dwt_util.wifisense(undo=undo)
+		if self.onedrive_check.IsChecked():
+			dwt_util.onedrive(undo=undo)
+		logger.info("Done. It's recommended that you reboot as soon as possible for the full effect.")
+		logger.info(("If you feel something didn't work properly, please press the 'Report an issue'"
+					  " button and follow the directions"))
+		console.Center()
+		console.Show()
+
+	def remove_apps(self, event):
+		children = [child for child in self.app_box.GetStaticBox().GetChildren() if child.GetName() != "check"]
+		app_list = [child.GetName() for child in children if isinstance(child, wx.CheckBox) and child.IsChecked()]
+		dwt_util.app_manager(app_list, undo=False)
+
+	def settings(self, event, silent=False):
 		if silent == False:
 			dialog = wx.Dialog(parent=self, title="Settings", style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 			sizer = wx.BoxSizer(wx.VERTICAL)
 			
 		normal_domains = (
-            'a-0001.a-msedge.net', 'a-0002.a-msedge.net', 'a-0003.a-msedge.net', 'a-0004.a-msedge.net',
-            'a-0005.a-msedge.net', 'a-0006.a-msedge.net', 'a-0007.a-msedge.net', 'a-0008.a-msedge.net',
-            'a-0009.a-msedge.net', 'a-msedge.net', 'a.ads1.msn.com', 'a.ads2.msads.net', 'a.ads2.msn.com',
-            'a.rad.msn.com', 'ac3.msn.com', 'ad.doubleclick.net', 'adnexus.net', 'adnxs.com', 'ads.msn.com',
-            'ads1.msads.net', 'ads1.msn.com', 'aidps.atdmt.com', 'aka-cdn-ns.adtech.de',
-            'az361816.vo.msecnd.net', 'az512334.vo.msecnd.net', 'b.ads1.msn.com', 'b.ads2.msads.net',
-            'b.rad.msn.com', 'bs.serving-sys.com', 'c.atdmt.com', 'c.msn.com', 'cdn.atdmt.com',
-            'cds26.ams9.msecn.net', 'choice.microsoft.com', 'choice.microsoft.com.nsatc.net',
-            'compatexchange.cloudapp.net', 'corp.sts.microsoft.com', 'corpext.msitadfs.glbdns2.microsoft.com',
-            'cs1.wpc.v0cdn.net', 'db3aqu.atdmt.com', 'df.telemetry.microsoft.com',
-            'diagnostics.support.microsoft.com', 'ec.atdmt.com', 'feedback.microsoft-hohm.com',
-            'feedback.search.microsoft.com', 'feedback.windows.com', 'flex.msn.com', 'g.msn.com', 'h1.msn.com',
-            'i1.services.social.microsoft.com', 'i1.services.social.microsoft.com.nsatc.net',
-            'lb1.www.ms.akadns.net', 'live.rads.msn.com', 'm.adnxs.com', 'msedge.net', 'msftncsi.com',
-            'msnbot-65-55-108-23.search.msn.com', 'msntest.serving-sys.com', 'oca.telemetry.microsoft.com',
-            'oca.telemetry.microsoft.com.nsatc.net', 'pre.footprintpredict.com', 'preview.msn.com',
-            'rad.live.com', 'rad.msn.com', 'redir.metaservices.microsoft.com',
-            'reports.wes.df.telemetry.microsoft.com', 'schemas.microsoft.akadns.net',
-            'secure.adnxs.com', 'secure.flashtalking.com', 'services.wes.df.telemetry.microsoft.com',
-            'settings-sandbox.data.microsoft.com', 'settings-win.data.microsoft.com',
-            'sls.update.microsoft.com.akadns.net', 'sqm.df.telemetry.microsoft.com',
-            'sqm.telemetry.microsoft.com', 'sqm.telemetry.microsoft.com.nsatc.net', 'ssw.live.com',
-            'static.2mdn.net', 'statsfe1.ws.microsoft.com', 'statsfe2.ws.microsoft.com',
-            'telecommand.telemetry.microsoft.com', 'telecommand.telemetry.microsoft.com.nsatc.net',
-            'telemetry.appex.bing.net', 'telemetry.microsoft.com', 'telemetry.urs.microsoft.com',
-            'v10.vortex-win.data.microsoft.com', 'vortex-bn2.metron.live.com.nsatc.net',
-            'vortex-cy2.metron.live.com.nsatc.net', 'vortex-sandbox.data.microsoft.com',
-            'vortex-win.data.metron.live.com.nsatc.net', 'vortex-win.data.microsoft.com',
-            'vortex.data.glbdns2.microsoft.com', 'vortex.data.microsoft.com', 'watson.live.com',
-            'web.vortex.data.microsoft.com', 'www.msftncsi.com'
+			'a-0001.a-msedge.net', 'a-0002.a-msedge.net', 'a-0003.a-msedge.net', 'a-0004.a-msedge.net',
+			'a-0005.a-msedge.net', 'a-0006.a-msedge.net', 'a-0007.a-msedge.net', 'a-0008.a-msedge.net',
+			'a-0009.a-msedge.net', 'a-msedge.net', 'a.ads1.msn.com', 'a.ads2.msads.net', 'a.ads2.msn.com',
+			'a.rad.msn.com', 'ac3.msn.com', 'ad.doubleclick.net', 'adnexus.net', 'adnxs.com', 'ads.msn.com',
+			'ads1.msads.net', 'ads1.msn.com', 'aidps.atdmt.com', 'aka-cdn-ns.adtech.de',
+			'az361816.vo.msecnd.net', 'az512334.vo.msecnd.net', 'b.ads1.msn.com', 'b.ads2.msads.net',
+			'b.rad.msn.com', 'bs.serving-sys.com', 'c.atdmt.com', 'c.msn.com', 'cdn.atdmt.com',
+			'cds26.ams9.msecn.net', 'choice.microsoft.com', 'choice.microsoft.com.nsatc.net',
+			'compatexchange.cloudapp.net', 'corp.sts.microsoft.com', 'corpext.msitadfs.glbdns2.microsoft.com',
+			'cs1.wpc.v0cdn.net', 'db3aqu.atdmt.com', 'df.telemetry.microsoft.com',
+			'diagnostics.support.microsoft.com', 'ec.atdmt.com', 'feedback.microsoft-hohm.com',
+			'feedback.search.microsoft.com', 'feedback.windows.com', 'flex.msn.com', 'g.msn.com', 'h1.msn.com',
+			'i1.services.social.microsoft.com', 'i1.services.social.microsoft.com.nsatc.net',
+			'lb1.www.ms.akadns.net', 'live.rads.msn.com', 'm.adnxs.com', 'msedge.net', 'msftncsi.com',
+			'msnbot-65-55-108-23.search.msn.com', 'msntest.serving-sys.com', 'oca.telemetry.microsoft.com',
+			'oca.telemetry.microsoft.com.nsatc.net', 'pre.footprintpredict.com', 'preview.msn.com',
+			'rad.live.com', 'rad.msn.com', 'redir.metaservices.microsoft.com',
+			'reports.wes.df.telemetry.microsoft.com', 'schemas.microsoft.akadns.net',
+			'secure.adnxs.com', 'secure.flashtalking.com', 'services.wes.df.telemetry.microsoft.com',
+			'settings-sandbox.data.microsoft.com', 'settings-win.data.microsoft.com',
+			'sls.update.microsoft.com.akadns.net', 'sqm.df.telemetry.microsoft.com',
+			'sqm.telemetry.microsoft.com', 'sqm.telemetry.microsoft.com.nsatc.net', 'ssw.live.com',
+			'static.2mdn.net', 'statsfe1.ws.microsoft.com', 'statsfe2.ws.microsoft.com',
+			'telecommand.telemetry.microsoft.com', 'telecommand.telemetry.microsoft.com.nsatc.net',
+			'telemetry.appex.bing.net', 'telemetry.microsoft.com', 'telemetry.urs.microsoft.com',
+			'v10.vortex-win.data.microsoft.com', 'vortex-bn2.metron.live.com.nsatc.net',
+			'vortex-cy2.metron.live.com.nsatc.net', 'vortex-sandbox.data.microsoft.com',
+			'vortex-win.data.metron.live.com.nsatc.net', 'vortex-win.data.microsoft.com',
+			'vortex.data.glbdns2.microsoft.com', 'vortex.data.microsoft.com', 'watson.live.com',
+			'web.vortex.data.microsoft.com', 'www.msftncsi.com'
 		)
 
 		extra_domains = (
-            'fe2.update.microsoft.com.akadns.net', 's0.2mdn.net', 'statsfe2.update.microsoft.com.akadns.net',
-            'survey.watson.microsoft.com', 'view.atdmt.com', 'watson.microsoft.com',
-            'watson.ppe.telemetry.microsoft.com', 'watson.telemetry.microsoft.com',
-            'watson.telemetry.microsoft.com.nsatc.net', 'wes.df.telemetry.microsoft.com', 'ui.skype.com',
-            'pricelist.skype.com', 'apps.skype.com', 'm.hotmail.com', 's.gateway.messenger.live.com'
-        )
+			'fe2.update.microsoft.com.akadns.net', 's0.2mdn.net', 'statsfe2.update.microsoft.com.akadns.net',
+			'survey.watson.microsoft.com', 'view.atdmt.com', 'watson.microsoft.com',
+			'watson.ppe.telemetry.microsoft.com', 'watson.telemetry.microsoft.com',
+			'watson.telemetry.microsoft.com.nsatc.net', 'wes.df.telemetry.microsoft.com', 'ui.skype.com',
+			'pricelist.skype.com', 'apps.skype.com', 'm.hotmail.com', 's.gateway.messenger.live.com'
+		)
 
 		ip_addresses = (
-            '2.22.61.43', '2.22.61.66', '65.39.117.230', '65.55.108.23', '23.218.212.69', '134.170.30.202',
-            '137.116.81.24', '157.56.106.189', '204.79.197.200', '65.52.108.33', '64.4.54.254'
-        )
+			'2.22.61.43', '2.22.61.66', '65.39.117.230', '65.55.108.23', '23.218.212.69', '134.170.30.202',
+			'137.116.81.24', '157.56.106.189', '204.79.197.200', '65.52.108.33', '64.4.54.254'
+		)
 
 		normal_domain_picker = ItemsPicker(dialog, choices=[], selectedLabel="Domains to be blocked",
-                                           ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
+										   ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
 		if self.picked_normal:
 			normal_domain_picker.SetSelections(self.picked_normal)
 			normal_domain_picker.SetItems([domain for domain in normal_domains if domain not in self.picked_normal])
@@ -371,7 +385,7 @@ class MainPanel(wx.Panel):
 			normal_domain_picker.SetSelections(normal_domains)
 
 		extra_domain_picker = ItemsPicker(dialog, choices=[], selectedLabel="Extra domains to be blocked",
-                                          ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
+										  ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
 		if self.picked_extra:
 			extra_domain_picker.SetSelections(self.picked_extra)
 			extra_domain_picker.SetItems([domain for domain in extra_domains if domain not in self.picked_extra])
@@ -379,7 +393,7 @@ class MainPanel(wx.Panel):
 			extra_domain_picker.SetSelections(extra_domains)
 
 		ip_picker = ItemsPicker(dialog, choices=[], selectedLabel="IP addresses to be blocked",
-                                ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
+								ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
 		if self.picked_ips:
 			ip_picker.SetSelections(self.picked_ips)
 			ip_picker.SetItems([ip for ip in ip_addresses if ip not in self.picked_ips])

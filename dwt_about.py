@@ -26,7 +26,7 @@ import wx
 import wx.adv
 import wx.lib.scrolledpanel as sp
 
-__version__ = "3.1.3"
+__version__ = "3.2.0"
 
 
 def about_dialog(parent):
