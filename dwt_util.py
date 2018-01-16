@@ -85,7 +85,7 @@ def ip_block(ip_list, undo):
 
 def clear_diagtrack():
 	file = os.path.join(os.environ['SYSTEMDRIVE'], ('\\ProgramData\\Microsoft\\Diagnosis\\ETLLogs\\AutoLogger\\AutoLogger-Diagtrack-Listener.etl'))
-	
+
 	cmds = ['sc delete DiagTrack',
 		   'sc delete dmwappushservice',
 		   'echo "" > "{file}"'.format(file=file)]
@@ -118,9 +118,9 @@ def clear_diagtrack():
 	cmds["takeown /f {0}".format(file)]="Take Ownership"
 	cmds["icacls {0} /grant administrators:F".format(file)]="Grant Admin Privilege"
 	cmds["icacls {0} /inheritance:r /deny SYSTEM:F /grant Administrators:F".format(file)]="Deny System Privilege"
-	
+
 	i = 0
-	
+
 	for x, y in cmds.iteritems():
 		i += 1
 		
