@@ -460,7 +460,12 @@ def exception_hook(error, value, trace):
 
 def check_elevated(silent=False):
 	if not bool(windll.advpack.IsNTAdmin(0, None)):
-		windll.shell32.ShellExecuteW(None, u"runas", unicode(sys.executable), unicode(__file__), None, 1)
+		if silent:
+			windll.shell32.ShellExecuteW(None, u"runas", unicode(sys.executable), u"{0} -silent".format(unicode(__file__)), None, 1)
+			sys.exit(1)
+		else:
+			windll.shell32.ShellExecuteW(None, u"runas", unicode(sys.executable), unicode(__file__) + u" -silent", None, 1)
+		sys.exit(1)
 	
 def silent():
 
