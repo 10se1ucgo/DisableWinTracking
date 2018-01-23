@@ -105,7 +105,7 @@ def clear_diagtrack():
 		
 		
 		output = subprocess_handler(cmd)
-		if output[0] in [0, 1060]:
+		if output[0] in [0, 1060, 1072]:
 			if output[0] == 0:
 				if len(service) > 1:
 					logger.info("DiagTrack: Successfully deleted service '{0}'".format(service[1]))
@@ -113,6 +113,8 @@ def clear_diagtrack():
 					logger.info("DiagTrack: Successfully erased tracking log.")
 			if output[0] == 1060:
 				logger.info("DiagTrack: {0} service doesn't exist. This is OK, you likely removed it already.".format(service[1]))
+			if output[0] == 1072:
+				logger.info("DiagTrack: {0} service marked for deletion. This is OK, make sure you reboot your machine!".format(service[1]))
 				
 			logger.info("DiagTrack: Completed Part {0}/{1}".format(i, len(cmds)))
 		else:

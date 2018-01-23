@@ -5,6 +5,11 @@ A tool that I created to use some of the known methods of disabling tracking in 
 <!-- ![screenshot](https://i.imgur.com/qfC2elN.png) -->
 ![screenshot](http://i.imgur.com/WINUxAj.png)
 
+## CYRILLIC LANGUAGES WARNING
+**Slavic languages: Belarusian, Bulgarian, Macedonian, Russian, Rusyn, Serbo-Croatian (for Standard Serbian, Bosnian, and Montenegrin), Ukrainian.**
+
+This program cannot run correctly from a file path that contains Cyrillic characters. Make sure to run it from your root folder (usually C:) so that you don't get runtime errors.
+
 ## DOWNLOAD
 
 [DOWNLOAD EXE HERE](https://github.com/10se1ucgo/DisableWinTracking/releases/)

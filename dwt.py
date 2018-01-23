@@ -460,16 +460,7 @@ def exception_hook(error, value, trace):
 
 def check_elevated(silent=False):
 	if not bool(windll.advpack.IsNTAdmin(0, None)):
-		if not silent:
-			warn = wx.MessageDialog(parent=None,
-									message="Program requires elevation, please run it as an administrator.",
-									caption="ERROR!", style=wx.OK | wx.ICON_WARNING)
-			warn.ShowModal()
-			warn.Destroy()
-		else:
-			logger.info("You didn't run DWT as administrator. Don't bother posting an issue.")
-			logger.info("Please re-run as administrator.")
-		sys.exit(1)
+		windll.shell32.ShellExecuteW(None, u"runas", unicode(sys.executable), unicode(__file__), None, 1)
 	
 def silent():
 
