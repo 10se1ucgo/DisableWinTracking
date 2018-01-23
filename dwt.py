@@ -464,7 +464,7 @@ def check_elevated(silent=False):
 			windll.shell32.ShellExecuteW(None, u"runas", unicode(sys.executable), u"{0} -silent".format(unicode(__file__)), None, 1)
 			sys.exit(1)
 		else:
-			windll.shell32.ShellExecuteW(None, u"runas", unicode(sys.executable), unicode(__file__) + u" -silent", None, 1)
+			windll.shell32.ShellExecuteW(None, u"runas", unicode(sys.executable), unicode(__file__), None, 1)
 		sys.exit(1)
 	
 def silent():
