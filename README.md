@@ -10,7 +10,7 @@ A tool that I created to use some of the known methods of disabling tracking in 
 
 This program cannot run correctly from a file path that contains Cyrillic characters. Make sure to run it from your root folder (usually C:/ ) so that you don't get runtime errors.
 
-##ПРЕДУПРЕЖДЕНИЕ КИРИЛЬСКИХ ЯЗЫКОВ
+## ПРЕДУПРЕЖДЕНИЕ КИРИЛЬСКИХ ЯЗЫКОВ
 **Славянские языки: белорусский, болгарский, македонский, русский, русинский, сербохорватский (для стандартного сербского, боснийского и черногорского), украинский.**
 
 Эта программа не может работать корректно с пути к файлу, содержащему кириллические символы. Обязательно запустите его из корневой папки ( обычно C:/ ), чтобы вы не получали ошибок во время выполнения.
