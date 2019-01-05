@@ -149,6 +149,10 @@ class MainPanel(wx.Panel):
 		self.onedrive_check = wx.CheckBox(self, label="Uninstall OneDrive")
 		self.onedrive_check.SetToolTip("Uninstalls OneDrive from your computer and removes it from Explorer.")
 
+		# Xbox DVR checkbox
+		self.dvr_check = wx.CheckBox(self, label="Disable Xbox DVR")
+		self.dvr_check.SetToolTip("Disable Xbox DVR feature to increase FPS in games")
+
 		self.service_rad = wx.RadioBox(self, label="Service Method", choices=("Disable", "Delete"))
 		self.service_rad.SetItemToolTip(item=0, text="Simply disables the services. This can be undone.")
 		self.service_rad.SetItemToolTip(item=1, text="Deletes the services completely. This can't be undone.")
@@ -245,6 +249,7 @@ class MainPanel(wx.Panel):
 		check_sizer.Add(self.defender_check, 0, wx.ALL, 1)
 		check_sizer.Add(self.wifisense_check, 0, wx.ALL, 1)
 		check_sizer.Add(self.onedrive_check, 0, wx.ALL, 1)
+		check_sizer.Add(self.dvr_check, 0, wx.ALL, 1)
 
 		# self.Bind(wx.EVT_CHECKBOX, handler=self.select_all_apps, source=select_all_check)
 		self.Bind(wx.EVT_CHECKBOX, handler=self.ip_warn, source=self.ip_check)
@@ -259,7 +264,7 @@ class MainPanel(wx.Panel):
 		for child in self.app_box.GetStaticBox().GetChildren():
 			if isinstance(child, wx.CheckBox):
 				child.SetValue(event.IsChecked())
-			
+
 	def ip_warn(self, event):
 		# Warn users about the potential side effects of the IP blocking firewall rules
 		if event.IsChecked():
@@ -317,6 +322,8 @@ class MainPanel(wx.Panel):
 			dwt_util.wifisense(undo=undo)
 		if self.onedrive_check.IsChecked():
 			dwt_util.onedrive(undo=undo)
+		if self.dvr_check.IsChecked():
+			dwt_util.dvr(undo=undo)
 		logger.info("Done. It's recommended that you reboot as soon as possible for the full effect.")
 		logger.info(
 			"If you feel something didn't work properly, please press the "
@@ -333,7 +340,7 @@ class MainPanel(wx.Panel):
 		if not silent_flag:
 			dialog = wx.Dialog(parent=self, title="Settings", style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 			sizer = wx.BoxSizer(wx.VERTICAL)
-			
+
 		normal_domains = (
 			'a-0001.a-msedge.net', 'a-0002.a-msedge.net', 'a-0003.a-msedge.net', 'a-0004.a-msedge.net',
 			'a-0005.a-msedge.net', 'a-0006.a-msedge.net', 'a-0007.a-msedge.net', 'a-0008.a-msedge.net',
@@ -419,12 +426,12 @@ class MainPanel(wx.Panel):
 				dialog.Center()
 				dialog.ShowModal()
 			dialog.Destroy()
-			
+
 		self.picked_normal = normal_domain_picker.GetSelections()
 		self.picked_extra = extra_domain_picker.GetSelections()
 		self.picked_ips = ip_picker.GetSelections()
-		
-		
+
+
 def setup_logging():
 	global logger
 	logger = logging.getLogger('dwt')
@@ -481,7 +488,7 @@ def check_elevated(silent_flag=False):
 			windll.shell32.ShellExecuteW(
 				None, u"runas", unicode(sys.executable), unicode(__file__), None, 1)
 		sys.exit(1)
-	
+
 
 def silent():
 
@@ -496,7 +503,7 @@ def silent():
 	# dwt_util.defender(0)
 	dwt_util.wifisense(0)
 	dwt_util.onedrive(0)
-	
+
 	logger.info("COMPLETE")
 
 
@@ -504,7 +511,7 @@ if __name__ == '__main__':
 	if '-silent' in sys.argv:
 		silent()
 		sys.exit(0)
-			
+
 	wx_app = wx.App()
 	frame = MainFrame()
 	console = ConsoleDialog(sys.stdout)
