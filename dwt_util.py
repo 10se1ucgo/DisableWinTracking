@@ -66,13 +66,12 @@ class CalledProcessError(Exception):
 
 def is_64bit():
     if os.name == 'nt':
-		output = subprocess.check_output(['wmic', 'os', 'get', 'OSArchitecture'])
-		os_arch = output.split()[1]
-		return True if os_arch == '64-bit' else False
+        output = subprocess.check_output(['wmic', 'os', 'get', 'OSArchitecture'])
+        os_arch = output.split()[1]
+        return True if os_arch == '64-bit' else False
     else:
-		logger.critical("This was only meant to be run on Windows-based system. Specifically, Windows 10.")
-		os._exit(0)
-    return os_arch
+        logger.critical("This was only meant to be run on Windows-based system. Specifically, Windows 10.")
+        exit(0)
 
 
 def ip_block(ip_list, undo):
@@ -84,89 +83,98 @@ def ip_block(ip_list, undo):
 
         try:
             subprocess_handler(shlex.split(cmd))
-            logger.info("IP Blocker: The IP {ip} was successfully {act}.".format(ip=ip, act='unblocked' if undo else 'blocked'))
+            logger.info(
+                "IP Blocker: The IP {ip} was successfully {act}.".format(ip=ip, act='unblocked' if undo else 'blocked'))
         except CalledProcessError as e:
             logger.exception("IP Blocker: Failed to {act} IP {ip}".format(act='unblock' if undo else 'block', ip=ip))
             logger.critical("IP Blocker: Error output:\n" + e.stdout.decode('ascii', 'replace'))
 
 
 def clear_diagtrack():
-	file = os.path.join(os.environ['SYSTEMDRIVE'], ('\\ProgramData\\Microsoft\\Diagnosis\\ETLLogs\\AutoLogger\\AutoLogger-Diagtrack-Listener.etl'))
+    file_path = os.path.join(
+        os.environ['SYSTEMDRIVE'],
+        '\\ProgramData\\Microsoft\\Diagnosis\\ETLLogs\\AutoLogger\\AutoLogger-Diagtrack-Listener.etl')
 
-	cmds = ['sc delete DiagTrack',
-		   'sc delete dmwappushservice',
-		   'echo "" > "{file}"'.format(file=file)]
+    cmds = [
+        'sc delete DiagTrack',
+        'sc delete dmwappushservice',
+        'echo "" > "{file}"'.format(file=file_path)
+    ]
 
-	i = 0
-	failed = False
-	for cmd in cmds:
-		i += 1
-		service = split(cmd, 'sc delete ')
-		
-		
-		output = subprocess_handler(cmd)
-		if output[0] in [0, 1060, 1072]:
-			if output[0] == 0:
-				if len(service) > 1:
-					logger.info("DiagTrack: Successfully deleted service '{0}'".format(service[1]))
-				else:
-					logger.info("DiagTrack: Successfully erased tracking log.")
-			if output[0] == 1060:
-				logger.info("DiagTrack: {0} service doesn't exist. This is OK, you likely removed it already.".format(service[1]))
-			if output[0] == 1072:
-				logger.info("DiagTrack: {0} service marked for deletion. This is OK, make sure you reboot your machine!".format(service[1]))
-				
-			logger.info("DiagTrack: Completed Part {0}/{1}".format(i, len(cmds)))
-		else:
-			logger.info("{0}".format(output[0]))
-			failed = True
-			logger.exception("DiagTrack: Failed Part {0}/{1}".format(i, len(cmds)))
-			logger.critical("DiagTrack: Error code: {0} - {1}".format(output[0],output[1]))
-		
-	if failed:
-		logger.info("DiagTrack: Complete. Errors were recorded.")
-	else:
-		logger.info("DiagTrack: Completed successfully, without errors.")
-	
-	'''
-	This is an ORDERED dictionary. It will always run in order, not subject to the devastation
-	of a standard dictionary, so no worries.
-	'''
-	
-	#temporarily removing this code in favor of something that actually works
-	'''
-	cmds = OrderedDict()
-	cmds["takeown /f {0}".format(file)]="Take Ownership"
-	cmds["icacls {0} /grant administrators:F".format(file)]="Grant Admin Privilege"
-	cmds["icacls {0} /inheritance:r /deny SYSTEM:F /grant Administrators:F".format(file)]="Deny System Privilege"
+    i = 0
+    failed = False
+    for cmd in cmds:
+        i += 1
+        service = split(cmd, 'sc delete ')
 
-	i = 0
+        output = subprocess_handler(cmd)
+        if output[0] in [0, 1060, 1072]:
+            if output[0] == 0:
+                if len(service) > 1:
+                    logger.info("DiagTrack: Successfully deleted service '{0}'".format(service[1]))
+                else:
+                    logger.info("DiagTrack: Successfully erased tracking log.")
+            if output[0] == 1060:
+                logger.info(
+                    "DiagTrack: {0} service doesn't exist. "
+                    "This is OK, you likely removed it already.".format(service[1]))
+            if output[0] == 1072:
+                logger.info(
+                    "DiagTrack: {0} service marked for deletion. "
+                    "This is OK, make sure you reboot your machine!".format(service[1]))
 
-	for x, y in cmds.iteritems():
-		i += 1
-		
-		if i == 3:
-			try:
-				open(file, 'w').close()
-				logger.info("DiagTrack: Cleared AutoLogger-Diagtrack-Listener.etl")
-			except:
-				logger.exception("DiagTrack: Couldn't open AutoLogger-Diagtrack-Listener.etl for writing")
+            logger.info("DiagTrack: Completed Part {0}/{1}".format(i, len(cmds)))
+        else:
+            logger.info("{0}".format(output[0]))
+            failed = True
+            logger.exception("DiagTrack: Failed Part {0}/{1}".format(i, len(cmds)))
+            logger.critical("DiagTrack: Error code: {0} - {1}".format(output[0], output[1]))
 
-		p = subprocess.Popen(x, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-		output = p.communicate()
-		logger.info("DiagTrack: {0} of AutoLogger-Diagtrack-Listener.etl was successful".format(y))
+    if failed:
+        logger.info("DiagTrack: Complete. Errors were recorded.")
+    else:
+        logger.info("DiagTrack: Completed successfully, without errors.")
 
-		if p.returncode:
-			logger.exception(p.returncode.decode())
-			
-		if i == 3:
-			logger.info("DiagTrack: Successfully cleared and locked DiagTrack log.")
-		'''
+    '''
+    This is an ORDERED dictionary. It will always run in order, not subject to the devastation
+    of a standard dictionary, so no worries.
+    '''
+
+    # temporarily removing this code in favor of something that actually works
+    '''
+    cmds = OrderedDict()
+    cmds["takeown /f {0}".format(file)]="Take Ownership"
+    cmds["icacls {0} /grant administrators:F".format(file)]="Grant Admin Privilege"
+    cmds["icacls {0} /inheritance:r /deny SYSTEM:F /grant Administrators:F".format(file)]="Deny System Privilege"
+    
+    i = 0
+    
+    for x, y in cmds.iteritems():
+        i += 1
+        
+        if i == 3:
+            try:
+                open(file, 'w').close()
+                logger.info("DiagTrack: Cleared AutoLogger-Diagtrack-Listener.etl")
+            except:
+                logger.exception("DiagTrack: Couldn't open AutoLogger-Diagtrack-Listener.etl for writing")
+    
+        p = subprocess.Popen(x, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        output = p.communicate()
+        logger.info("DiagTrack: {0} of AutoLogger-Diagtrack-Listener.etl was successful".format(y))
+    
+        if p.returncode:
+            logger.exception(p.returncode.decode())
+            
+        if i == 3:
+            logger.info("DiagTrack: Successfully cleared and locked DiagTrack log.")
+        '''
+
 
 def delete_service(service):
     try:
         win32serviceutil.RemoveService(service)
-        logger.info("Services: Succesfully removed service '{service}'".format(service=service))
+        logger.info("Services: Successfully removed service '{service}'".format(service=service))
     except pywintypes.error as e:
         errors = (winerror.ERROR_SERVICE_DOES_NOT_EXIST, winerror.ERROR_SERVICE_NOT_ACTIVE)
         if not any(error == e.winerror for error in errors):
@@ -176,7 +184,7 @@ def delete_service(service):
 def disable_service(service):
     try:
         win32serviceutil.StopService(service)
-        logger.info("Services: Succesfully stopped service '{service}'".format(service=service))
+        logger.info("Services: Successfully stopped service '{service}'".format(service=service))
     except pywintypes.error as e:
         errors = (winerror.ERROR_SERVICE_DOES_NOT_EXIST, winerror.ERROR_SERVICE_NOT_ACTIVE)
         if not any(error == e.winerror for error in errors):
@@ -233,42 +241,45 @@ def wifisense(undo):
 
 
 def onedrive(undo):
-	file_sync_value = int(undo)
-	list_pin_value = int(not undo)
-	action = "install" if undo else "uninstall"
-	
-	if is_64bit():
-		onedrive_keys = {'FileSync': [winreg.HKEY_LOCAL_MACHINE,
-									  r'SOFTWARE\Policies\Microsoft\Windows\OneDrive',
-									  'DisableFileSyncNGSC', winreg.REG_DWORD, file_sync_value],
+    file_sync_value = int(undo)
+    list_pin_value = int(not undo)
+    action = "install" if undo else "uninstall"
 
-						 'ListPin': [winreg.HKEY_CLASSES_ROOT,
-									 r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
-									 'System.IsPinnedToNameSpaceTree', winreg.REG_DWORD, list_pin_value],
+    if is_64bit():
+        onedrive_keys = {'FileSync': [winreg.HKEY_LOCAL_MACHINE,
+                                      r'SOFTWARE\Policies\Microsoft\Windows\OneDrive',
+                                      'DisableFileSyncNGSC', winreg.REG_DWORD, file_sync_value],
 
-						 'ListPin64Bit': [winreg.HKEY_CLASSES_ROOT,
-									 r'Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
-									 'System.IsPinnedToNameSpaceTree', winreg.REG_DWORD, list_pin_value]}
-	else:	
-		onedrive_keys = {'FileSync': [winreg.HKEY_LOCAL_MACHINE,
-									  r'SOFTWARE\Policies\Microsoft\Windows\OneDrive',
-									  'DisableFileSyncNGSC', winreg.REG_DWORD, file_sync_value],
+                         'ListPin': [winreg.HKEY_CLASSES_ROOT,
+                                     r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
+                                     'System.IsPinnedToNameSpaceTree', winreg.REG_DWORD, list_pin_value],
 
-						 'ListPin': [winreg.HKEY_CLASSES_ROOT,
-									 r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
-									 'System.IsPinnedToNameSpaceTree', winreg.REG_DWORD, list_pin_value]}
+                         'ListPin64Bit': [
+                             winreg.HKEY_CLASSES_ROOT,
+                             r'Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
+                             'System.IsPinnedToNameSpaceTree', winreg.REG_DWORD, list_pin_value]}
+    else:
+        onedrive_keys = {'FileSync': [winreg.HKEY_LOCAL_MACHINE,
+                                      r'SOFTWARE\Policies\Microsoft\Windows\OneDrive',
+                                      'DisableFileSyncNGSC', winreg.REG_DWORD, file_sync_value],
 
-	set_registry(onedrive_keys)
+                         'ListPin': [winreg.HKEY_CLASSES_ROOT,
+                                     r'CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}',
+                                     'System.IsPinnedToNameSpaceTree', winreg.REG_DWORD, list_pin_value]}
 
-	system = "SysWOW64" if is_64bit() else "System32"
-	onedrive_setup = os.path.join(os.environ['SYSTEMROOT'], "{system}\\OneDriveSetup.exe".format(system=system))
-	cmd = "{bin} /{action}".format(bin=onedrive_setup, action=action)
-	
-	output = subprocess_handler(cmd)
-	if output[0] == -2147219823:
-		logger.info("OneDrive: successfully {action}ed".format(action=action))
-	else:
-		logger.info("OneDrive: unable to {action}. Exited with code: {code} - {message}".format(action=action, code=output[0], message=output[1]))
+    set_registry(onedrive_keys)
+
+    system = "SysWOW64" if is_64bit() else "System32"
+    onedrive_setup = os.path.join(os.environ['SYSTEMROOT'], "{system}\\OneDriveSetup.exe".format(system=system))
+    cmd = "{bin} /{action}".format(bin=onedrive_setup, action=action)
+
+    output = subprocess_handler(cmd)
+    if output[0] == -2147219823:
+        logger.info("OneDrive: successfully {action}ed".format(action=action))
+    else:
+        logger.info(
+            "OneDrive: unable to {action}. "
+            "Exited with code: {code} - {message}".format(action=action, code=output[0], message=output[1]))
 
 
 def set_registry(keys):
@@ -331,10 +342,10 @@ def app_manager(apps, undo):
 
 
 def subprocess_handler(cmd):
-	p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
-	output = p.communicate()
-	
-	return [p.returncode, output]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
+    output = p.communicate()
+
+    return [p.returncode, output]
 
 # Old reinstall code, does not work:
 # if reinstall:

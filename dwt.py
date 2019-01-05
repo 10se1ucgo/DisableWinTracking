@@ -28,52 +28,54 @@ from wx.lib.itemspicker import ItemsPicker, IP_SORT_SELECTED, IP_SORT_CHOICES, I
 import dwt_about
 import dwt_util
 
+
 class RedirectText(io.StringIO):
-    def __init__(self, console, old_stdout):
-        super(RedirectText, self).__init__()
+	def __init__(self, cli, old_stdout):
+		super(RedirectText, self).__init__()
 
-        self.out = console
-        self.old_out = old_stdout
+		self.out = cli
+		self.old_out = old_stdout
 
-    def write(self, string):
-        # Oh my god this is the DUMBEST THING I've ever done. (Keeping a reference to the old stdout)
-        self.old_out.write(string)
-        self.out.WriteText(string)
+	def write(self, string):
+		# Oh my god this is the DUMBEST THING I've ever done. (Keeping a reference to the old stdout)
+		self.old_out.write(string)
+		self.out.WriteText(string)
 
 
 class ConsoleDialog(wx.Dialog):
-    def __init__(self, old_stdout):
-        wx.Dialog.__init__(self, parent=wx.GetApp().TopWindow, title="Console Output", size=(500, 200),
-                           style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+	def __init__(self, old_stdout):
+		wx.Dialog.__init__(
+			self, parent=wx.GetApp().TopWindow, title="Console Output", size=(500, 200),
+			style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 
-        console_box = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.TE_READONLY)
-        sys.stdout = RedirectText(console_box, old_stdout)
+		console_box = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.TE_READONLY)
+		sys.stdout = RedirectText(console_box, old_stdout)
 
-        top_sizer = wx.BoxSizer(wx.VERTICAL)
-        console_sizer = wx.BoxSizer(wx.VERTICAL)
-        button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
+		top_sizer = wx.BoxSizer(wx.VERTICAL)
+		console_sizer = wx.BoxSizer(wx.VERTICAL)
+		button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
 
-        report_button = wx.FindWindowById(wx.ID_CANCEL, self)
-        report_button.SetLabel("Report an issue")
+		report_button = wx.FindWindowById(wx.ID_CANCEL, self)
+		report_button.SetLabel("Report an issue")
 
-        console_sizer.Add(console_box, 1, wx.LEFT | wx.RIGHT | wx.EXPAND | wx.ALIGN_TOP, 5)
+		console_sizer.Add(console_box, 1, wx.LEFT | wx.RIGHT | wx.EXPAND | wx.ALIGN_TOP, 5)
 
-        top_sizer.Add(console_sizer, 1, wx.ALL | wx.EXPAND, 5)
-        top_sizer.Add(button_sizer, 0, wx.ALL | wx.ALIGN_LEFT, 5)
+		top_sizer.Add(console_sizer, 1, wx.ALL | wx.EXPAND, 5)
+		top_sizer.Add(button_sizer, 0, wx.ALL | wx.ALIGN_LEFT, 5)
 
-        self.Bind(wx.EVT_CLOSE, handler=lambda x: sys.exit(0))
-        self.Bind(wx.EVT_BUTTON, handler=lambda x: sys.exit(0), id=wx.ID_OK)
-        self.Bind(wx.EVT_BUTTON, source=report_button, handler=self.submit_issue)
-        self.SetSizer(top_sizer)
+		self.Bind(wx.EVT_CLOSE, handler=lambda x: sys.exit(0))
+		self.Bind(wx.EVT_BUTTON, handler=lambda x: sys.exit(0), id=wx.ID_OK)
+		self.Bind(wx.EVT_BUTTON, source=report_button, handler=self.submit_issue)
+		self.SetSizer(top_sizer)
 
-    def submit_issue(self, event):
-        webbrowser.open_new_tab("https://github.com/10se1ucgo/DisableWinTracking/issues/new")
+	def submit_issue(self, event):
+		webbrowser.open_new_tab("https://github.com/10se1ucgo/DisableWinTracking/issues/new")
 
 
 class MainFrame(wx.Frame):
-    def __init__(self):
-		super(MainFrame, self).__init__(parent=wx.GetApp().GetTopWindow(), title="Disable Windows 10 Tracking",
-										size=(415, 245))
+	def __init__(self):
+		super(MainFrame, self).__init__(
+			parent=wx.GetApp().GetTopWindow(), title="Disable Windows 10 Tracking", size=(415, 245))
 		self.SetMinSize(self.GetSize())
 		panel = MainPanel(self)
 
@@ -111,13 +113,13 @@ class MainPanel(wx.Panel):
 		self.service_check.SetToolTip("Disables or deletes tracking services. Choose option in 'Services Method'")
 
 		self.diagtrack_check = wx.CheckBox(self, label="Clear DiagTrack log")
-		self.diagtrack_check.SetToolTip("Clears Dianostic Tracking log and prevents modification to it. "
-										"Cannot be undone automatically.")
+		self.diagtrack_check.SetToolTip(
+			"Clears Dianostic Tracking log and prevents modification to it. Cannot be undone automatically.")
 
 		# Telemetry checkbox
 		self.telemetry_check = wx.CheckBox(self, label="Telemetry")
-		self.telemetry_check.SetToolTip("Sets 'AllowTelemetry' to 0. "
-										"On non-Enterprise OS editions, requires HOSTS file modification.")
+		self.telemetry_check.SetToolTip(
+			"Sets 'AllowTelemetry' to 0. On non-Enterprise OS editions, requires HOSTS file modification.")
 
 		# HOSTS file checkbox
 		self.host_check = wx.CheckBox(self, label="Block tracking domains")
@@ -125,8 +127,9 @@ class MainPanel(wx.Panel):
 
 		# Extra HOSTS checkbox
 		self.extra_host_check = wx.CheckBox(self, label="Block even more tracking domains")
-		self.extra_host_check.SetToolTip("For the paranoid. Adds extra domains to the HOSTS file.\n"
-										 "May cause issues with Skype, Dr. Watson, Hotmail and/or Error Reporting.")
+		self.extra_host_check.SetToolTip(
+			"For the paranoid. Adds extra domains to the HOSTS file.\n"
+			"May cause issues with Skype, Dr. Watson, Hotmail and/or Error Reporting.")
 
 		# IP block checkbox
 		self.ip_check = wx.CheckBox(self, label="Block tracking IP addresses")
@@ -134,8 +137,8 @@ class MainPanel(wx.Panel):
 
 		# Windows Privacy Regs (Policy Manager)
 		self.defender_check = wx.CheckBox(self, label="Windows Defender collection")
-		#self.defender_check.SetToolTip("Modifies registry to prevent Defender collection")
-		#Disable defender option until a solution is found.
+		# self.defender_check.SetToolTip("Modifies registry to prevent Defender collection")
+		# Disable defender option until a solution is found.
 		self.defender_check.SetToolTip("Disable due to limitation set by windows kernel.")
 		self.defender_check.Enable(False)
 
@@ -156,9 +159,8 @@ class MainPanel(wx.Panel):
 
 		go_button = wx.Button(self, label="Go!")
 
-		#Temporarily removed due to issues with not being able to restore apps properly
-		#This was honestly beyond the scope of the project to begin with and shouldn't have been implemented
-
+		# Temporarily removed due to issues with not being able to restore apps properly
+		# This was honestly beyond the scope of the project to begin with and shouldn't have been implemented
 
 		'''self.app_box = wx.StaticBoxSizer(wx.VERTICAL, self, "Built-in Apps")
 		stat_box = self.app_box.GetStaticBox()
@@ -228,7 +230,7 @@ class MainPanel(wx.Panel):
 		rad_sizer = wx.BoxSizer(wx.VERTICAL)
 
 		top_sizer.Add(top_row_sizer, 0, wx.ALL, 5)
-		#top_sizer.Add(self.app_box, 0, wx.ALL, 5)
+		# top_sizer.Add(self.app_box, 0, wx.ALL, 5)
 		top_row_sizer.Add(check_sizer, 0, wx.ALL)
 		top_row_sizer.Add(rad_sizer, 0, wx.ALL)
 		rad_sizer.Add(self.service_rad, 0, wx.ALL, 10)
@@ -244,10 +246,10 @@ class MainPanel(wx.Panel):
 		check_sizer.Add(self.wifisense_check, 0, wx.ALL, 1)
 		check_sizer.Add(self.onedrive_check, 0, wx.ALL, 1)
 
-		#self.Bind(wx.EVT_CHECKBOX, handler=self.select_all_apps, source=select_all_check)
+		# self.Bind(wx.EVT_CHECKBOX, handler=self.select_all_apps, source=select_all_check)
 		self.Bind(wx.EVT_CHECKBOX, handler=self.ip_warn, source=self.ip_check)
 		self.Bind(wx.EVT_CHECKBOX, handler=self.hosts_warn, source=self.extra_host_check)
-		#self.Bind(wx.EVT_BUTTON, handler=self.remove_apps, source=remove_app_button)
+		# self.Bind(wx.EVT_BUTTON, handler=self.remove_apps, source=remove_app_button)
 		self.Bind(wx.EVT_BUTTON, handler=self.go, source=go_button)
 
 		self.SetSizer(top_sizer)
@@ -261,10 +263,11 @@ class MainPanel(wx.Panel):
 	def ip_warn(self, event):
 		# Warn users about the potential side effects of the IP blocking firewall rules
 		if event.IsChecked():
-			warn = wx.MessageDialog(parent=self,
-									message="This option could potentially disable Microsoft Licensing traffic and thus "
-											"certain games and apps may cease to work, such as, Forza, or Gears of War.",
-									caption="Attention!", style=wx.YES_NO | wx.ICON_EXCLAMATION)
+			warn = wx.MessageDialog(
+				parent=self,
+				message="""This option could potentially disable Microsoft Licensing traffic and thus certain games 
+				and apps may cease to work, such as, Forza, or Gears of War.""",
+				caption="Attention!", style=wx.YES_NO | wx.ICON_EXCLAMATION)
 
 			if warn.ShowModal() == wx.ID_NO:
 				event.GetEventObject().SetValue(False)
@@ -274,10 +277,10 @@ class MainPanel(wx.Panel):
 	def hosts_warn(self, event):
 		# Warn users about the potential side effects of the extra hosts mod.
 		if event.IsChecked():
-			warn = wx.MessageDialog(parent=self,
-									message="This option could potentially disable one or more of the following "
-											"services:\n\nSkype, Hotmail, Dr. Watson and/or Error Reporting. Continue?",
-									caption="Attention!", style=wx.YES_NO | wx.ICON_EXCLAMATION)
+			warn = wx.MessageDialog(
+				parent=self, caption="Attention!", style=wx.YES_NO | wx.ICON_EXCLAMATION,
+				message="""This option could potentially disable one or more of the following services:
+				\n\nSkype, Hotmail, Dr. Watson and/or Error Reporting. Continue?""")
 
 			if warn.ShowModal() == wx.ID_NO:
 				event.GetEventObject().SetValue(False)
@@ -315,18 +318,19 @@ class MainPanel(wx.Panel):
 		if self.onedrive_check.IsChecked():
 			dwt_util.onedrive(undo=undo)
 		logger.info("Done. It's recommended that you reboot as soon as possible for the full effect.")
-		logger.info(("If you feel something didn't work properly, please press the 'Report an issue'"
-					  " button and follow the directions"))
+		logger.info(
+			"If you feel something didn't work properly, please press the "
+			"'Report an issue' button and follow the directions")
 		console.Center()
 		console.Show()
 
-	def remove_apps(self, event):
+	def remove_apps(self):
 		children = [child for child in self.app_box.GetStaticBox().GetChildren() if child.GetName() != "check"]
 		app_list = [child.GetName() for child in children if isinstance(child, wx.CheckBox) and child.IsChecked()]
 		dwt_util.app_manager(app_list, undo=False)
 
-	def settings(self, event, silent=False):
-		if silent == False:
+	def settings(self, event, silent_flag=False):
+		if not silent_flag:
 			dialog = wx.Dialog(parent=self, title="Settings", style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 			sizer = wx.BoxSizer(wx.VERTICAL)
 			
@@ -376,31 +380,37 @@ class MainPanel(wx.Panel):
 			'137.116.81.24', '157.56.106.189', '204.79.197.200', '65.52.108.33', '64.4.54.254'
 		)
 
-		normal_domain_picker = ItemsPicker(dialog, choices=[], selectedLabel="Domains to be blocked",
-										   ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
+		normal_domain_picker = ItemsPicker(
+			dialog, choices=[], selectedLabel="Domains to be blocked",
+			ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
+
 		if self.picked_normal:
 			normal_domain_picker.SetSelections(self.picked_normal)
 			normal_domain_picker.SetItems([domain for domain in normal_domains if domain not in self.picked_normal])
 		else:
 			normal_domain_picker.SetSelections(normal_domains)
 
-		extra_domain_picker = ItemsPicker(dialog, choices=[], selectedLabel="Extra domains to be blocked",
-										  ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
+		extra_domain_picker = ItemsPicker(
+			dialog, choices=[], selectedLabel="Extra domains to be blocked",
+			ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
+
 		if self.picked_extra:
 			extra_domain_picker.SetSelections(self.picked_extra)
 			extra_domain_picker.SetItems([domain for domain in extra_domains if domain not in self.picked_extra])
 		else:
 			extra_domain_picker.SetSelections(extra_domains)
 
-		ip_picker = ItemsPicker(dialog, choices=[], selectedLabel="IP addresses to be blocked",
-								ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
+		ip_picker = ItemsPicker(
+			dialog, choices=[], selectedLabel="IP addresses to be blocked",
+			ipStyle=IP_SORT_SELECTED | IP_SORT_CHOICES | IP_REMOVE_FROM_CHOICES)
+
 		if self.picked_ips:
 			ip_picker.SetSelections(self.picked_ips)
 			ip_picker.SetItems([ip for ip in ip_addresses if ip not in self.picked_ips])
 		else:
 			ip_picker.SetSelections(ip_addresses)
 
-		if silent == False:
+		if not silent_flag:
 			sizer.Add(normal_domain_picker, 0, wx.EXPAND)
 			sizer.Add(extra_domain_picker, 0, wx.EXPAND)
 			sizer.Add(ip_picker, 0, wx.EXPAND)
@@ -416,57 +426,63 @@ class MainPanel(wx.Panel):
 		
 		
 def setup_logging():
-    global logger
-    logger = logging.getLogger('dwt')
-    logger.setLevel(logging.DEBUG)
+	global logger
+	logger = logging.getLogger('dwt')
+	logger.setLevel(logging.DEBUG)
 
-    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%H:%M:%S')
+	formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%H:%M:%S')
 
-    stdout_log = logging.StreamHandler(sys.stdout)
-    stdout_log.setLevel(logging.DEBUG)
-    stdout_log.setFormatter(formatter)
-    logger.addHandler(stdout_log)
+	stdout_log = logging.StreamHandler(sys.stdout)
+	stdout_log.setLevel(logging.DEBUG)
+	stdout_log.setFormatter(formatter)
+	logger.addHandler(stdout_log)
 
-    try:
-        file_log = logging.FileHandler(filename='dwt.log')
-        file_log.setLevel(logging.DEBUG)
-        file_log.setFormatter(formatter)
-        logger.addHandler(file_log)
-    except (OSError, IOError):
-        error_dialog = wx.MessageDialog(parent=wx.GetApp().GetTopWindow(),
-                                        message="Could not create log file, errors will not be recorded!",
-                                        caption="ERROR!", style=wx.OK | wx.ICON_ERROR)
-        error_dialog.ShowModal()
-        error_dialog.Destroy()
-        logger.exception("Could not create log file.")
+	try:
+		file_log = logging.FileHandler(filename='dwt.log')
+		file_log.setLevel(logging.DEBUG)
+		file_log.setFormatter(formatter)
+		logger.addHandler(file_log)
+	except (OSError, IOError):
+		error_dialog = wx.MessageDialog(
+			parent=wx.GetApp().GetTopWindow(),
+			message="Could not create log file, errors will not be recorded!",
+			caption="ERROR!", style=wx.OK | wx.ICON_ERROR)
+		error_dialog.ShowModal()
+		error_dialog.Destroy()
+		logger.exception("Could not create log file.")
 
-    logger.info("Python {version} on {platform}".format(version=sys.version, platform=sys.platform))
-    logger.info(platform.uname())
-    logger.info("DisableWinTracking version {v}".format(v=dwt_about.__version__))
+	logger.info("Python {version} on {platform}".format(version=sys.version, platform=sys.platform))
+	logger.info(platform.uname())
+	logger.info("DisableWinTracking version {v}".format(v=dwt_about.__version__))
 
 
 def exception_hook(error, value, trace):
-    error_message = ''.join(traceback.format_exception(error, value, trace))
-    logger.critical(error_message)
-    error_dialog = wx.MessageDialog(parent=wx.GetApp().GetTopWindow(),
-                                    message="An error has occured!\n\n" + error_message,
-                                    caption="ERROR!", style=wx.OK | wx.CANCEL | wx.ICON_ERROR)
-    error_dialog.SetOKCancelLabels("Ignore", "Quit")
-    if error_dialog.ShowModal() == wx.ID_OK:
-        error_dialog.Destroy()
-    else:
-        error_dialog.Destroy()
-        sys.exit(1)
+	error_message = ''.join(traceback.format_exception(error, value, trace))
+	logger.critical(error_message)
+	error_dialog = wx.MessageDialog(
+		parent=wx.GetApp().GetTopWindow(),
+		message="An error has occured!\n\n" + error_message,
+		caption="ERROR!", style=wx.OK | wx.CANCEL | wx.ICON_ERROR)
+	error_dialog.SetOKCancelLabels("Ignore", "Quit")
+	if error_dialog.ShowModal() == wx.ID_OK:
+		error_dialog.Destroy()
+	else:
+		error_dialog.Destroy()
+		sys.exit(1)
 
-def check_elevated(silent=False):
+
+def check_elevated(silent_flag=False):
 	if not bool(windll.advpack.IsNTAdmin(0, None)):
-		if silent:
-			windll.shell32.ShellExecuteW(None, u"runas", unicode(sys.executable), u"{0} -silent".format(unicode(__file__)), None, 1)
+		if silent_flag:
+			windll.shell32.ShellExecuteW(
+				None, u"runas", unicode(sys.executable), u"{0} -silent".format(unicode(__file__)), None, 1)
 			sys.exit(1)
 		else:
-			windll.shell32.ShellExecuteW(None, u"runas", unicode(sys.executable), unicode(__file__), None, 1)
+			windll.shell32.ShellExecuteW(
+				None, u"runas", unicode(sys.executable), unicode(__file__), None, 1)
 		sys.exit(1)
 	
+
 def silent():
 
 	setup_logging()
@@ -477,12 +493,13 @@ def silent():
 	dwt_util.disable_service("DiagTrack")
 	dwt_util.services(0)
 	dwt_util.telemetry(0)
-	#dwt_util.defender(0)
+	# dwt_util.defender(0)
 	dwt_util.wifisense(0)
 	dwt_util.onedrive(0)
 	
 	logger.info("COMPLETE")
-		
+
+
 if __name__ == '__main__':
 	if '-silent' in sys.argv:
 		silent()
