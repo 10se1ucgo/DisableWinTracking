@@ -3,7 +3,8 @@
 A tool that I created to use some of the known methods of disabling tracking in Windows 10.
 
 <!-- ![screenshot](https://i.imgur.com/qfC2elN.png) -->
-![screenshot](http://i.imgur.com/WINUxAj.png)
+<!-- ![screenshot](http://i.imgur.com/WINUxAj.png)  -->
+![screenshot](http://i.imgur.com/Yu8WEHN.png)
 
 ## CYRILLIC LANGUAGES WARNING
 
