@@ -71,9 +71,11 @@ class ConsoleDialog(wx.Dialog):
 
 
 class MainFrame(wx.Frame):
-    def __init__(self):
-		super(MainFrame, self).__init__(parent=wx.GetApp().GetTopWindow(), title="Disable Windows 10 Tracking",
-										size=(415, 245))
+	def __init__(self):
+		super(MainFrame, self).__init__(parent=wx.GetApp().GetTopWindow(), \
+										title="Disable Windows 10 Tracking", \
+										size=(415,245))
+
 		self.SetMinSize(self.GetSize())
 		panel = MainPanel(self)
 
