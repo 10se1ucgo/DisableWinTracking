@@ -16,6 +16,7 @@
 # along with DisableWinTracking.  If not, see <http://www.gnu.org/licenses/>.
 
 # dwt.py will become cluttered enough :^)
+import datetime
 import cgi
 import json
 import urllib2
@@ -26,12 +27,12 @@ import wx
 import wx.adv
 import wx.lib.scrolledpanel as sp
 
-__version__ = "3.2.1"
-
+__version__ = "3.2.2"
+year = datetime.date.today().year
 
 def about_dialog(parent):
     license_text = """
-    Copyright (C) 10se1ucgo 2015-2016
+    Copyright (C) 10se1ucgo 2015-{year}
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,12 +45,12 @@ def about_dialog(parent):
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program. If not, see <http://www.gnu.org/licenses/>."""
+    along with this program. If not, see <http://www.gnu.org/licenses/>.""".format(year=year)
 
     about_info = wx.adv.AboutDialogInfo()
     about_info.SetName("Disable Windows 10 Tracking")
     about_info.SetVersion("v{v}".format(v=__version__))
-    about_info.SetCopyright("Copyright (C) 10se1ucgo 2015-2016")
+    about_info.SetCopyright("Copyright (C) 10se1ucgo 2015-{year}".format(year=year))
     about_info.SetDescription("A tool to disable tracking in Windows 10")
     about_info.SetWebSite("https://github.com/10se1ucgo/DisableWinTracking", "GitHub repository")
     about_info.AddDeveloper("10se1ucgo")
