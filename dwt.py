@@ -148,6 +148,10 @@ class MainPanel(wx.Panel):
 		self.onedrive_check = wx.CheckBox(self, label="Uninstall OneDrive")
 		self.onedrive_check.SetToolTip("Uninstalls OneDrive from your computer and removes it from Explorer.")
 
+		# Xbox DVR checkbox
+		self.dvr_check = wx.CheckBox(self, label="Disable Xbox DVR")
+		self.dvr_check.SetToolTip("Disable Xbox DVR feature to increase FPS in games")
+
 		self.service_rad = wx.RadioBox(self, label="Service Method", choices=("Disable", "Delete"))
 		self.service_rad.SetItemToolTip(item=0, text="Simply disables the services. This can be undone.")
 		self.service_rad.SetItemToolTip(item=1, text="Deletes the services completely. This can't be undone.")
@@ -245,6 +249,7 @@ class MainPanel(wx.Panel):
 		check_sizer.Add(self.defender_check, 0, wx.ALL, 1)
 		check_sizer.Add(self.wifisense_check, 0, wx.ALL, 1)
 		check_sizer.Add(self.onedrive_check, 0, wx.ALL, 1)
+		check_sizer.Add(self.dvr_check, 0, wx.ALL, 1)
 
 		#self.Bind(wx.EVT_CHECKBOX, handler=self.select_all_apps, source=select_all_check)
 		self.Bind(wx.EVT_CHECKBOX, handler=self.ip_warn, source=self.ip_check)
@@ -316,6 +321,8 @@ class MainPanel(wx.Panel):
 			dwt_util.wifisense(undo=undo)
 		if self.onedrive_check.IsChecked():
 			dwt_util.onedrive(undo=undo)
+		if self.dvr_check.IsChecked():
+				dwt_util.dvr(undo=undo)			
 		logger.info("Done. It's recommended that you reboot as soon as possible for the full effect.")
 		logger.info(("If you feel something didn't work properly, please press the 'Report an issue'"
 					  " button and follow the directions"))

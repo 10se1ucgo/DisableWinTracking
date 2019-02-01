@@ -354,3 +354,20 @@ def subprocess_handler(cmd):
 #         subprocess.call("powershell -EncodedCommand {0}".format(encodedcommand), shell=True)
 #     except (WindowsError, IOError):
 #         print "App management: Could not re-install all apps"
+
+def dvr(undo):
+    game_dvr_enabled = allow_game_dvr = 0
+    action = "disabled"
+    if undo:
+        game_dvr_enabled = allow_game_dvr = 1
+        action = "enabled"
+
+    dvr_keys = {'GameDVR_Enabled': [winreg.HKEY_CURRENT_USER,
+                                    r'System\GameConfigStore',
+                                    'GameDVR_Enabled', winreg.REG_DWORD, game_dvr_enabled],
+                'AllowGameDVR': [winreg.HKEY_LOCAL_MACHINE,
+                                 r'SOFTWARE\Policies\Microsoft\Windows\GameDVR',
+                                 'AllowGameDVR', winreg.REG_DWORD, allow_game_dvr]}
+
+    set_registry(dvr_keys)
+logger.info("Xbox DVR: successfully {action}".format(action=action))
