@@ -370,4 +370,4 @@ def dvr(undo):
                                  'AllowGameDVR', winreg.REG_DWORD, allow_game_dvr]}
 
     set_registry(dvr_keys)
-logger.info("Xbox DVR: successfully {action}".format(action=action))
+    logger.info("Xbox DVR: successfully {action}".format(action=action))
