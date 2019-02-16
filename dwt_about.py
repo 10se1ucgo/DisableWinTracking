@@ -27,7 +27,7 @@ import wx
 import wx.adv
 import wx.lib.scrolledpanel as sp
 
-__version__ = "3.2.2"
+__version__ = "3.2.3"
 year = datetime.date.today().year
 
 def about_dialog(parent):
