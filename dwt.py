@@ -21,6 +21,7 @@ import platform
 import traceback
 import webbrowser
 from ctypes import windll
+from six import u
 
 import wx
 from wx.lib.itemspicker import ItemsPicker, IP_SORT_SELECTED, IP_SORT_CHOICES, IP_REMOVE_FROM_CHOICES
@@ -470,10 +471,10 @@ def exception_hook(error, value, trace):
 def check_elevated(silent=False):
 	if not bool(windll.advpack.IsNTAdmin(0, None)):
 		if silent:
-			windll.shell32.ShellExecuteW(None, u"runas", unicode(sys.executable), u"{0} -silent".format(unicode(__file__)), None, 1)
+			windll.shell32.ShellExecuteW(None, u"runas", u(sys.executable), u"{0} -silent".format(u(__file__)), None, 1)
 			sys.exit(1)
 		else:
-			windll.shell32.ShellExecuteW(None, u"runas", unicode(sys.executable), unicode(__file__), None, 1)
+			windll.shell32.ShellExecuteW(None, u"runas", u(sys.executable), u(__file__), None, 1)
 		sys.exit(1)
 	
 def silent():

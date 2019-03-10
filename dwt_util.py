@@ -20,10 +20,9 @@ import platform
 from collections import OrderedDict
 import pywintypes
 import shutil
-from string import split
 import subprocess
 import tempfile
-import _winreg as winreg
+from six.moves import winreg
 import shlex
 
 import win32serviceutil
@@ -66,12 +65,12 @@ class CalledProcessError(Exception):
 
 def is_64bit():
     if os.name == 'nt':
-		output = subprocess.check_output(['wmic', 'os', 'get', 'OSArchitecture'])
-		os_arch = output.split()[1]
-		return True if os_arch == '64-bit' else False
+        output = subprocess.check_output(['wmic', 'os', 'get', 'OSArchitecture'])
+        os_arch = output.split()[1]
+        return True if os_arch == '64-bit' else False
     else:
-		logger.critical("This was only meant to be run on Windows-based system. Specifically, Windows 10.")
-		os._exit(0)
+        logger.critical("This was only meant to be run on Windows-based system. Specifically, Windows 10.")
+        os._exit(0)
     return os_arch
 
 
@@ -101,7 +100,7 @@ def clear_diagtrack():
 	failed = False
 	for cmd in cmds:
 		i += 1
-		service = split(cmd, 'sc delete ')
+		service = cmd.split('sc delete ')
 		
 		
 		output = subprocess_handler(cmd)
