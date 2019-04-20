@@ -57,7 +57,7 @@ Clears and disables writing to the log located in `C:\ProgramData\Microsoft\Diag
 #### Services
 
 You can delete or disable the 2 services below:
-* `DiagTrack` Diagnostics Tracking Service
+* `DiagTrack` (aka. Connected User Experiences and Telemetry) Diagnostics Tracking Service
 * `dmwappushsvc` WAP Push Message Routing Service
 
 Action:
