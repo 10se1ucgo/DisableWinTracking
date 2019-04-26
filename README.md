@@ -39,8 +39,8 @@ Either can be run with the -silent argument as of v3.1. This will perform all av
 
 ## Dependencies
 This is only to run the script from source, [download the exe here](https://github.com/10se1ucgo/DisableWinTracking/releases/)
-* Tested on Python 2.7
-* [wxPython](http://wxpython.org/download.php) -- GUI (Tested with wxPython=Phoenix)
+* Tested on Python 3.7.2 since DisableWinTracking 3.2.4 (commit [9f1d2aa](https://github.com/10se1ucgo/DisableWinTracking/commit/9f1d2aa58cec76306c3dc6887e7c9c92769936fe))
+* [wxPython](http://wxpython.org/download.php)
 * [PyWin32](http://sourceforge.net/projects/pywin32/files/pywin32/)
 * Windows 10 (Duh)
 
