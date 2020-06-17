@@ -65,9 +65,8 @@ class CalledProcessError(Exception):
 
 def is_64bit():
     if os.name == 'nt':
-        output = subprocess.check_output(['wmic', 'os', 'get', 'OSArchitecture'])
-        os_arch = output.split()[1]
-        return True if os_arch == '64-bit' else False
+        os_arch = os.environ["PROCESSOR_ARCHITEW6432"]
+        return True if os_arch == 'AMD64' else False
     else:
         logger.critical("This was only meant to be run on Windows-based system. Specifically, Windows 10.")
         os._exit(0)
