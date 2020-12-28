@@ -1,7 +1,7 @@
 # DO NOT SUBMIT NEW ISSUES OR PULL REQUESTS
 ## THIS REPOSITORY IS HERE FOR ARCHIVAL PURPOSES ONLY. THIS SOFTWARE RECEIVED IT'S LAST UPDATE ON 04/2019 AND LAST COMMIT ON 12/2020.
 
-#----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 
 # DisableWinTracking
 
