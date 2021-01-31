@@ -1,6 +1,9 @@
 # DO NOT SUBMIT NEW ISSUES OR PULL REQUESTS
 ## THIS REPOSITORY IS HERE FOR ARCHIVAL PURPOSES ONLY. THIS SOFTWARE RECEIVED IT'S LAST RELEASE ON 01/2019 AND LAST COMMIT ON 12/2020.
 
+# Someone has forked and continued the project here: [https://github.com/bitlog2/DisableWinTracking](https://github.com/bitlog2/DisableWinTracking)
+## As with any fork of a project, we cannot verify the integrity of their code, so report any issues with their fork to THAT repository, not this one.
+
 # --------------------------
 
 # DisableWinTracking
